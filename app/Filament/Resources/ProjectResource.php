@@ -93,21 +93,25 @@ class ProjectResource extends Resource
                             ->icon('heroicon-o-photo')
                             ->schema([
                                 Forms\Components\Section::make('Zdjecia projektu')
-                                    ->description('Wgraj dwa zdjecia: miniaturke do strony glownej i pelne zdjecie do modala. Zdjecia sa automatycznie konwertowane do formatu WebP (jakosc 95%, bez zmiany rozmiaru).')
+                                    ->description('Wgraj dwa zdjecia: miniaturke do strony glownej i pelne zdjecie do modala. Zdjecia sa automatycznie konwertowane do formatu WebP (jakosc 95%) i optymalizowane pod wyswietlanie na stronie.')
                                     ->schema([
                                         OptimizedImageUpload::make('thumbnail_image')
                                             ->label('Miniaturka (strona glowna)')
                                             ->image()
+                                            ->maxSize(51200)
                                             ->directory('projects/thumbnails')
                                             ->outputFormat('webp')
                                             ->quality(95)
+                                            ->resizeMaxWidth(1600)
                                             ->columnSpanFull(),
                                         OptimizedImageUpload::make('full_image')
                                             ->label('Pelne zdjecie (modal case study)')
                                             ->image()
+                                            ->maxSize(51200)
                                             ->directory('projects/full')
                                             ->outputFormat('webp')
                                             ->quality(95)
+                                            ->resizeMaxWidth(1920)
                                             ->columnSpanFull(),
                                     ]),
                             ]),

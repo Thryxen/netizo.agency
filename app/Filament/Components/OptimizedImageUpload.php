@@ -5,7 +5,8 @@ namespace App\Filament\Components;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\ImageManagerStatic as Image;
+use Intervention\Image\Constraint;
+use Intervention\Image\ImageManager;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class OptimizedImageUpload extends FileUpload
@@ -27,28 +28,27 @@ class OptimizedImageUpload extends FileUpload
                 return null;
             }
 
-            $image = Image::make($file->getRealPath());
+            $manager = new ImageManager([
+                'driver' => extension_loaded('imagick') ? 'imagick' : 'gd',
+            ]);
 
-            // Resize if needed
+            $image = $manager->make($file->getRealPath());
+
             $maxW = $component->getImageMaxWidth();
             $maxH = $component->getImageMaxHeight();
 
             if ($maxW || $maxH) {
-                $image->resize($maxW, $maxH, function ($constraint) {
+                $image->resize($maxW, $maxH, function (Constraint $constraint): void {
                     $constraint->aspectRatio();
                     $constraint->upsize();
                 });
             }
 
-            // Always encode to JPEG for maximum compatibility
-            // WebP encoding with GD is unreliable on some server configurations
-            $encoded = $image->encode('jpg', $component->getImageQuality());
+            $encoded = $image->encode($component->getOutputFormat(), $component->getImageQuality());
 
-            // Generate filename with .jpg extension
-            $filename = Str::ulid().'.jpg';
+            $filename = Str::ulid().'.'.$component->getOutputExtension();
             $path = $component->getDirectory().'/'.$filename;
 
-            // Store the file
             Storage::disk($component->getDiskName())->put($path, $encoded->getEncoded());
 
             return $path;
@@ -85,7 +85,15 @@ class OptimizedImageUpload extends FileUpload
 
     public function getOutputFormat(): string
     {
-        return $this->outputFormat;
+        return strtolower($this->outputFormat);
+    }
+
+    public function getOutputExtension(): string
+    {
+        return match ($this->getOutputFormat()) {
+            'jpeg' => 'jpg',
+            default => $this->getOutputFormat(),
+        };
     }
 
     public function getImageQuality(): int

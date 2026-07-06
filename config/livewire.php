@@ -65,7 +65,7 @@ return [
 
     'temporary_file_upload' => [
         'disk' => null,
-        'rules' => null,
+        'rules' => 'file|max:51200',
         'directory' => null,
         'middleware' => null,
         'preview_mimes' => [   // Supported file types for temporary pre-signed file URLs...
