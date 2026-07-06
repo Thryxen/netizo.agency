@@ -3860,64 +3860,27 @@ a.qc-item:hover {
 
 /* Footer */
 footer {
-    padding: 50px 80px;
+    padding: 36px 80px;
     border-top: 1px solid var(--dark-border);
+    background: linear-gradient(180deg, transparent, rgba(247, 208, 0, 0.015));
     position: relative;
     z-index: 2;
 }
 
 .footer-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     width: 100%;
-    max-width: 1400px;
+    max-width: 1300px;
     margin-left: auto;
     margin-right: auto;
 }
 
-.footer-brand {
+/* Bottom bar — copyright, legal, terminal cursor sign-off */
+.footer-bottom {
     display: flex;
     align-items: center;
-    text-decoration: none;
-    transition: opacity 0.3s;
-}
-
-.footer-brand:hover {
-    opacity: 0.8;
-}
-
-.footer-brand img {
-    height: 28px;
-    width: auto;
-    filter: grayscale(100%) brightness(0.8);
-    transition: filter 0.3s;
-}
-
-.footer-brand:hover img {
-    filter: none;
-}
-
-.footer-email {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: var(--gray-light);
-    text-decoration: none;
-    padding: 12px 24px;
-    border: 1px solid var(--dark-border);
-    transition: all 0.3s;
-}
-
-.footer-email svg {
-    color: var(--yellow);
-}
-
-.footer-email:hover {
-    border-color: var(--yellow);
-    color: var(--white);
+    justify-content: space-between;
+    gap: 14px 28px;
+    flex-wrap: wrap;
 }
 
 .footer-copy {
@@ -3925,30 +3888,58 @@ footer {
     color: var(--gray);
 }
 
-.footer-social {
+.footer-legal {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    font-size: 13px;
 }
 
-.footer-social a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--dark-border);
+.footer-legal a {
     color: var(--gray);
-    transition: all 0.3s;
+    text-decoration: none;
+    transition: color 0.25s ease;
 }
 
-.footer-social a:hover {
+.footer-legal a:hover {
+    color: var(--white);
+}
+
+.footer-legal .fl-sep {
+    color: var(--gray);
+    opacity: 0.4;
+}
+
+.footer-cursor-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+}
+
+.footer-cursor-line .fc-prompt {
+    color: var(--gray);
+}
+
+.footer-cursor-line .fc-brand {
+    color: var(--yellow);
+    font-weight: 600;
+}
+
+.footer-cursor-line .fc-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 16px;
     background: var(--yellow);
-    border-color: var(--yellow);
-    color: var(--dark);
-    transform: translateY(-2px);
+    animation: blink 1s step-end infinite;
+}
+
+/* Reserve space so the sign-off clears the floating callback button (desktop only) */
+@media (min-width: 1025px) {
+    .footer-bottom {
+        padding-right: 88px;
+    }
 }
 
 /* Scroll reveal */
@@ -3982,6 +3973,9 @@ footer {
     .cta-action { text-align: center; }
     .cta-time { display: none; }
 
+    /* Footer responsive */
+    footer { padding: 32px 30px; }
+
     /* Clients section responsive */
     .client-item .client-name {
         font-size: 18px;
@@ -4002,13 +3996,11 @@ footer {
     .hero-buttons { flex-direction: column; width: 100%; }
     .btn-primary, .btn-ghost { width: 100%; justify-content: center; }
     .services-grid { grid-template-columns: 1fr; }
-    .footer-inner {
+    footer { padding: 28px 25px; }
+    .footer-bottom {
         flex-direction: column;
-        gap: 25px;
-        text-align: center;
-    }
-    .footer-email {
-        order: -1;
+        align-items: flex-start;
+        gap: 16px;
     }
 
     /* Clients section mobile */

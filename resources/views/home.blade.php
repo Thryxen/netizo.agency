@@ -761,10 +761,23 @@
 
     <footer>
         <div class="footer-inner">
-            <a href="#" class="footer-brand">
-                <img src="{{ asset('assets/images/logo.svg') }}" alt="Voxbit" width="100" height="32">
-            </a>
-            <span class="footer-copy">© {{ \Carbon\Carbon::now()->year }} Voxbit</span>
+            <div class="footer-bottom">
+                <span class="footer-copy">© {{ \Carbon\Carbon::now()->year }} Voxbit — Wszelkie prawa zastrzeżone</span>
+                <div class="footer-legal">
+                    <a href="/panel" target="_blank" rel="noopener">Panel klienta</a>
+                    <span class="fl-sep">·</span>
+                    <a href="/utrzymanie">Utrzymanie</a>
+                    <span class="fl-sep">·</span>
+                    <a href="/regulamin">Regulamin</a>
+                    <span class="fl-sep">·</span>
+                    <a href="/polityka-prywatnosci">Polityka prywatności</a>
+                </div>
+                <span class="footer-cursor-line">
+                    <span class="fc-prompt">export default</span>
+                    <span class="fc-brand">Voxbit</span>
+                    <span class="fc-cursor" aria-hidden="true"></span>
+                </span>
+            </div>
         </div>
     </footer>
 
