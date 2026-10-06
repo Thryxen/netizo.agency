@@ -19,7 +19,7 @@
             --dark: #0a0a0a;
             --dark-card: #0e0e0e;
             --dark-border: rgba(255, 255, 255, 0.08);
-            --yellow: #F7D000;
+            --ink: #fafafa;
             --white: #ffffff;
             --gray: #888;
             --gray-light: #aaa;
@@ -58,13 +58,13 @@
             font-size: clamp(120px, 25vw, 200px);
             font-weight: 700;
             color: transparent;
-            -webkit-text-stroke: 2px var(--yellow);
+            -webkit-text-stroke: 2px var(--ink);
             line-height: 1;
             margin-bottom: 20px;
         }
 
         .error-title { font-size: clamp(24px, 5vw, 36px); font-weight: 600; margin-bottom: 16px; }
-        .error-title span { color: var(--yellow); }
+        .error-title span { color: var(--ink); }
         .error-desc { font-size: 16px; color: var(--gray-light); margin-bottom: 40px; line-height: 1.6; }
 
         .error-terminal {
@@ -78,16 +78,16 @@
         }
 
         .terminal-line { display: flex; gap: 10px; margin-bottom: 8px; }
-        .terminal-prompt { color: var(--yellow); }
+        .terminal-prompt { color: var(--ink); }
         .terminal-cmd { color: var(--gray-light); }
-        .terminal-warning { color: var(--yellow); }
+        .terminal-warning { color: var(--ink); }
 
         .btn-ghost {
             display: inline-flex; align-items: center; gap: 10px;
             padding: 16px 32px; background: transparent; border: 1px solid var(--dark-border);
             color: var(--white); text-decoration: none; font-weight: 500; font-size: 14px; transition: all 0.3s ease;
         }
-        .btn-ghost:hover { border-color: var(--yellow); color: var(--yellow); }
+        .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
 
         .logo { position: absolute; top: 30px; left: 30px; }
         .logo img { height: 28px; }

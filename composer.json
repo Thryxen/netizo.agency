@@ -9,6 +9,7 @@
         "php": "^8.2",
         "artesaos/seotools": "^1.3",
         "filament/filament": "^3.2",
+        "inertiajs/inertia-laravel": "^3.0",
         "joshembling/image-optimizer": "^1.6",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
@@ -19,7 +20,7 @@
         "fakerphp/faker": "^1.23",
         "laravel-lang/common": "^6.7",
         "laravel-lang/lang": "^15.26",
-        "laravel/boost": "^1.8",
+        "laravel/boost": "^2.5",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
@@ -52,6 +53,11 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
+        ],
+        "dev:ssr": [
+            "npm run build",
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=server,queue,logs,ssr --kill-others"
         ],
         "test": [
             "@php artisan config:clear --ansi",

@@ -19,7 +19,7 @@
             --dark: #0a0a0a;
             --dark-card: #0e0e0e;
             --dark-border: rgba(255, 255, 255, 0.08);
-            --yellow: #F7D000;
+            --ink: #fafafa;
             --white: #ffffff;
             --gray: #888;
             --gray-light: #aaa;
@@ -78,7 +78,7 @@
         }
 
         .terminal-line { display: flex; gap: 10px; margin-bottom: 8px; }
-        .terminal-prompt { color: var(--yellow); }
+        .terminal-prompt { color: var(--ink); }
         .terminal-cmd { color: var(--gray-light); }
         .terminal-error { color: #ff6b6b; }
 
@@ -86,7 +86,7 @@
 
         .btn-primary {
             display: inline-flex; align-items: center; gap: 10px;
-            padding: 16px 32px; background: var(--yellow); color: #000;
+            padding: 16px 32px; background: var(--ink); color: #000;
             text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s ease;
         }
         .btn-primary:hover { background: #fff; transform: translateY(-2px); }
@@ -96,7 +96,7 @@
             padding: 16px 32px; background: transparent; border: 1px solid var(--dark-border);
             color: var(--white); text-decoration: none; font-weight: 500; font-size: 14px; transition: all 0.3s ease;
         }
-        .btn-ghost:hover { border-color: var(--yellow); color: var(--yellow); }
+        .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
 
         .logo { position: absolute; top: 30px; left: 30px; }
         .logo img { height: 28px; }

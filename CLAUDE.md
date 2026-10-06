@@ -4,20 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Voxbit is a Polish web agency website built with Laravel 12, Livewire 3, and Filament 3. It's a single-page marketing site with an admin panel for managing projects, contact submissions, and client data.
+Voxbit is a Polish web agency website built with Laravel 12. The public homepage is a single-page Inertia v3 + React 19 + TypeScript app (shadcn/ui, server-side rendered). The admin panel at `/admin` is Filament 3 (Livewire 3) for managing projects, clients and the leads collected by the homepage forms.
 
 ## Commands
 
 ### Development
 ```bash
-composer dev          # Runs server, queue, pail (logs), and vite concurrently
+composer dev          # Server, queue, pail (logs) and Vite dev server (HMR, Inertia SSR via the Vite plugin)
+composer dev:ssr      # Production build, then server, queue, pail and the Node SSR server
 ```
+The site is served by Laravel Herd at https://voxbit.test, so `php artisan serve` is not needed.
 
 ### Build & Assets
 ```bash
-npm run build         # Production build via Vite
+npm run build         # Client bundle (public/build) + SSR bundle (bootstrap/ssr/ssr.js)
 npm run dev           # Vite dev server with HMR
+npm run types         # TypeScript check (tsc --noEmit)
+php artisan inertia:start-ssr   # Run the SSR server for the built bundle (stop: inertia:stop-ssr)
 ```
+Without a running SSR server, Inertia falls back to client-side rendering.
 
 ### Testing
 ```bash
@@ -28,6 +33,7 @@ composer test         # Runs Pest tests (clears config first)
 ### Code Quality
 ```bash
 ./vendor/bin/pint     # Laravel Pint code style fixer
+npx tsc --noEmit      # Type-check the React/TypeScript frontend
 ```
 
 ### Database
@@ -38,11 +44,32 @@ php artisan migrate   # Run migrations (uses SQLite in database/database.sqlite)
 ## Architecture
 
 ### Stack
-- **Backend**: Laravel 12, PHP 8.2+, Livewire 3
-- **Admin Panel**: Filament 3
-- **Frontend**: Tailwind CSS 4, Vite 7
+- **Backend**: Laravel 12, PHP 8.2+ (8.4 locally)
+- **Homepage**: Inertia v3 (`inertiajs/inertia-laravel`, `@inertiajs/react`), React 19, TypeScript, SSR on
+- **UI**: shadcn/ui (new-york, neutral, CSS variables) on Radix (`radix-ui`), `lucide-react` icons, Tailwind CSS 4, `tw-animate-css`
+- **Fonts**: self-hosted Geist / Geist Mono (`@fontsource-variable/*`) and Geist Pixel Square (`resources/fonts/`); no Google Fonts on the homepage
+- **Motion**: `motion` (motion.dev), used only for `MotionConfig` and scroll-linked values (`useScroll` + `useTransform`); entrances are CSS/canvas primitives in `components/motion/`
+- **Admin Panel**: Filament 3. Livewire 3 stays installed only because Filament needs it; the homepage has no Livewire components.
+- **Build**: Vite 7 (`vite.config.ts`, `laravel-vite-plugin`, `@inertiajs/vite`, `@vitejs/plugin-react`)
 - **Database**: SQLite (development)
 - **Testing**: Pest 4
+
+### Request flow
+- `GET /` → `HomeController@index` sets the SEOTools meta and returns `Inertia::render('home', ['projects', 'clients', 'faq'])`. FAQ items have one source (`HomeController::faq()`) used for both the prop and the FAQ JSON-LD passed to the root view as `faqSchema`.
+- Root view `resources/views/app.blade.php`: Trusted Types default policy, gtag, theme-before-paint script, `SEO::generate()`, FAQ JSON-LD, favicons, `@vite`, `@inertiaHead`, `@cookieconsentscripts`; body has the GTM noscript, `@inertia`, then `@cookieconsentview` and Microsoft Clarity outside the Inertia root.
+- Middleware (`bootstrap/app.php`, web group): `HandleAppearance` (reads the `appearance` cookie: light/dark/system; the cookie is not encrypted), `HandleInertiaRequests`, `AddLinkHeadersForPreloadedAssets`, `SecurityHeaders` (CSP with Trusted Types; adds the Vite dev origin only while `public/hot` exists).
+
+### Form endpoints
+All in `routes/web.php` inside a `throttle:forms` group (10 req/min per IP, defined in `AppServiceProvider`; when exceeded it redirects back with an `errors.form` message instead of a 429 page). Each controller validates with a Form Request, saves the model, calls `DiscordWebhookService` where noted, and returns `back()`.
+
+| Method/URI | Route name | Controller | Form Request | Model | Webhook |
+|---|---|---|---|---|---|
+| POST /kontakt | contact-messages.store | ContactMessageController | StoreContactMessageRequest | ContactMessage | sendContactMessage |
+| POST /brief | project-briefs.store | ProjectBriefController | StoreProjectBriefRequest | ProjectBrief | sendBrief |
+| POST /oddzwonimy | callback-requests.store | CallbackRequestController | StoreCallbackRequestRequest | CallbackRequest | sendCallbackRequest |
+| POST /newsletter | newsletter-subscriptions.store | NewsletterSubscriptionController | StoreNewsletterSubscriptionRequest | NewsletterSubscriber | none |
+
+Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreContactMessageRequest::SUBJECTS`); `resources/js/components/home/brief/brief-options.ts` must use the same values. The frontend URLs are in `resources/js/lib/endpoints.ts` and forms post with Inertia `useForm`.
 
 ### Directory Structure
 
@@ -51,33 +78,54 @@ php artisan migrate   # Run migrations (uses SQLite in database/database.sqlite)
 - `ClientResource` - Client management
 - `ContactMessageResource`, `CallbackRequestResource`, `ProjectBriefResource` - Lead/inquiry management (read-only)
 
-**app/Livewire/** - Interactive components:
-- `Brief` - Multi-step project brief wizard
-- `QuickContact`, `CallbackModal`, `CaseStudyModal` - Contact forms and modals
-- `Newsletter` - Newsletter subscription
+**app/Http/** - Homepage backend:
+- `Controllers/HomeController.php` - Page props, SEO, FAQ
+- `Controllers/{ContactMessage,ProjectBrief,CallbackRequest,NewsletterSubscription}Controller.php` + `Requests/Store*Request.php` - Form endpoints
+- `Middleware/HandleInertiaRequests.php`, `HandleAppearance.php`, `SecurityHeaders.php`
 
 **app/Models/** - Eloquent models:
 - `Project`, `Client` - Content entities
 - `ContactMessage`, `CallbackRequest`, `ProjectBrief`, `NewsletterSubscriber` - Lead capture
 
+**app/Services/DiscordWebhookService.php** - Discord notifications for new leads
+
+**resources/js/** - Inertia React app:
+- `app.tsx` (client entry), `ssr.tsx` (SSR entry); both resolve pages through `lib/pages.ts`
+- `pages/home.tsx` - Page assembly (`HomeUiProvider`, header, sections, footer, callback FAB and dialog, skip link)
+- `components/home/` - Homepage sections and shared primitives: `section.tsx` (`Section`, `SectionHeading` (heading reveal built in), `Container`, `Rivet`, gutter/bleed class helpers), `pixel.tsx`, `logo.tsx`, `theme-toggle.tsx`, `tech-tag.tsx`, `external-link.tsx`, `home-ui-context.tsx` (`useHomeUi()`: callback dialog state, contact tab, `openContact()`), one file per section, `bento/` (services bento: one file per live tile, `bento-tile.tsx` shell, scoped `bento-styles.tsx`), `brief/` (6-step brief wizard, options, form field helpers)
+- `components/motion/` - Motion primitives, import from `@/components/motion`: `PixelatedImage` (the "pixel → sharp" photo reveal, canvas over a real `<img>`), `Reveal`, `SplitLines` (hero H1), `CountUp`, `Marquee`, `Spotlight`/`useSpotlight`, `useLiveLoop`/`useInViewLoop` (in-view gated loops), `useMotionStyle` (bind `useScroll`/`useTransform` values to a plain element), `MotionRoot` (wraps the page). Don't use `motion.*`/`m.*`/`animate()` (they pull in the animation engine, ~+27 KB gz); gate scroll-linked styles with `useReducedMotionPreference()`.
+- `components/ui/` - shadcn components (add new ones with `npx shadcn add`, then check the generated `cn` import points at `@/lib/utils`)
+- `hooks/use-appearance.tsx` - Light/dark/system theme (cookie + localStorage)
+- `lib/` - `utils.ts` (`cn`), `endpoints.ts`, `pages.ts`, `photos.ts` (`photo(name)` → `src`/`srcSet`/size for the photo series), `site.ts`, `in-page-navigation.ts`
+- `types/home.ts` - Page prop types (`Project`, `Client`, `FaqItem`, `HomePageProps`)
+
+**resources/css/app.css** - Tailwind 4 entry: shadcn tokens on `:root` / `.dark`, fonts, base styles, `ease-expo-out`, motion primitive states/keyframes (gated by `html.js`), `mask-fade-x`
+
 **resources/views/** - Blade templates:
-- `home.blade.php` - Main single-page website
-- `livewire/` - Livewire component views
-- `errors/` - Custom error pages (403, 404, 419, 429, 500, 503)
+- `app.blade.php` - Inertia root view
+- `vendor/cookie-consent/` - Cookie banner, styled with the site tokens
+- `errors/` - Custom error pages (403, 404, 419, 429, 500, 503), self-contained
+
+**public/assets/images/photos/** - Generated photo series (WebP, `{name}.webp` at native width + `{name}-768.webp`): `hero-studio`, `bento-mobile`, `bento-ecommerce`, `mission-workshop`, `process-{discovery,design,development,launch}`, `contact-desk`. Reference them through `photo()` in `lib/photos.ts`.
+
+**public/assets/images/illustrations/** - Light/dark WebP project placeholder (shown when a project has no screenshot)
+
+### Frontend Patterns
+- Monochrome shadcn neutral look with no accent colour (no yellow anywhere, error pages included); colour comes only from photos and project screenshots.
+- Square "bits" mark structure (rails, rivets, markers); grids use shared borders, not floating shadowed cards.
+- Sentence case Polish copy; no eyebrow labels, no arrows appended to button text.
+- Motion: one signature (photos resolve from pixels to sharp via `PixelatedImage`), plus heading reveals (`SectionHeading` only, never on cards), hero load sequence, counters, client marquee, live bento tiles, scroll-linked parallax and process rail. Animate transform/opacity only. Every effect needs a complete static state: the inline head script adds `js` to `<html>` and hidden entrance states are styled only under `.js` + `prefers-reduced-motion: no-preference`, so SSR/no-JS and reduced motion show the finished page.
+- Section anchors: `#uslugi`, `#projekty`, `#misja`, `#klienci`, `#proces`, `#faq`, `#newsletter`, `#kontakt`.
+- Components must stay SSR-safe: no `window`/`document` access during render.
+
+### Filament Customization
+- Custom `OptimizedImageUpload` component at `app/Filament/Components/OptimizedImageUpload.php` for automatic image optimization on upload
 
 ### Key Integrations
 - **artesaos/seotools** - SEO meta tags management (config in `config/seotools.php`)
 - **joshembling/image-optimizer** - Image optimization for uploads
 - **whitecube/laravel-cookie-consent** - GDPR cookie consent
 - **laravel-lang** - Multi-language support (Polish primary)
-
-### Frontend Patterns
-- CSS uses custom properties defined in `:root` (yellow accent theme)
-- JavaScript uses vanilla ES6+ with IntersectionObserver for animations
-- Single-page design with section-based navigation (`#stack`, `#projekty`, `#misja`, etc.)
-
-### Filament Customization
-- Custom `OptimizedImageUpload` component at `app/Filament/Components/OptimizedImageUpload.php` for automatic image optimization on upload
 
 ===
 

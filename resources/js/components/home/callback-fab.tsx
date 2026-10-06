@@ -1,0 +1,28 @@
+import { Phone } from 'lucide-react';
+import { useHomeUi } from '@/components/home/home-ui-context';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+/**
+ * Floating square "bit" that opens the callback dialog. Sits below the cookie banner (z-index 45)
+ * and the header (z-40), lifted above the banner while it shows (`--cookie-banner-height`, set by the
+ * cookie-consent view); hidden while the dialog is open and refocused when it closes.
+ * Desktop only: below lg the header's phone button is the callback trigger, so the FAB would be a
+ * duplicate that permanently covers content in the narrow gutter.
+ */
+export function CallbackFab() {
+    const { callbackOpen, openCallback } = useHomeUi();
+
+    return (
+        <Button
+            aria-label="Zamów rozmowę telefoniczną"
+            onClick={(event) => openCallback(event.currentTarget)}
+            className={cn(
+                'fixed right-[max(1.25rem,env(safe-area-inset-right))] bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))_+_var(--cookie-banner-height,0px))] z-30 size-[52px] rounded-none p-0 ring-4 ring-background max-lg:hidden',
+                callbackOpen && 'hidden',
+            )}
+        >
+            <Phone aria-hidden="true" className="size-5" />
+        </Button>
+    );
+}

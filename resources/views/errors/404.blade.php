@@ -19,7 +19,7 @@
             --dark: #0a0a0a;
             --dark-card: #0e0e0e;
             --dark-border: rgba(255, 255, 255, 0.08);
-            --yellow: #F7D000;
+            --ink: #fafafa;
             --white: #ffffff;
             --gray: #888;
             --gray-light: #aaa;
@@ -67,7 +67,7 @@
             font-size: clamp(120px, 25vw, 200px);
             font-weight: 700;
             color: transparent;
-            -webkit-text-stroke: 2px var(--yellow);
+            -webkit-text-stroke: 2px var(--ink);
             line-height: 1;
             margin-bottom: 20px;
             animation: glitch 3s infinite;
@@ -88,7 +88,7 @@
         }
 
         .error-title span {
-            color: var(--yellow);
+            color: var(--ink);
         }
 
         .error-desc {
@@ -115,7 +115,7 @@
         }
 
         .terminal-prompt {
-            color: var(--yellow);
+            color: var(--ink);
         }
 
         .terminal-cmd {
@@ -138,7 +138,7 @@
             align-items: center;
             gap: 10px;
             padding: 16px 32px;
-            background: var(--yellow);
+            background: var(--ink);
             color: #000;
             text-decoration: none;
             font-weight: 600;
@@ -166,8 +166,8 @@
         }
 
         .btn-ghost:hover {
-            border-color: var(--yellow);
-            color: var(--yellow);
+            border-color: var(--ink);
+            color: var(--ink);
         }
 
         .logo {
