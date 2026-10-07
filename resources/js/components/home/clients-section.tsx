@@ -1,6 +1,5 @@
 import { ArrowUpRightIcon } from 'lucide-react';
 import { ExternalLink } from '@/components/home/external-link';
-import { Pixel } from '@/components/home/pixel';
 import { bleedClassName, gutterClassName, Rivet, Section, SectionHeading } from '@/components/home/section';
 import { CountUp, Marquee } from '@/components/motion';
 import { cn } from '@/lib/utils';
@@ -16,9 +15,8 @@ const STATS = [
 ] as const;
 
 /**
- * The heading band, then one bleed block rail to rail like the services grid: the client wordmarks, a bit before each
- * (a marquee band; the wrapped wordmark list under reduced motion, without JS and for fewer than three clients).
- * Type only, no images.
+ * The heading band, then one bleed block rail to rail like the services grid: the client wordmarks (a marquee band;
+ * the wrapped wordmark list under reduced motion, without JS and for fewer than three clients). Type only, no images.
  *
  * The stats are one list placed by breakpoint: from lg in the heading band's right half (beside the H2), below lg a
  * row of shared-border cells under the wordmarks, flush to the next section's hairline. The section drops its bottom
@@ -39,7 +37,7 @@ export function ClientsSection({ clients }: { clients: Client[] }) {
                 />
 
                 <ul
-                    aria-label="Voxbit w liczbach"
+                    aria-label="Netizo w liczbach"
                     className={cn(
                         'order-last grid grid-cols-2 gap-px border-t border-border bg-border',
                         bleedClassName,
@@ -48,7 +46,7 @@ export function ClientsSection({ clients }: { clients: Client[] }) {
                 >
                     {STATS.map((stat) => (
                         <li key={stat.value} className={cn('flex flex-col gap-3 bg-background py-8', gutterClassName, 'lg:bg-transparent lg:p-0')}>
-                            <CountUp value={stat.value} className="font-pixel text-4xl leading-none md:text-5xl" />
+                            <CountUp value={stat.value} className="text-4xl leading-none font-semibold tracking-tight tabular-nums md:text-5xl" />
                             <span className="leading-snug text-muted-foreground">{stat.label}</span>
                         </li>
                     ))}
@@ -65,11 +63,9 @@ export function ClientsSection({ clients }: { clients: Client[] }) {
                                 className="bg-background [--marquee-gap:2rem] [--mask-fade:2rem] md:[--marquee-gap:3rem] md:[--mask-fade:3rem]"
                                 rowClassName="py-10 md:py-14"
                             >
-                                {/* Bit first, spaced like the static list (a bullet before its name, not a separator between names). */}
                                 <ul className="flex items-center gap-[var(--marquee-gap)]">
                                     {clients.map((client) => (
-                                        <li key={client.id} className="flex shrink-0 items-center gap-3 md:gap-4">
-                                            <ClientBit />
+                                        <li key={client.id} className="flex shrink-0 items-center">
                                             <ClientWordmark client={client} />
                                         </li>
                                     ))}
@@ -83,10 +79,6 @@ export function ClientsSection({ clients }: { clients: Client[] }) {
             </div>
         </Section>
     );
-}
-
-function ClientBit() {
-    return <Pixel size="md" className="bg-foreground/25" />;
 }
 
 /** A client name, large and semibold; links out (with an arrow) when the client has a site. */
@@ -118,8 +110,7 @@ function ClientList({ clients }: { clients: Client[] }) {
             )}
         >
             {clients.map((client) => (
-                <li key={client.id} className="flex min-w-0 items-center gap-3 md:gap-4">
-                    <ClientBit />
+                <li key={client.id} className="flex min-w-0 items-center">
                     <ClientWordmark client={client} />
                 </li>
             ))}

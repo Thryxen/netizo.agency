@@ -74,7 +74,7 @@ export function BriefArtifact({ state }: { state: StepState }) {
                                 key: 'review',
                                 node: (
                                     <span className={cn(chipClassName, 'border-foreground/40')}>
-                                        <span className="vx-relay-blink size-1.5 bg-foreground" />
+                                        <span className="nz-relay-blink size-1.5 bg-foreground" />
                                         Do akceptacji
                                     </span>
                                 ),

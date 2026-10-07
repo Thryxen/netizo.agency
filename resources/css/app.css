@@ -8,18 +8,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@font-face {
-    font-family: 'Geist Pixel Square';
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-    src: url('../fonts/GeistPixel-Square.woff2') format('woff2');
-}
-
 @theme inline {
     --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
     --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --font-pixel: 'Geist Pixel Square', 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
 
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
@@ -54,7 +45,7 @@
 }
 
 /*
- * "Siatka bitów" tokens — shadcn neutral, monochrome. Colour comes only from photos and project screenshots.
+ * Design tokens — shadcn neutral, monochrome. Colour comes only from photos and project screenshots.
  * --ring is the ink colour (not shadcn's grey) so the `ring-ring/50` focus ring keeps ≥3:1 contrast in both themes.
  * --input is the boundary of interactive controls (inputs, selects, checkboxes, chips): ≥3:1 against the page in
  * both themes (WCAG 1.4.11), unlike the decorative --border hairlines. Dark fills use it at low alpha (bg-input/12).
@@ -249,19 +240,6 @@
         animation-delay: var(--hero-rise-delay, 0s);
     }
 
-    /*
-     * PixelatedImage: the canvas (muted background, then pixel blocks) stands in for the photo until it resolves.
-     * A `priority` photo keeps its <img> visible (it is the page's LCP) under the server-rendered mosaic (`lqip`),
-     * which shows from the first paint until the canvas has drawn its first frame.
-     */
-    .js [data-pixelate]:not([data-revealed], [data-pixel-priority]) > img {
-        opacity: 0;
-    }
-
-    .js [data-pixelate]:not([data-revealed], [data-pixel-drawn]) > [data-pixel-lqip] {
-        display: block;
-    }
-
     /* CountUp: show the running (zero) layer from the first paint; the final value stays in the DOM for AT. */
     .js [data-count-up]:not([data-count-done]) > [data-count-final] {
         opacity: 0;
@@ -290,25 +268,9 @@
     }
 }
 
-[data-pixel-lqip] {
-    display: none;
-}
-
-[data-pixelate] > canvas {
-    transition: opacity 150ms linear;
-}
-
 /* Photos (not project screenshots) step down a little in dark mode, so a high-key photo never outshines the type. */
-.dark [data-pixelate]:has(> img[data-photo]) > :is(img, canvas) {
+.dark [data-photo-frame] > img[data-photo] {
     filter: brightness(0.88) contrast(1.04);
-}
-
-[data-pixelate][data-revealed] > canvas {
-    opacity: 0;
-}
-
-html:not(.js) [data-pixelate] > canvas {
-    display: none;
 }
 
 /* Marquee: CSS loop; the static fallback replaces it for reduced motion and no-JS. */
@@ -363,7 +325,7 @@ html:not(.js) [data-marquee-static] {
 
 /* The scenes' own photos (Misja, FAQ, Newsletter, Kontakt) step down a little further than other photos, so a bright
    wall or window never outshines the type on a near-black page. */
-.dark [data-scene] [data-pixelate]:has(> img[data-photo]) > :is(img, canvas) {
+.dark [data-scene] [data-photo-frame] > img[data-photo] {
     filter: brightness(0.8) contrast(1.05);
 }
 
@@ -405,7 +367,6 @@ html:not(.js) [data-marquee-static] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    [data-pixelate] > canvas,
     [data-marquee-motion] {
         display: none;
     }

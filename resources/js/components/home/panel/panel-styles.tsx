@@ -58,34 +58,34 @@ const PANEL_CSS = `
     transition: transform 480ms cubic-bezier(0.45, 0, 0.2, 1), opacity 200ms linear;
 }
 
-@keyframes vx-panel-char { from { opacity: 0; } }
-@keyframes vx-panel-caret { from, to { box-shadow: 0.08em 0 0 0 currentColor; } }
-@keyframes vx-panel-blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-@keyframes vx-panel-roll { from { opacity: 0; transform: translateY(65%); } }
-@keyframes vx-panel-press { 45% { transform: scale(0.94); } }
-@keyframes vx-panel-ripple {
+@keyframes nz-panel-char { from { opacity: 0; } }
+@keyframes nz-panel-caret { from, to { box-shadow: 0.08em 0 0 0 currentColor; } }
+@keyframes nz-panel-blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+@keyframes nz-panel-roll { from { opacity: 0; transform: translateY(65%); } }
+@keyframes nz-panel-press { 45% { transform: scale(0.94); } }
+@keyframes nz-panel-ripple {
     from { opacity: 0.55; transform: translate(-50%, -50%) scale(0.3); }
     to { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
 }
-@keyframes vx-panel-land {
+@keyframes nz-panel-land {
     from { box-shadow: 0 0 0 0.25em color-mix(in oklab, var(--foreground) 22%, transparent); }
 }
 
 /* Typing: characters appear one by one, the caret rides on the newest one, then keeps blinking at the end. */
 [data-panel-live] [data-panel-typing] > span {
-    animation: vx-panel-char 1ms linear calc(260ms + var(--i) * 24ms) both, vx-panel-caret 24ms linear calc(260ms + var(--i) * 24ms);
+    animation: nz-panel-char 1ms linear calc(260ms + var(--i) * 24ms) both, nz-panel-caret 24ms linear calc(260ms + var(--i) * 24ms);
 }
 [data-panel-live] [data-panel-typing] > span:last-child {
-    animation: vx-panel-char 1ms linear calc(260ms + var(--i) * 24ms) both, vx-panel-caret 1s step-end calc(260ms + var(--i) * 24ms) infinite;
+    animation: nz-panel-char 1ms linear calc(260ms + var(--i) * 24ms) both, nz-panel-caret 1s step-end calc(260ms + var(--i) * 24ms) infinite;
 }
 
-.vx-panel-pulse { animation: vx-panel-blink 1.1s ease-in-out infinite; }
-[data-panel-stage]:not([data-panel-live]) .vx-panel-pulse { animation-play-state: paused; }
-[data-panel-live] .vx-panel-roll { animation: vx-panel-roll 320ms var(--ease-expo-out) both; }
-[data-panel-live] .vx-panel-press { animation: vx-panel-press 220ms ease-out; }
-.vx-panel-ripple { opacity: 0; }
-[data-panel-live] .vx-panel-ripple { animation: vx-panel-ripple 600ms ease-out forwards; }
-[data-panel-live] .vx-panel-land { animation: vx-panel-land 1.1s ease-out 200ms both; }
+.nz-panel-pulse { animation: nz-panel-blink 1.1s ease-in-out infinite; }
+[data-panel-stage]:not([data-panel-live]) .nz-panel-pulse { animation-play-state: paused; }
+[data-panel-live] .nz-panel-roll { animation: nz-panel-roll 320ms var(--ease-expo-out) both; }
+[data-panel-live] .nz-panel-press { animation: nz-panel-press 220ms ease-out; }
+.nz-panel-ripple { opacity: 0; }
+[data-panel-live] .nz-panel-ripple { animation: nz-panel-ripple 600ms ease-out forwards; }
+[data-panel-live] .nz-panel-land { animation: nz-panel-land 1.1s ease-out 200ms both; }
 
 @media (prefers-reduced-motion: reduce) {
     [data-panel-stage], [data-panel-stage] * { animation: none !important; transition: none !important; }

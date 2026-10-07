@@ -19,16 +19,16 @@ it('renders the 404 page in the homepage style', function () {
     $response = $this->get('/this-page-does-not-exist')
         ->assertNotFound()
         ->assertSee('<meta name="robots" content="noindex">', false)
-        ->assertSee('<title>404 – Nie ma takiej strony | Voxbit</title>', false)
+        ->assertSee('<title>404 – Nie ma takiej strony | Netizo</title>', false)
         ->assertSee('Nie ma takiej strony')
         ->assertSee('Adres mógł się zmienić albo strona została usunięta. Sprawdź, czy w&nbsp;adresie nie ma literówki.', false)
         ->assertSee('Pod tym adresem nic nie ma')
         ->assertSee('/this-page-does-not-exist')
         ->assertSee('<a class="button button--primary" href="/">Strona główna</a>', false)
         ->assertSee('<a class="button button--outline" href="/#kontakt">Napisz do nas</a>', false)
-        ->assertSee('href="mailto:kontakt@voxbit.pl"', false)
+        ->assertSee('href="mailto:kontakt@netizo.pl"', false)
         ->assertSee('href="tel:+48884343924"', false)
-        ->assertSee('© '.date('Y').' Voxbit. Wszelkie prawa zastrzeżone.');
+        ->assertSee('© '.date('Y').' Netizo. Wszelkie prawa zastrzeżone.');
 
     expect(errorPageHtmlTag($response->getContent()))->toBe('<html lang="pl">');
 });
@@ -38,7 +38,7 @@ it('links the homepage sections and the client panel from the header', function 
         ->assertNotFound()
         ->assertSee('<nav class="site-nav" aria-label="Sekcje strony">', false)
         ->assertSeeInOrder(['href="/#uslugi"', 'href="/#projekty"', 'href="/#proces"', 'href="/#faq"', 'href="/#kontakt"'], false)
-        ->assertSee('href="https://panel-klienta.voxbit.pl" target="_blank" rel="noopener"', false);
+        ->assertSee('href="https://panel-klienta.netizo.pl" target="_blank" rel="noopener"', false);
 });
 
 it('loads nothing from outside the site and runs no scripts', function () {
@@ -84,13 +84,13 @@ it('uses the dark theme only when the visitor chose it', function () {
 it('renders each error page with its own copy and visual', function (int $status, string $title, string $description, string $primaryAction, string $chipTitle) {
     $this->get("/_error-probe/{$status}")
         ->assertStatus($status)
-        ->assertSee("<title>{$status} – {$title} | Voxbit</title>", false)
+        ->assertSee("<title>{$status} – {$title} | Netizo</title>", false)
         ->assertSee($title)
         ->assertSee("<p class=\"error__lead\">{$description}</p>", false)
         ->assertSee(">{$primaryAction}</a>", false)
         ->assertSee("<span class=\"chip__title\">{$chipTitle}</span>", false)
-        ->assertSee('kontakt@voxbit.pl')
-        ->assertSee('<link rel="icon" type="image/svg+xml" href="'.asset('favicon.svg').'?v=2" />', false)
+        ->assertSee('kontakt@netizo.pl')
+        ->assertSee('<link rel="icon" type="image/svg+xml" href="'.asset('favicon.svg').'?v=3" />', false)
         ->assertDontSee('fonts.googleapis', false);
 })->with([
     '401' => [401, 'Wymagane logowanie', 'Ta strona jest dostępna tylko po zalogowaniu.', 'Strona główna', 'Strona dla zalogowanych'],
@@ -108,8 +108,8 @@ it('shows only the logo, a reload button and the contact line during maintenance
         ->assertDontSee('Napisz do nas')
         ->assertDontSee('Sekcje strony')
         ->assertDontSee('Panel klienta')
-        ->assertSee('aria-label="Voxbit – strona główna"', false)
-        ->assertSee('href="mailto:kontakt@voxbit.pl"', false)
+        ->assertSee('aria-label="Netizo – strona główna"', false)
+        ->assertSee('href="mailto:kontakt@netizo.pl"', false)
         ->assertSee('<a class="button button--primary" href="">Odśwież stronę</a>', false);
 });
 
@@ -141,13 +141,13 @@ it('goes back to the page the expired form was on, never another site', function
 it('styles client and server errors without their own view', function () {
     $this->get('/kontakt')
         ->assertMethodNotAllowed()
-        ->assertSee('<title>405 – Nie udało się otworzyć strony | Voxbit</title>', false)
+        ->assertSee('<title>405 – Nie udało się otworzyć strony | Netizo</title>', false)
         ->assertSee('Nie możemy obsłużyć tego zapytania. Sprawdź adres strony.')
         ->assertSee('Zapytanie odrzucone');
 
     $this->get('/_error-probe/502')
         ->assertStatus(502)
-        ->assertSee('<title>502 – Coś poszło nie tak | Voxbit</title>', false)
+        ->assertSee('<title>502 – Coś poszło nie tak | Netizo</title>', false)
         ->assertSee('Serwer nie odpowiada');
 });
 
@@ -173,7 +173,7 @@ it('prerenders the maintenance page outside an HTTP request', function () {
     (new RegisterErrorViewPaths)();
 
     expect(view('errors::503', ['retryAfter' => null])->render())
-        ->toContain('<title>503 – Trwają prace techniczne | Voxbit</title>')
+        ->toContain('<title>503 – Trwają prace techniczne | Netizo</title>')
         ->toContain('Aktualizujemy stronę. Wróć za kilka minut.')
         ->toContain('Aktualizacja w toku')
         ->not->toContain('Sekcje strony')

@@ -23,7 +23,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="{{ ($appearance ?? 'light') === 'dark' ? '#0a0a0a' : '#ffffff' }}">
-    <meta name="author" content="Voxbit">
+    <meta name="author" content="Netizo">
 
     {{-- Light by default; dark only when the visitor switched to it (cookie, or its localStorage copy when the cookie
          is gone). Set before first paint (no flash). --}}
@@ -71,11 +71,11 @@
     @endisset
 
     {{-- Same icons as the client panel: the SVG follows the system light/dark theme; ?v busts old cached icons. --}}
-    <link rel="icon" href="{{ asset('favicon.ico') }}?v=2" sizes="any" />
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=2" />
-    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}?v=2" />
-    <meta name="apple-mobile-web-app-title" content="Voxbit.pl" />
-    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}?v=2" />
+    <link rel="icon" href="{{ asset('favicon.ico') }}?v=3" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3" />
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}?v=3" />
+    <meta name="apple-mobile-web-app-title" content="Netizo.pl" />
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}?v=3" />
 
     {{-- Geist (latin + latin-ext for Polish) renders the first screen; fetch it with the CSS instead of after it. --}}
     @foreach (rescue(fn () => [

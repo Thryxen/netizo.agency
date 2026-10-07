@@ -73,7 +73,7 @@ export function BackendTile({ service, rivets }: { service: BentoService; rivets
                         </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <span className="vx-bento-blink vx-bento-loop size-1.5 bg-foreground" />
+                        <span className="nz-bento-blink nz-bento-loop size-1.5 bg-foreground" />
                         na żywo
                     </span>
                 </div>
@@ -86,7 +86,7 @@ export function BackendTile({ service, rivets }: { service: BentoService; rivets
                     <svg
                         viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
                         preserveAspectRatio="none"
-                        className="vx-bento-scroll vx-bento-loop absolute inset-y-0 left-0 h-full w-[200%]"
+                        className="nz-bento-scroll nz-bento-loop absolute inset-y-0 left-0 h-full w-[200%]"
                     >
                         <path d={AREA} className="fill-foreground/[0.06]" />
                         <path d={LINE} vectorEffect="non-scaling-stroke" strokeWidth={1.5} strokeLinejoin="round" className="fill-none stroke-foreground" />

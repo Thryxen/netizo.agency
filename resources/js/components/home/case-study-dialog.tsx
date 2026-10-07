@@ -2,7 +2,6 @@ import { ExternalLinkIcon, XIcon } from 'lucide-react';
 import { type RefObject, useRef } from 'react';
 import { ExternalLink } from '@/components/home/external-link';
 import { useHomeUi } from '@/components/home/home-ui-context';
-import { Pixel } from '@/components/home/pixel';
 import { ProjectFrame } from '@/components/home/project-frame';
 import { TechTag } from '@/components/home/tech-tag';
 import { Button } from '@/components/ui/button';
@@ -176,11 +175,10 @@ function ChallengesAndSolutions({ challenges, solutions }: { challenges: string[
             {columns.map((column) => (
                 <div key={column.title} className="border-r border-b p-5 md:p-6">
                     <h3 className="text-lg font-semibold tracking-tight">{column.title}</h3>
-                    <ul className="mt-4 grid gap-3">
+                    <ul className="mt-4 grid list-disc gap-3 pl-5 marker:text-muted-foreground">
                         {column.items.map((item) => (
-                            <li key={item} className="flex gap-3 leading-relaxed">
-                                <Pixel className="mt-2.5" />
-                                <span>{item}</span>
+                            <li key={item} className="pl-1 leading-relaxed">
+                                {item}
                             </li>
                         ))}
                     </ul>

@@ -21,13 +21,13 @@ const STATS: HeroStat[] = [
     { value: '150+', label: 'zrealizowanych projektów', countFrom: 120 },
     { value: '8 lat', label: 'doświadczenia' },
     { value: '99,9%', label: 'dostępności wdrożeń', countFrom: 99 },
-    { value: 'Leszno', label: 'działamy w całej Polsce' },
+    { value: '0 zł', label: 'za wycenę i konsultację' },
 ];
 
 /** Shared borders for a 2×2 (mobile) / 1×4 (lg) strip: right edges between columns, bottom edge under the first row. */
 const STAT_CELL_BORDERS = ['border-r border-b lg:border-b-0', 'border-b lg:border-r lg:border-b-0', 'border-r', ''];
 
-const STAT_VALUE_CLASS = 'font-pixel text-[2.25rem] leading-none tracking-tight sm:text-[2.5rem] lg:text-[2.75rem]';
+const STAT_VALUE_CLASS = 'text-[2.25rem] leading-none font-semibold tracking-tight tabular-nums sm:text-[2.5rem] lg:text-[2.75rem]';
 
 /**
  * The heading as fixed lines: four in the narrow column (phones, and from lg beside the stage), two between md and lg

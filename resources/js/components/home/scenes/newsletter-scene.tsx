@@ -1,5 +1,5 @@
 import { Mail } from 'lucide-react';
-import { PixelatedImage } from '@/components/motion/pixelated-image';
+import { Photo } from '@/components/home/photo';
 import { useLiveLoop } from '@/components/motion/use-in-view-loop';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
@@ -10,7 +10,7 @@ const PHASE_MS = [900, 5600] as const;
 const SHOWN = 1;
 
 /**
- * Newsletter: someone reading on a phone over coffee (newsletter-reading, pixel → sharp on first view) and the
+ * Newsletter: someone reading on a phone over coffee (newsletter-reading) and the
  * monthly issue arriving as a push notification over the top edge, like the bento's booking notification.
  */
 export function NewsletterScene({ className }: { className?: string }) {
@@ -18,7 +18,7 @@ export function NewsletterScene({ className }: { className?: string }) {
 
     return (
         <div ref={ref} {...sceneProps(active)} className={cn('relative overflow-hidden bg-muted', className)}>
-            <PixelatedImage
+            <Photo
                 {...photo('newsletter-reading')}
                 alt=""
                 sizes="(min-width: 1024px) 500px, 100vw"

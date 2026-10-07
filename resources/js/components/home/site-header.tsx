@@ -3,7 +3,6 @@ import { type MouseEvent, type RefObject, useEffect, useRef, useState } from 're
 import { ExternalLink } from '@/components/home/external-link';
 import { useHomeUi } from '@/components/home/home-ui-context';
 import { Logo } from '@/components/home/logo';
-import { Pixel } from '@/components/home/pixel';
 import { Container } from '@/components/home/section';
 import { ThemeToggle } from '@/components/home/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -94,14 +93,6 @@ function useActiveSection(headerRef: RefObject<HTMLElement | null>): string | nu
     return activeId;
 }
 
-/**
- * The "bit" before a nav label: filled with ink for the current section only. Inactive links keep the
- * (transparent) square so nothing shifts; it shows in the border tone on hover.
- */
-function NavPixel({ active }: { active: boolean }) {
-    return <Pixel size="sm" className={cn('transition-colors duration-200', active ? 'bg-foreground' : 'bg-transparent group-hover:bg-border')} />;
-}
-
 export function SiteHeader() {
     const { openContact, openCallback } = useHomeUi();
     const headerRef = useRef<HTMLElement>(null);
@@ -131,7 +122,7 @@ export function SiteHeader() {
     return (
         <header ref={headerRef} className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/85">
             <Container className="flex h-(--header-height) items-center gap-2">
-                <a href="#" aria-label="Voxbit – strona główna" className={cn('-ml-1 inline-flex min-h-11 shrink-0 items-center rounded-sm p-1 lg:min-h-0', focusRing)}>
+                <a href="#" aria-label="Netizo – strona główna" className={cn('-ml-1 inline-flex min-h-11 shrink-0 items-center rounded-sm p-1 lg:min-h-0', focusRing)}>
                     <Logo className="h-9" />
                 </a>
 
@@ -146,12 +137,11 @@ export function SiteHeader() {
                                         href={`#${id}`}
                                         aria-current={active ? 'true' : undefined}
                                         className={cn(
-                                            'group inline-flex h-9 items-center gap-2 rounded-md px-2.5 text-sm font-medium transition-colors',
+                                            'inline-flex h-9 items-center rounded-md px-2.5 text-sm font-medium transition-colors',
                                             active ? 'text-foreground' : 'text-foreground/70 hover:text-foreground',
                                             focusRing,
                                         )}
                                     >
-                                        <NavPixel active={active} />
                                         {label}
                                     </a>
                                 </li>
@@ -223,12 +213,12 @@ export function SiteHeader() {
                                                         aria-current={active ? 'true' : undefined}
                                                         onClick={(event) => handleSheetLinkClick(event, id)}
                                                         className={cn(
-                                                            'group flex items-center gap-3 px-4 py-3.5 text-lg font-medium tracking-tight transition-colors hover:bg-accent focus-visible:bg-accent',
+                                                            'flex items-center px-4 py-3.5 text-lg font-medium tracking-tight transition-colors hover:bg-accent focus-visible:bg-accent',
+                                                            active ? 'text-foreground' : 'text-foreground/70 hover:text-foreground',
                                                             focusRing,
                                                             'focus-visible:ring-inset',
                                                         )}
                                                     >
-                                                        <NavPixel active={active} />
                                                         {label}
                                                     </a>
                                                 </li>

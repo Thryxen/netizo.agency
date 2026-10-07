@@ -3,14 +3,14 @@
  */
 
 export const contact = {
-    email: 'kontakt@voxbit.pl',
+    email: 'kontakt@netizo.pl',
     phone: {
         display: '+48 884 343 924',
         href: 'tel:+48884343924',
     },
 } as const;
 
-export const clientPanelUrl = 'https://panel-klienta.voxbit.pl';
+export const clientPanelUrl = 'https://panel-klienta.netizo.pl';
 
 export const infoLinks = [
     { href: '/utrzymanie', label: 'Utrzymanie' },

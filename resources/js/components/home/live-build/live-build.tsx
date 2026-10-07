@@ -35,7 +35,7 @@ function Layer({ className, depth = 0, track, children }: LayerProps) {
 /**
  * The hero's stage: a website being built live for a client (a knitwear shop), in the bento's visual language, floating
  * like a product shot on a photo of the shop's own workshop (spec v7: the photo sits still under the tilt and only
- * drifts very slowly). Wireframe → design (photos resolve pixel → sharp) → code → deploy, looping; the scene tilts
+ * drifts very slowly). Wireframe → design (photos fade in) → code → deploy, looping; the scene tilts
  * toward the pointer with its layers at different depths.
  *
  * The markup is the finished composition (SSR, no JS, reduced motion); see live-build-styles for the first-frame gate

@@ -15,9 +15,9 @@ it('converts uploaded project images to webp', function () {
 
     Livewire::test(CreateProject::class)
         ->fillForm([
-            'title' => 'Voxbit Case Study',
-            'slug' => 'voxbit-case-study',
-            'url' => 'voxbit.pl',
+            'title' => 'Netizo Case Study',
+            'slug' => 'netizo-case-study',
+            'url' => 'netizo.pl',
             'category' => 'Web app',
             'description' => 'Krótki opis projektu.',
             'full_description' => 'Pełny opis projektu.',
@@ -39,7 +39,7 @@ it('converts uploaded project images to webp', function () {
         ->call('create')
         ->assertHasNoFormErrors();
 
-    $project = Project::query()->where('slug', 'voxbit-case-study')->firstOrFail();
+    $project = Project::query()->where('slug', 'netizo-case-study')->firstOrFail();
 
     expect($project->thumbnail_image)
         ->toStartWith('projects/thumbnails/')

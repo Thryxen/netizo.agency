@@ -21,7 +21,7 @@ class HomeController extends Controller
         $imageUrl = asset('assets/images/og-image.jpg');
 
         // Meta tags
-        SEOMeta::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Voxbit');
+        SEOMeta::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Netizo');
         SEOMeta::setDescription('Profesjonalne tworzenie stron internetowych i aplikacji webowych dla firm. Nowoczesny design, szybkość i SEO w standardzie. React, Next.js, Laravel. 150+ projektów, 8 lat doświadczenia. Bezpłatna wycena!');
         SEOMeta::setCanonical(url('/'));
         SEOMeta::addKeyword([
@@ -30,7 +30,7 @@ class HomeController extends Controller
             'projektowanie stron WWW', 'responsywne strony internetowe', 'nowoczesne strony WWW',
             'agencja interaktywna', 'software house', 'aplikacje webowe', 'sklepy internetowe',
             // Technologie
-            'React', 'Next.js', 'Node.js', 'Laravel', 'web development', 'Polska', 'voxbit', 'Wielkopolska',
+            'React', 'Next.js', 'Node.js', 'Laravel', 'web development', 'Polska', 'netizo', 'Wielkopolska',
             // Leszno
             'Leszno', 'programista Leszno', 'tworzenie stron Leszno', 'strony internetowe Leszno', 'software house Leszno',
             // Duże miasta
@@ -56,31 +56,25 @@ class HomeController extends Controller
         ]);
 
         // Open Graph
-        OpenGraph::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Voxbit')
+        OpenGraph::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Netizo')
             ->setDescription('Profesjonalne strony internetowe i aplikacje webowe. Nowoczesny design, szybkość, SEO. 150+ projektów. Bezpłatna wycena!')
             ->setType('website')
-            ->setSiteName('Voxbit')
+            ->setSiteName('Netizo')
             ->setUrl(url('/'))
             ->addImage($imageUrl, ['width' => 1200, 'height' => 630]);
 
         // Twitter Card
-        TwitterCard::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Voxbit')
+        TwitterCard::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Netizo')
             ->setDescription('Profesjonalne strony internetowe i aplikacje webowe. Nowoczesny design, szybkość, SEO. 150+ projektów. Bezpłatna wycena!')
             ->setType('summary_large_image')
             ->setImage($imageUrl);
 
         // JSON-LD Structured Data - Organization (SEO::generate() renders the JsonLdMulti instance, not JsonLd)
-        JsonLdMulti::setTitle('Voxbit')
+        JsonLdMulti::setTitle('Netizo')
             ->setDescription('Profesjonalne tworzenie stron internetowych i aplikacji webowych dla firm. Nowoczesny design, szybkość i SEO w standardzie. 150+ projektów, 8 lat doświadczenia.')
             ->setType('ProfessionalService')
             ->setUrl(url('/'))
             ->setImage($imageUrl)
-            ->addValue('sameAs', [
-                'https://facebook.com/voxbitpl',
-                'https://instagram.com/voxbitpl',
-                'https://linkedin.com/company/voxbitpl',
-                'https://github.com/voxbit-pl',
-            ])
             ->addValue('address', [
                 '@type' => 'PostalAddress',
                 'addressLocality' => 'Leszno',

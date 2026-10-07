@@ -18,7 +18,7 @@ export function SiteFooter() {
                 <Rivet side="right" />
                 <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
                     <div className="sm:col-span-2 lg:col-span-6">
-                        <a href="#" aria-label="Voxbit – strona główna" className={cn(linkClass, '-ml-1 p-1 text-foreground')}>
+                        <a href="#" aria-label="Netizo – strona główna" className={cn(linkClass, '-ml-1 p-1 text-foreground')}>
                             <LogoMark className="h-10" />
                         </a>
                         <p className="mt-4 max-w-sm leading-relaxed text-pretty text-muted-foreground">
@@ -70,7 +70,7 @@ export function SiteFooter() {
                     <Rivet side="right" />
                     {/* The SSR server and the browser may disagree on the year around New Year (or across time zones). */}
                     <p suppressHydrationWarning className="text-sm text-muted-foreground">
-                        © {new Date().getFullYear()} Voxbit. Wszelkie prawa zastrzeżone.
+                        © {new Date().getFullYear()} Netizo. Wszelkie prawa zastrzeżone.
                     </p>
                 </Container>
             </div>

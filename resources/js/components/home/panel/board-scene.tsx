@@ -75,7 +75,7 @@ export function BoardScene({ step }: { step: number }) {
                 <span
                     className={cn(
                         'flex h-[2.6em] shrink-0 items-center gap-[0.45em] rounded-[0.45em] bg-foreground px-[0.95em] text-background',
-                        step === BOARD.clickAdd && 'vx-panel-press',
+                        step === BOARD.clickAdd && 'nz-panel-press',
                     )}
                 >
                     <Plus aria-hidden="true" className="size-[1.1em]" strokeWidth={2.25} />
@@ -127,7 +127,7 @@ export function BoardScene({ step }: { step: number }) {
                                 task={{ ...NEW_TASK, assigned: step >= BOARD.progress && step <= BOARD.hold }}
                                 file={NEW_TASK.file}
                                 done={newColumn === 'done'}
-                                className={step === BOARD.landed ? 'vx-panel-land' : undefined}
+                                className={step === BOARD.landed ? 'nz-panel-land' : undefined}
                             />
                         </div>
                     </CardSlot>
@@ -146,10 +146,10 @@ export function BoardScene({ step }: { step: number }) {
                 style={{ '--x': cursor.at.x, '--y': cursor.at.y } as CSSProperties}
                 className="pointer-events-none absolute top-0 right-0 z-30 size-0 data-[show=false]:opacity-0"
             >
-                {cursor.clicking && <span className="vx-panel-ripple absolute top-[0.15em] left-[0.15em] size-[3em] rounded-full border border-foreground/60" />}
+                {cursor.clicking && <span className="nz-panel-ripple absolute top-[0.15em] left-[0.15em] size-[3em] rounded-full border border-foreground/60" />}
                 <svg
                     viewBox="0 0 16 20"
-                    className={cn('absolute -top-[0.15em] -left-[0.15em] block h-[2em] w-[1.6em] origin-top-left fill-foreground stroke-background', cursor.clicking && 'vx-panel-press')}
+                    className={cn('absolute -top-[0.15em] -left-[0.15em] block h-[2em] w-[1.6em] origin-top-left fill-foreground stroke-background', cursor.clicking && 'nz-panel-press')}
                     strokeWidth={1.25}
                     strokeLinejoin="round"
                 >
@@ -343,7 +343,7 @@ function AddTaskDialog({ step, open }: { step: number; open: boolean }) {
                 <span
                     className={cn(
                         'flex h-full w-[13em] items-center gap-[0.5em] rounded-[0.45em] border px-[0.7em] text-[0.98em]',
-                        step === BOARD.priority && 'vx-panel-press',
+                        step === BOARD.priority && 'nz-panel-press',
                     )}
                 >
                     <span className="text-muted-foreground">Priorytet</span>
@@ -364,7 +364,7 @@ function AddTaskDialog({ step, open }: { step: number; open: boolean }) {
                 <span
                     className={cn(
                         'flex h-full shrink-0 items-center rounded-[0.45em] bg-foreground px-[1em] text-[1.02em] font-medium whitespace-nowrap text-background',
-                        step === BOARD.submit && 'vx-panel-press',
+                        step === BOARD.submit && 'nz-panel-press',
                     )}
                 >
                     Dodaj task

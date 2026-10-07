@@ -79,10 +79,10 @@ it('sends the security headers on responses produced outside the web group', fun
 ]);
 
 it('allows only the configured host of a remote Vite dev server', function () {
-    writeViteHotFile('https://voxbit.test:5173');
+    writeViteHotFile('https://netizo.agency.test:5173');
 
     expect(contentSecurityPolicy())
-        ->toContain('https://voxbit.test:5173')
-        ->toContain('wss://voxbit.test:5173')
+        ->toContain('https://netizo.agency.test:5173')
+        ->toContain('wss://netizo.agency.test:5173')
         ->not->toContain('localhost');
 });

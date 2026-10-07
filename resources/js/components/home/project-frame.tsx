@@ -1,8 +1,8 @@
 import { useScroll, useTransform } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pixel } from '@/components/home/pixel';
+import { Photo } from '@/components/home/photo';
 import { ThemedImage } from '@/components/home/themed-image';
-import { PixelatedImage, useMotionStyle, useReducedMotionPreference } from '@/components/motion';
+import { useMotionStyle, useReducedMotionPreference } from '@/components/motion';
 import { cn } from '@/lib/utils';
 import type { Project } from '@/types/home';
 
@@ -15,9 +15,9 @@ const PARALLAX_DISTANCE = 24;
 type ProjectFrameProps = {
     project: Project;
     /**
-     * preview: a 16:10 window onto the full-page screenshot (`fullImageUrl ?? thumbnailUrl`), top-aligned. It resolves
-     * from pixels when it scrolls into view, drifts slightly with the page (parallax) and slowly scrolls the whole page
-     * while the frame is hovered, or while a control inside the surrounding `group/project` has keyboard focus.
+     * preview: a 16:10 window onto the full-page screenshot (`fullImageUrl ?? thumbnailUrl`), top-aligned. It drifts
+     * slightly with the page (parallax) and slowly scrolls the whole page while the frame is hovered, or while a
+     * control inside the surrounding `group/project` has keyboard focus.
      * full: the whole `fullImageUrl ?? thumbnailUrl` in a viewport that scrolls when the screenshot is taller.
      */
     variant?: 'preview' | 'full';
@@ -25,7 +25,7 @@ type ProjectFrameProps = {
 };
 
 /**
- * Browser-window chrome around a project screenshot: three square "dots", an address bar with the
+ * Browser-window chrome around a project screenshot: three dots, an address bar with the
  * project URL and the image. Falls back to the placeholder illustration when there is no screenshot.
  * Screenshots always load lazily: the projects sit well below the fold, so they must not compete with
  * the fonts and scripts the first screen needs.
@@ -38,9 +38,9 @@ export function ProjectFrame({ project, variant = 'preview', className }: Projec
         <div data-slot="project-frame" className={cn('group/frame overflow-hidden rounded-lg border bg-background', className)}>
             <div className="flex h-10 items-center gap-3 border-b bg-muted/60 px-3.5">
                 <span aria-hidden="true" className="flex shrink-0 items-center gap-1.5">
-                    <Pixel className="bg-foreground/20" />
-                    <Pixel className="bg-foreground/20" />
-                    <Pixel className="bg-foreground/20" />
+                    <span className="size-1.5 rounded-full bg-foreground/20" />
+                    <span className="size-1.5 rounded-full bg-foreground/20" />
+                    <span className="size-1.5 rounded-full bg-foreground/20" />
                 </span>
                 <span className="flex h-6 max-w-md min-w-0 flex-1 items-center rounded-md border bg-background px-2.5 font-mono text-xs text-muted-foreground">
                     <span className="truncate">{project.url}</span>
@@ -71,11 +71,10 @@ export function ProjectFrame({ project, variant = 'preview', className }: Projec
  * The preview window. Layers, outside in:
  * - the 16:10 window (clips),
  * - a parallax layer, PARALLAX_DISTANCE taller than the window, moved up by scroll progress (0 → −24px),
- * - the PixelatedImage wrapper filling that layer; it is a size container, so the <img> (the whole page at the
- *   window's width, never shorter than the layer) can translate by exactly its overflow: −(100% − 100cqh).
+ * - the Photo wrapper filling that layer; it is a size container, so the <img> (the whole page at the window's
+ *   width, never shorter than the layer) can translate by exactly its overflow: −(100% − 100cqh).
  *
- * The slow scroll only runs once the photo has resolved (`[data-revealed]`), so it never slides away under the
- * pixel canvas, and only with motion allowed (`motion-safe`). It scrolls down in 6 s linear and returns faster.
+ * The slow scroll only runs with motion allowed (`motion-safe`). It scrolls down in 6 s linear and returns faster.
  */
 function ScreenshotPreview({ src, alt }: { src: string; alt: string }) {
     const windowRef = useRef<HTMLDivElement>(null);
@@ -89,7 +88,7 @@ function ScreenshotPreview({ src, alt }: { src: string; alt: string }) {
     return (
         <div ref={windowRef} className="relative aspect-[16/10] overflow-hidden bg-muted">
             <div ref={layerRef} className="absolute inset-x-0 top-0 h-[calc(100%+24px)]">
-                <PixelatedImage
+                <Photo
                     src={src}
                     alt={alt}
                     width={1600}
@@ -98,8 +97,8 @@ function ScreenshotPreview({ src, alt }: { src: string; alt: string }) {
                     imgClassName={cn(
                         'h-auto! min-h-full object-top',
                         'transition-transform duration-[900ms] ease-expo-out',
-                        'motion-safe:group-hover/frame:[[data-revealed]>&]:translate-y-[calc(-100%+100cqh)] motion-safe:group-hover/frame:[[data-revealed]>&]:duration-[6s] motion-safe:group-hover/frame:[[data-revealed]>&]:ease-linear',
-                        'motion-safe:group-has-focus-visible/project:[[data-revealed]>&]:translate-y-[calc(-100%+100cqh)] motion-safe:group-has-focus-visible/project:[[data-revealed]>&]:duration-[6s] motion-safe:group-has-focus-visible/project:[[data-revealed]>&]:ease-linear',
+                        'motion-safe:group-hover/frame:translate-y-[calc(-100%+100cqh)] motion-safe:group-hover/frame:duration-[6s] motion-safe:group-hover/frame:ease-linear',
+                        'motion-safe:group-has-focus-visible/project:translate-y-[calc(-100%+100cqh)] motion-safe:group-has-focus-visible/project:duration-[6s] motion-safe:group-has-focus-visible/project:ease-linear',
                     )}
                 />
             </div>

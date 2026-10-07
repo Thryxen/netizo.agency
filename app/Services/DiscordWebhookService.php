@@ -8,8 +8,11 @@ use Illuminate\Support\Facades\Log;
 class DiscordWebhookService
 {
     protected ?string $webhookContact;
+
     protected ?string $webhookBrief;
+
     protected ?string $webhookCallback;
+
     protected ?string $roleId;
 
     public function __construct()
@@ -24,6 +27,7 @@ class DiscordWebhookService
     {
         if (empty($webhookUrl)) {
             Log::warning('Discord webhook URL is not configured');
+
             return false;
         }
 
@@ -33,7 +37,7 @@ class DiscordWebhookService
             'fields' => $fields,
             'timestamp' => now()->toIso8601String(),
             'footer' => [
-                'text' => 'Voxbit',
+                'text' => 'Netizo',
             ],
         ];
 
@@ -53,6 +57,7 @@ class DiscordWebhookService
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
+
                 return false;
             }
 
@@ -61,6 +66,7 @@ class DiscordWebhookService
             Log::error('Discord webhook exception', [
                 'message' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -220,7 +226,8 @@ class DiscordWebhookService
 
     protected function mapArray(array $values, array $labels): string
     {
-        $mapped = array_map(fn($v) => $labels[$v] ?? $v, $values);
+        $mapped = array_map(fn ($v) => $labels[$v] ?? $v, $values);
+
         return implode(', ', $mapped);
     }
 

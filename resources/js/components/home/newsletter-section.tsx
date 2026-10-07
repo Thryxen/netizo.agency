@@ -1,7 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { FieldError, fieldError, FormErrorAlert, formLevelError, invalidProps, SubmitButton } from '@/components/home/brief/fields';
-import { Pixel } from '@/components/home/pixel';
 import { NewsletterScene } from '@/components/home/scenes/newsletter-scene';
 import { bleedClassName, gutterClassName, Section, SectionHeading } from '@/components/home/section';
 import { Input } from '@/components/ui/input';
@@ -62,8 +61,7 @@ function NewsletterForm() {
 
     if (subscribed) {
         return (
-            <p ref={successRef} tabIndex={-1} role="status" className="flex items-start gap-3 text-lg leading-relaxed font-medium outline-none">
-                <Pixel size="md" className="mt-2.5" />
+            <p ref={successRef} tabIndex={-1} role="status" className="text-lg leading-relaxed font-medium outline-none">
                 Zapisano. Pierwszy numer trafi do Ciebie w przyszłym miesiącu.
             </p>
         );
@@ -124,10 +122,9 @@ export function NewsletterSection() {
                     lead="Przegląd najważniejszych trendów, case studies i praktyczne porady dla firm."
                     className={cn('mb-0 bg-background pt-20 pb-12 md:mb-0 md:pt-28 md:pb-16 lg:col-span-6 lg:row-span-2 lg:pb-28 xl:col-span-7', gutterClassName)}
                 >
-                    <ul className="mt-8 grid gap-3" aria-label="Co znajdziesz w newsletterze">
+                    <ul className="mt-8 grid list-disc gap-3 pl-5 marker:text-muted-foreground" aria-label="Co znajdziesz w newsletterze">
                         {perks.map((perk) => (
-                            <li key={perk} className="flex items-center gap-3">
-                                <Pixel size="sm" />
+                            <li key={perk} className="pl-1">
                                 {perk}
                             </li>
                         ))}

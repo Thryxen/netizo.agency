@@ -1,5 +1,6 @@
 import { Bell, ChevronsUpDown, Lock, MessagesSquare } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
+import { LogoMark } from '@/components/home/logo';
 import { clientPanelUrl } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { MODE_PAGE, PANEL_MODES, PANEL_NAV, type PanelMode } from './panel-data';
@@ -13,13 +14,11 @@ const NAV_GAP = 0.15;
 
 const PANEL_HOST = clientPanelUrl.replace(/^https?:\/\//, '');
 
-/** The panel's mark: the logo's pixel staircase on an ink square. */
+/** The panel's mark: the netizo sygnet on an ink square. */
 export function PanelMark({ className }: { className?: string }) {
     return (
-        <span className={cn('relative block shrink-0 rounded-[0.3em] bg-foreground', className)}>
-            <span className="absolute top-[22%] right-[22%] size-[18%] bg-background" />
-            <span className="absolute top-[40%] right-[40%] size-[18%] bg-background" />
-            <span className="absolute top-[58%] right-[58%] size-[18%] bg-background" />
+        <span className={cn('flex shrink-0 items-center justify-center rounded-[0.3em] bg-foreground text-background', className)}>
+            <LogoMark className="h-[52%]" />
         </span>
     );
 }
@@ -43,9 +42,9 @@ export function PanelWindow({ mode, notify, children }: PanelWindowProps) {
         <div className="relative overflow-hidden rounded-[0.9em] border bg-background">
             <div className="flex h-[3.2em] items-center gap-[1.3em] border-b bg-muted/60 px-[1.2em]">
                 <span className="flex shrink-0 items-center gap-[0.5em]">
-                    <span className="size-[0.65em] bg-foreground/20" />
-                    <span className="size-[0.65em] bg-foreground/20" />
-                    <span className="size-[0.65em] bg-foreground/20" />
+                    <span className="size-[0.65em] rounded-full bg-foreground/20" />
+                    <span className="size-[0.65em] rounded-full bg-foreground/20" />
+                    <span className="size-[0.65em] rounded-full bg-foreground/20" />
                 </span>
                 <span className="flex h-[2.1em] w-full max-w-[24em] min-w-0 items-center gap-[0.6em] rounded-[0.45em] border bg-background px-[0.8em]">
                     <Lock aria-hidden="true" className="size-[0.95em] shrink-0 text-muted-foreground" strokeWidth={2} />
@@ -113,7 +112,7 @@ function Sidebar({ activeIndex }: { activeIndex: number }) {
                 <PanelMark className="size-[2.1em]" />
                 <span className="hidden min-w-0 leading-[1.25] @min-[41.25rem]/panel:block">
                     <span className="block truncate text-[1.06em] font-semibold tracking-tight">Panel klienta</span>
-                    <span className="block truncate text-[0.88em] text-muted-foreground">voxbit.pl</span>
+                    <span className="block truncate text-[0.88em] text-muted-foreground">netizo.pl</span>
                 </span>
             </div>
 

@@ -34,7 +34,7 @@
                 "/Applications/Herd.app/Contents/Resources/herd-mcp.phar"
             ],
             "env": {
-                "SITE_PATH": "/Users/thryxen/Herd/voxbit"
+                "SITE_PATH": "/Users/thryxen/PhpstormProjects/netizo.agency"
             }
         }
     }

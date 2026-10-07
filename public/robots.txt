@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://voxbit.pl/sitemap.xml
+Sitemap: https://netizo.pl/sitemap.xml

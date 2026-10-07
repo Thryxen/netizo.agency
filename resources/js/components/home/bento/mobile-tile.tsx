@@ -1,6 +1,6 @@
 import { CalendarCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { PixelatedImage } from '@/components/motion/pixelated-image';
+import { Photo } from '@/components/home/photo';
 import { useLiveLoop } from '@/components/motion/use-in-view-loop';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
@@ -18,7 +18,7 @@ const BOOKINGS = [
 ] as const;
 
 /**
- * Aplikacje mobilne: the bento-mobile photo fills the tile (pixel → sharp on first view) and booking notifications
+ * Aplikacje mobilne: the bento-mobile photo fills the tile and booking notifications
  * slide in over it. The text sits on a solid band at the bottom for legibility (no gradient scrim).
  */
 export function MobileTile({ service, rivets }: { service: BentoService; rivets?: BentoRivet[] }) {
@@ -36,7 +36,7 @@ export function MobileTile({ service, rivets }: { service: BentoService; rivets?
     return (
         <BentoTile className="min-h-[32rem] sm:min-h-[36rem] md:min-h-[27rem] lg:row-span-2 lg:min-h-0" rivets={rivets}>
             <div ref={ref} {...liveVisualProps(active)} className="absolute inset-0 overflow-hidden">
-                <PixelatedImage
+                <Photo
                     {...photo('bento-mobile')}
                     alt=""
                     sizes="(min-width: 1024px) 300px, (min-width: 768px) 50vw, 100vw"

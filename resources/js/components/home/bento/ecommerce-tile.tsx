@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { PixelatedImage } from '@/components/motion/pixelated-image';
+import { Photo } from '@/components/home/photo';
 import { useInViewLoop } from '@/components/motion/use-in-view-loop';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
@@ -77,7 +77,7 @@ export function EcommerceTile({ service, rivets }: { service: BentoService; rive
                                 </span>
                             </span>
                             {hasLiveOrder && (
-                                <span key={latest} className="vx-bento-flash shrink-0 text-[11px] text-muted-foreground tabular-nums">
+                                <span key={latest} className="nz-bento-flash shrink-0 text-[11px] text-muted-foreground tabular-nums">
                                     +{formatZloty(amountOf(latest))}
                                 </span>
                             )}
@@ -90,7 +90,7 @@ export function EcommerceTile({ service, rivets }: { service: BentoService; rive
                                     style={{ transform: `translateY(${index * 100}%)` }}
                                     className="absolute inset-x-0 top-0 h-9 transition-transform duration-700 ease-expo-out"
                                 >
-                                    <div className={cn('flex h-full items-center justify-between gap-3 border-b text-[13px]', order >= FIRST_LIVE_ORDER && 'vx-bento-row-in')}>
+                                    <div className={cn('flex h-full items-center justify-between gap-3 border-b text-[13px]', order >= FIRST_LIVE_ORDER && 'nz-bento-row-in')}>
                                         <span className="flex min-w-0 items-center gap-2.5">
                                             <span
                                                 data-on={index === 0}
@@ -109,7 +109,7 @@ export function EcommerceTile({ service, rivets }: { service: BentoService; rive
                 </div>
 
                 <div aria-hidden="true" className="relative order-first h-56 border-b sm:h-72 md:order-none md:h-auto md:border-b-0 md:border-l">
-                    <PixelatedImage
+                    <Photo
                         {...photo('bento-ecommerce')}
                         alt=""
                         sizes="(min-width: 1024px) 300px, (min-width: 768px) 50vw, 100vw"

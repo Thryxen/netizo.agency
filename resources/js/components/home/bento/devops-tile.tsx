@@ -90,7 +90,7 @@ export function DevopsTile({ service, rivets }: { service: BentoService; rivets?
 
                 <div className="mt-5 flex items-center gap-2 overflow-hidden rounded-md border bg-muted/50 px-3 py-2 font-mono text-[11px] leading-5 text-muted-foreground">
                     <span className="shrink-0 text-foreground/40">$</span>
-                    <span key={step} className="vx-bento-type min-w-0 truncate">
+                    <span key={step} className="nz-bento-type min-w-0 truncate">
                         {[...LOG[step]].map((character, index) => (
                             <span key={index} style={{ '--i': index } as CSSProperties}>
                                 {character}

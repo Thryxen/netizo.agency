@@ -1,4 +1,3 @@
-import { Pixel } from '@/components/home/pixel';
 import { MissionScene } from '@/components/home/scenes/mission-scene';
 import { Section, SectionHeading } from '@/components/home/section';
 
@@ -13,8 +12,7 @@ export function MissionSection() {
                         lead="Chcemy, żeby następna generacja produktów cyfrowych była szybsza. Dla Twojej firmy budujemy spójny, wydajny zestaw narzędzi, który rośnie razem z nią."
                         className="mb-0 md:mb-0"
                     >
-                        <blockquote className="relative mt-10 border-l-2 border-foreground pl-6">
-                            <Pixel size="md" className="absolute top-0 -left-[5px]" />
+                        <blockquote className="mt-10 border-l-2 border-foreground pl-6">
                             <p className="text-2xl leading-snug font-semibold tracking-tight text-balance md:text-[1.75rem]">
                                 Skupiamy się na architekturze, nie tylko na kodzie.
                             </p>

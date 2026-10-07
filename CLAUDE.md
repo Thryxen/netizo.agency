@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Voxbit is a Polish web agency website built with Laravel 12. The public homepage is a single-page Inertia v3 + React 19 + TypeScript app (shadcn/ui, server-side rendered). The admin panel at `/admin` is Filament 3 (Livewire 3) for managing projects, clients and the leads collected by the homepage forms.
+Netizo (netizo.pl) is a Polish web agency website built with Laravel 12. The public homepage is a single-page Inertia v3 + React 19 + TypeScript app (shadcn/ui, server-side rendered). The admin panel at `/admin` is Filament 3 (Livewire 3) for managing projects, clients and the leads collected by the homepage forms.
 
 ## Commands
 
@@ -13,7 +13,7 @@ Voxbit is a Polish web agency website built with Laravel 12. The public homepage
 composer dev          # Server, queue, pail (logs) and Vite dev server (HMR, Inertia SSR via the Vite plugin)
 composer dev:ssr      # Production build, then server, queue, pail and the Node SSR server
 ```
-The site is served by Laravel Herd at https://voxbit.test, so `php artisan serve` is not needed.
+The site is served by Laravel Herd at https://netizo.agency.test, so `php artisan serve` is not needed.
 
 ### Build & Assets
 ```bash
@@ -47,7 +47,7 @@ php artisan migrate   # Run migrations (uses SQLite in database/database.sqlite)
 - **Backend**: Laravel 12, PHP 8.2+ (8.4 locally)
 - **Homepage**: Inertia v3 (`inertiajs/inertia-laravel`, `@inertiajs/react`), React 19, TypeScript, SSR on
 - **UI**: shadcn/ui (new-york, neutral, CSS variables) on Radix (`radix-ui`), `lucide-react` icons, Tailwind CSS 4, `tw-animate-css`
-- **Fonts**: self-hosted Geist / Geist Mono (`@fontsource-variable/*`) and Geist Pixel Square (`resources/fonts/`); no Google Fonts on the homepage
+- **Fonts**: self-hosted Geist / Geist Mono (`@fontsource-variable/*`); no Google Fonts on the homepage
 - **Motion**: `motion` (motion.dev), used only for `MotionConfig` and scroll-linked values (`useScroll` + `useTransform`); entrances are CSS/canvas primitives in `components/motion/`
 - **Admin Panel**: Filament 3. Livewire 3 stays installed only because Filament needs it; the homepage has no Livewire components.
 - **Build**: Vite 7 (`vite.config.ts`, `laravel-vite-plugin`, `@inertiajs/vite`, `@vitejs/plugin-react`)
@@ -92,8 +92,8 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 **resources/js/** - Inertia React app:
 - `app.tsx` (client entry), `ssr.tsx` (SSR entry); both resolve pages through `lib/pages.ts`
 - `pages/home.tsx` - Page assembly (`HomeUiProvider`, header, sections, footer, callback FAB and dialog, skip link)
-- `components/home/` - Homepage sections and shared primitives: `section.tsx` (`Section`, `SectionHeading` (heading reveal built in), `Container`, `Rivet`, gutter/bleed class helpers), `pixel.tsx`, `logo.tsx`, `theme-toggle.tsx`, `tech-tag.tsx`, `external-link.tsx`, `home-ui-context.tsx` (`useHomeUi()`: callback dialog state, contact tab, `openContact()`), one file per section, `bento/` (services bento: one file per live tile, `bento-tile.tsx` shell, scoped `bento-styles.tsx`), `brief/` (6-step brief wizard, options, form field helpers)
-- `components/motion/` - Motion primitives, import from `@/components/motion`: `PixelatedImage` (the "pixel → sharp" photo reveal, canvas over a real `<img>`), `Reveal`, `SplitLines` (hero H1), `CountUp`, `Marquee`, `Spotlight`/`useSpotlight`, `useLiveLoop`/`useInViewLoop` (in-view gated loops), `useMotionStyle` (bind `useScroll`/`useTransform` values to a plain element), `MotionRoot` (wraps the page). Don't use `motion.*`/`m.*`/`animate()` (they pull in the animation engine, ~+27 KB gz); gate scroll-linked styles with `useReducedMotionPreference()`.
+- `components/home/` - Homepage sections and shared primitives: `section.tsx` (`Section`, `SectionHeading` (heading reveal built in), `Container`, `Rivet`, gutter/bleed class helpers), `photo.tsx` (`Photo`: a photo in a clipping frame, lazy `<img>`), `logo.tsx` (netizo `Logo`/`LogoMark`), `theme-toggle.tsx`, `tech-tag.tsx`, `external-link.tsx`, `home-ui-context.tsx` (`useHomeUi()`: callback dialog state, contact tab, `openContact()`), one file per section, `bento/` (services bento: one file per live tile, `bento-tile.tsx` shell, scoped `bento-styles.tsx`), `brief/` (6-step brief wizard, options, form field helpers)
+- `components/motion/` - Motion primitives, import from `@/components/motion`: `Reveal`, `SplitLines` (hero H1), `CountUp`, `Marquee`, `Spotlight`/`useSpotlight`, `useLiveLoop`/`useInViewLoop` (in-view gated loops), `useMotionStyle` (bind `useScroll`/`useTransform` values to a plain element), `MotionRoot` (wraps the page). Don't use `motion.*`/`m.*`/`animate()` (they pull in the animation engine, ~+27 KB gz); gate scroll-linked styles with `useReducedMotionPreference()`.
 - `components/ui/` - shadcn components (add new ones with `npx shadcn add`, then check the generated `cn` import points at `@/lib/utils`)
 - `hooks/use-appearance.tsx` - Light/dark/system theme (cookie + localStorage)
 - `lib/` - `utils.ts` (`cn`), `endpoints.ts`, `pages.ts`, `photos.ts` (`photo(name)` → `src`/`srcSet`/size for the photo series), `site.ts`, `in-page-navigation.ts`
@@ -112,9 +112,9 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 
 ### Frontend Patterns
 - Monochrome shadcn neutral look with no accent colour (no yellow anywhere, error pages included); colour comes only from photos and project screenshots.
-- Square "bits" mark structure (rails, rivets, markers); grids use shared borders, not floating shadowed cards.
+- Rails and rivets mark the structure; grids use shared borders, not floating shadowed cards. No pixel/"bit" motifs (the old Voxbit brand): no square markers, no pixel font, photos are plain images.
 - Sentence case Polish copy; no eyebrow labels, no arrows appended to button text.
-- Motion: one signature (photos resolve from pixels to sharp via `PixelatedImage`), plus heading reveals (`SectionHeading` only, never on cards), hero load sequence, counters, client marquee, live bento tiles, scroll-linked parallax and process rail. Animate transform/opacity only. Every effect needs a complete static state: the inline head script adds `js` to `<html>` and hidden entrance states are styled only under `.js` + `prefers-reduced-motion: no-preference`, so SSR/no-JS and reduced motion show the finished page.
+- Motion: heading reveals (`SectionHeading` only, never on cards), hero load sequence, counters, client marquee, live bento tiles, scroll-linked parallax and process rail. Animate transform/opacity only. Every effect needs a complete static state: the inline head script adds `js` to `<html>` and hidden entrance states are styled only under `.js` + `prefers-reduced-motion: no-preference`, so SSR/no-JS and reduced motion show the finished page.
 - Section anchors: `#uslugi`, `#projekty`, `#misja`, `#klienci`, `#proces`, `#faq`, `#newsletter`, `#kontakt`.
 - Components must stay SSR-safe: no `window`/`document` access during render.
 

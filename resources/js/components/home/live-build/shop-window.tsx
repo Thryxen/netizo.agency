@@ -1,8 +1,8 @@
 import { Lock, ShoppingBag } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { PixelPhoto } from './pixel-photo';
 import { SHOP_BRAND, SHOP_CTA, SHOP_HEADLINE, SHOP_LEAD, SHOP_NAV, SHOP_PRODUCTS, SHOP_URL } from './shop-data';
+import { StagePhoto } from './stage-photo';
 
 /** Wireframe vocabulary (act 1): hairline dashed slots and quiet bars. Hidden in the finished page. */
 const WF_SLOT = 'pointer-events-none absolute inset-0 rounded-[0.5em] border border-dashed border-foreground/30 bg-foreground/[0.025] opacity-0';
@@ -19,7 +19,7 @@ export function SlotCross() {
     );
 }
 
-/** A photo slot of the shop: wireframe (+ marquee for the dragged ones) under the resolving photo. */
+/** A photo slot of the shop: wireframe (+ marquee for the dragged ones) under the photo. */
 function PhotoSlot({ name, drawn = false, children, className }: { name: string; drawn?: boolean; children: ReactNode; className?: string }) {
     return (
         <div data-lb-target={name} className={cn('relative', className)}>
@@ -41,9 +41,9 @@ export function ShopWindow() {
         <div className="flex flex-col overflow-hidden rounded-[0.9em] border bg-background">
             <div className="flex h-[3.4em] shrink-0 items-center gap-[1.4em] border-b bg-muted/60 px-[1.3em]">
                 <span className="flex shrink-0 items-center gap-[0.5em]">
-                    <span className="size-[0.7em] bg-foreground/20" />
-                    <span className="size-[0.7em] bg-foreground/20" />
-                    <span className="size-[0.7em] bg-foreground/20" />
+                    <span className="size-[0.7em] rounded-full bg-foreground/20" />
+                    <span className="size-[0.7em] rounded-full bg-foreground/20" />
+                    <span className="size-[0.7em] rounded-full bg-foreground/20" />
                 </span>
                 <span className="flex h-[2.2em] w-[24em] items-center gap-[0.6em] rounded-[0.45em] border bg-background px-[0.8em]">
                     <Lock aria-hidden="true" className="size-[1em] shrink-0 text-muted-foreground" strokeWidth={2} />
@@ -147,7 +147,7 @@ function ShopHero() {
             </div>
 
             <PhotoSlot name="hero" drawn className="h-[14.6em]">
-                <PixelPhoto
+                <StagePhoto
                     name="hero"
                     photo="shop-hero"
                     sizes="(min-width: 640px) 270px, 40vw"
@@ -167,7 +167,7 @@ function ShopProducts() {
             {SHOP_PRODUCTS.map((product, index) => (
                 <div key={product.name} className="min-w-0">
                     <PhotoSlot name={`card-${index}`} drawn={index === 0} className="aspect-[16/10]">
-                        <PixelPhoto
+                        <StagePhoto
                             name={`card-${index}`}
                             photo={product.photo}
                             sizes="(min-width: 640px) 190px, 28vw"

@@ -4,7 +4,6 @@ import { ExternalLink } from '@/components/home/external-link';
 import { useHomeUi } from '@/components/home/home-ui-context';
 import { isPanelMode, PANEL_MODES, type PanelMode } from '@/components/home/panel/panel-data';
 import { PanelStage } from '@/components/home/panel/panel-stage';
-import { Pixel } from '@/components/home/pixel';
 import { bleedClassName, gutterClassName, Rivet, Section, SectionHeading } from '@/components/home/section';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -101,9 +100,8 @@ export function PanelSection() {
                                         <TabsTrigger
                                             key={value}
                                             value={value}
-                                            className="group relative z-10 h-full gap-2 px-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:px-4 dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent"
+                                            className="relative z-10 h-full px-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:px-4 dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent"
                                         >
-                                            <Pixel size="sm" className="bg-border transition-colors duration-300 group-data-[state=active]:bg-foreground" />
                                             {label}
                                         </TabsTrigger>
                                     ))}
@@ -119,10 +117,9 @@ export function PanelSection() {
                                         forceMount
                                         className="col-start-1 row-start-1 rounded-sm transition-[opacity,translate,visibility] duration-300 ease-expo-out focus-visible:ring-offset-4 focus-visible:ring-offset-background data-[state=inactive]:invisible data-[state=inactive]:translate-y-1 data-[state=inactive]:opacity-0"
                                     >
-                                        <ul className="grid gap-3.5">
+                                        <ul className="grid list-disc gap-3.5 pl-5 marker:text-muted-foreground">
                                             {points.map((point) => (
-                                                <li key={point} className="flex gap-3.5 leading-relaxed text-pretty">
-                                                    <Pixel size="sm" className="mt-[0.6875rem]" />
+                                                <li key={point} className="pl-1 leading-relaxed text-pretty">
                                                     {point}
                                                 </li>
                                             ))}

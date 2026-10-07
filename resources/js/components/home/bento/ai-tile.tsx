@@ -62,7 +62,7 @@ export function AiTile({ service, rivets }: { service: BentoService; rivets?: Be
                                 <span
                                     key={dot}
                                     style={{ '--bento-delay': `${dot * 160}ms` } as CSSProperties}
-                                    className={cn('size-1 bg-foreground/70', step === THINK && 'vx-bento-blink')}
+                                    className={cn('size-1 bg-foreground/70', step === THINK && 'nz-bento-blink')}
                                 />
                             ))}
                         </Appear>

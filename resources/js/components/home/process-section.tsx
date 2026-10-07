@@ -1,6 +1,5 @@
 import type { CSSProperties, ReactNode, RefObject } from 'react';
 import { PanelMark } from '@/components/home/panel/panel-window';
-import { Pixel } from '@/components/home/pixel';
 import { BriefArtifact } from '@/components/home/process/brief-artifact';
 import { DesignArtifact } from '@/components/home/process/design-artifact';
 import { LaunchArtifact } from '@/components/home/process/launch-artifact';
@@ -95,7 +94,7 @@ function ProcessStepCell({ step, index, state, artifactRef }: ProcessStepCellPro
             {isLast && <Rivet side="right" className="lg:hidden" />}
 
             <div className="flex items-baseline gap-3">
-                <span aria-hidden="true" data-relay-number="" className="font-pixel text-lg leading-none">
+                <span aria-hidden="true" data-relay-number="" className="font-mono text-lg leading-none">
                     {step.number}
                 </span>
                 <h3 className="text-lg font-semibold tracking-tight sm:text-xl">{step.title}</h3>
@@ -106,11 +105,8 @@ function ProcessStepCell({ step, index, state, artifactRef }: ProcessStepCellPro
             </div>
 
             <p className="mt-5 max-w-[46ch] text-sm leading-relaxed text-pretty text-muted-foreground">{step.text}</p>
-            <p className="mt-3 flex max-w-[46ch] gap-2.5 text-sm leading-relaxed text-pretty">
-                <Pixel className="mt-2" />
-                <span>
-                    <span className="font-semibold">Dostajesz:</span> {step.deliverable}
-                </span>
+            <p className="mt-3 max-w-[46ch] text-sm leading-relaxed text-pretty">
+                <span className="font-semibold">Dostajesz:</span> {step.deliverable}
             </p>
 
             <ul className="mt-5 flex flex-wrap gap-1.5 md:mt-auto md:pt-5">

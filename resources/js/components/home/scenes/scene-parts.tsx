@@ -28,8 +28,8 @@ export const WINDOW_SHADOW = 'rounded-[0.9em] shadow-[0_0.2em_0.5em_rgb(0_0_0/0.
 /** A chat bubble from the visitor: ink, its tail at the bottom right (the bento's AI tile). */
 export const VISITOR_BUBBLE = 'rounded-lg rounded-br-[3px] bg-foreground px-3 py-2 text-xs leading-snug text-background shadow-[0_10px_24px_-12px_rgb(0_0_0/0.45)] dark:shadow-none';
 
-/** A chat bubble from Voxbit: the chip surface, its tail at the bottom left. */
-export const VOXBIT_BUBBLE = cn('rounded-lg rounded-bl-[3px] px-3 py-2 text-xs leading-snug', CHIP_SURFACE);
+/** A chat bubble from Netizo: the chip surface, its tail at the bottom left. */
+export const NETIZO_BUBBLE = cn('rounded-lg rounded-bl-[3px] px-3 py-2 text-xs leading-snug', CHIP_SURFACE);
 
 /**
  * Attributes for a scene's live layer: hidden from assistive tech (the section's text carries the meaning) and

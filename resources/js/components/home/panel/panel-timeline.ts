@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 
 /**
  * Tablica, ≈ 8.9 s: the client adds a task (the pointer opens "Dodaj task", the title types in, a screenshot is
- * pasted, priority set, submitted), the card lands in Do zrobienia, moves to W trakcie (Voxbit joins), then to
+ * pasted, priority set, submitted), the card lands in Do zrobienia, moves to W trakcie (Netizo joins), then to
  * Gotowe, and a comment arrives.
  */
 export const BOARD_PHASE_MS = [560, 200, 1100, 520, 420, 300, 420, 200, 850, 1250, 620, 2150, 420] as const;

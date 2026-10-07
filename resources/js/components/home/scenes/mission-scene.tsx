@@ -1,5 +1,5 @@
 import { Check, FileText } from 'lucide-react';
-import { PixelatedImage } from '@/components/motion/pixelated-image';
+import { Photo } from '@/components/home/photo';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
 import { SceneChip, sceneProps, useSceneArrival } from './scene-parts';
@@ -8,7 +8,7 @@ import { SceneChip, sceneProps, useSceneArrival } from './scene-parts';
 const ARRIVE_MS = 500;
 
 /**
- * Misja: the workshop wall of wireframes and flows (mission-workshop, pixel → sharp on first view) with the outcome the
+ * Misja: the workshop wall of wireframes and flows (mission-workshop) with the outcome the
  * quote is about: the system's architecture, approved. The chip arrives once on first view and its box ticks, then it
  * stays (no status loop: the Proces relay already shows a document going through approval).
  */
@@ -17,7 +17,7 @@ export function MissionScene({ className }: { className?: string }) {
 
     return (
         <div ref={ref} {...sceneProps(active)} className={cn('relative overflow-hidden border bg-muted', className)}>
-            <PixelatedImage
+            <Photo
                 {...photo('mission-workshop')}
                 sizes="(min-width: 1248px) 625px, (min-width: 1024px) 50vw, calc(100vw - 3rem)"
                 alt=""

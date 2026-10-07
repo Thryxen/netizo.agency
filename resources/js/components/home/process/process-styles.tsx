@@ -13,8 +13,8 @@
  * - `data-relay-instant`: a quiet reset (all transitions off for two frames). `data-relay-live`: CSS loops may run.
  */
 const PROCESS_CSS = `
-@keyframes vx-relay-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-@keyframes vx-relay-pulse { 50% { opacity: 0.35; } }
+@keyframes nz-relay-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@keyframes nz-relay-pulse { 50% { opacity: 0.35; } }
 
 [data-relay-fill] {
     opacity: 0;
@@ -39,7 +39,7 @@ const PROCESS_CSS = `
     background-color: var(--foreground);
     box-shadow: inset 0 0 0 1px var(--foreground);
 }
-[data-relay-live] [data-step-state='active'] [data-relay-marker] { animation: vx-relay-pulse 1.1s ease-in-out 250ms infinite; }
+[data-relay-live] [data-step-state='active'] [data-relay-marker] { animation: nz-relay-pulse 1.1s ease-in-out 250ms infinite; }
 
 [data-relay-number] { color: var(--muted-foreground); transition: color 300ms linear; }
 [data-step-state='active'] [data-relay-number], [data-step-state='done'] [data-relay-number] { color: var(--foreground); }
@@ -48,8 +48,8 @@ const PROCESS_CSS = `
 [data-step-state='pending'] [data-artifact] { opacity: 0.7; }
 [data-step-state='active'] [data-artifact] { border-color: color-mix(in oklab, var(--foreground) 32%, transparent); }
 
-.vx-relay-blink { animation: vx-relay-blink 1.2s ease-in-out infinite; }
-[data-process-relay]:not([data-relay-live]) .vx-relay-blink { animation-play-state: paused; }
+.nz-relay-blink { animation: nz-relay-blink 1.2s ease-in-out infinite; }
+[data-process-relay]:not([data-relay-live]) .nz-relay-blink { animation-play-state: paused; }
 
 [data-relay-instant] *, [data-relay-instant] *::before, [data-relay-instant] *::after {
     transition: none !important;

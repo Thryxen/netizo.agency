@@ -1,5 +1,4 @@
 import { type RefObject, useEffect, useRef } from 'react';
-import { Pixel } from '@/components/home/pixel';
 import { useLiveLoop } from '@/components/motion/use-in-view-loop';
 import { cn } from '@/lib/utils';
 import { tween } from './bento-motion';
@@ -54,9 +53,9 @@ export function WebTile({ service }: { service: BentoService }) {
                     <div className="flex h-full flex-col overflow-hidden rounded-t-lg border border-b-0 bg-background">
                         <div className="flex h-9 shrink-0 items-center gap-3 border-b bg-muted/60 px-3">
                             <span className="flex shrink-0 items-center gap-1.5">
-                                <Pixel className="bg-foreground/20" />
-                                <Pixel className="bg-foreground/20" />
-                                <Pixel className="bg-foreground/20" />
+                                <span className="size-1.5 rounded-full bg-foreground/20" />
+                                <span className="size-1.5 rounded-full bg-foreground/20" />
+                                <span className="size-1.5 rounded-full bg-foreground/20" />
                             </span>
                             <span className="flex h-5 w-full max-w-56 items-center rounded-md border bg-background px-2">
                                 <span className="h-1.5 w-1/2 rounded-full bg-foreground/15" />
@@ -106,7 +105,7 @@ function LandingPage({ step, at }: { step: number; at: (phase: number) => boolea
                         <span
                             className={cn(
                                 'inline-flex h-8 items-center rounded-md bg-foreground px-3.5 text-xs font-medium text-background',
-                                step === CLICK && 'vx-bento-press',
+                                step === CLICK && 'nz-bento-press',
                             )}
                         >
                             Rozpocznij
@@ -114,14 +113,8 @@ function LandingPage({ step, at }: { step: number; at: (phase: number) => boolea
                         <Cursor show={at(CLICK)} clicking={step === CLICK} />
                     </Appear>
                 </div>
-                <Appear show={at(HERO)} delay={120} className="relative hidden aspect-[4/3] rounded-md bg-muted @sm:block">
-                    {/* A placeholder picture: the bit staircase, quiet. */}
-                    <span className="absolute right-4 bottom-4 grid grid-cols-3 gap-1">
-                        <span className="col-start-3 size-2.5 bg-foreground/20" />
-                        <span className="col-start-2 size-2.5 bg-foreground/20" />
-                        <span className="col-start-1 size-2.5 bg-foreground/20" />
-                    </span>
-                </Appear>
+                {/* A placeholder picture. */}
+                <Appear show={at(HERO)} delay={120} className="hidden aspect-[4/3] rounded-md bg-muted @sm:block" />
             </div>
 
             <div className="mt-8 grid grid-cols-3 gap-2.5 @sm:mt-10 @sm:gap-3">
@@ -156,7 +149,7 @@ function Cursor({ show, clicking }: { show: boolean; clicking: boolean }) {
             data-show={show}
             className="pointer-events-none absolute top-[55%] left-[68%] z-10 [transition:translate_900ms_cubic-bezier(0.45,0,0.2,1),opacity_250ms_linear] data-[show=false]:translate-x-24 data-[show=false]:translate-y-14 data-[show=false]:opacity-0"
         >
-            {clicking && <span className="vx-bento-ripple absolute top-0.5 left-0.5 size-8 rounded-full border border-foreground/60" />}
+            {clicking && <span className="nz-bento-ripple absolute top-0.5 left-0.5 size-8 rounded-full border border-foreground/60" />}
             <svg viewBox="0 0 16 20" className="relative block h-5 w-4 fill-foreground stroke-background" strokeWidth={1.25} strokeLinejoin="round">
                 <path d="M1.5 1.5v14.6l3.8-3.5 2.6 6.1 2.6-1.1-2.6-6h5.1z" />
             </svg>

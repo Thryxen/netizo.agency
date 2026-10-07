@@ -54,7 +54,7 @@ export function Tick({ status, running = 'blink', className }: TickProps) {
             )}
         >
             {status === 'done' && <Check aria-hidden="true" className="size-2.5" strokeWidth={3} />}
-            {status === 'running' && running === 'blink' && <span className="vx-relay-blink size-1.5 bg-foreground" />}
+            {status === 'running' && running === 'blink' && <span className="nz-relay-blink size-1.5 bg-foreground" />}
             {status === 'running' && running === 'spin' && <LoaderCircle aria-hidden="true" className="size-2.5 animate-spin" strokeWidth={2.75} />}
         </span>
     );

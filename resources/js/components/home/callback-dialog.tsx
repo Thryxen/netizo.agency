@@ -3,7 +3,6 @@ import { XIcon } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { Field, fieldError, FormErrorAlert, formLevelError, invalidProps, SubmitButton } from '@/components/home/brief/fields';
 import { useHomeUi } from '@/components/home/home-ui-context';
-import { Pixel } from '@/components/home/pixel';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -61,8 +60,7 @@ function CallbackForm() {
     if (submitted) {
         return (
             <div className="grid gap-6">
-                <p ref={successRef} tabIndex={-1} role="status" className="flex items-center gap-3 font-medium outline-none">
-                    <Pixel size="md" />
+                <p ref={successRef} tabIndex={-1} role="status" className="font-medium outline-none">
                     Dziękujemy, oddzwonimy wkrótce.
                 </p>
                 <DialogClose asChild>

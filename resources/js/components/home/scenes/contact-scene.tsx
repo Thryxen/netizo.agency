@@ -1,18 +1,18 @@
 import { Appear } from '@/components/home/bento/bento-tile';
 import { PanelMark } from '@/components/home/panel/panel-window';
-import { PixelatedImage } from '@/components/motion/pixelated-image';
+import { Photo } from '@/components/home/photo';
 import { useLiveLoop } from '@/components/motion/use-in-view-loop';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
 import { CHIP_SURFACE, sceneProps, TypingDots } from './scene-parts';
 
-/** gone → Voxbit typing → the greeting (static frame) → gone again. */
+/** gone → Netizo typing → the greeting (static frame) → gone again. */
 const PHASE_MS = [800, 1400, 5600] as const;
 const TYPING = 1;
 const MESSAGE = 2;
 
 /**
- * Kontakt: the meeting table (contact-desk, pixel → sharp on first view) with a greeting from Voxbit arriving over it:
+ * Kontakt: the meeting table (contact-desk) with a greeting from Netizo arriving over it:
  * typing, then the message (the reply time is on the form's tab right beside it).
  */
 export function ContactScene({ className }: { className?: string }) {
@@ -20,7 +20,7 @@ export function ContactScene({ className }: { className?: string }) {
 
     return (
         <div ref={ref} {...sceneProps(active)} className={cn('relative overflow-hidden bg-muted', className)}>
-            <PixelatedImage {...photo('contact-desk')} sizes="(min-width: 1024px) 400px, 50vw" alt="" className="absolute inset-0" />
+            <Photo {...photo('contact-desk')} sizes="(min-width: 1024px) 400px, 50vw" alt="" className="absolute inset-0" />
 
             <Appear
                 show={step >= TYPING}
@@ -34,7 +34,7 @@ export function ContactScene({ className }: { className?: string }) {
                 <PanelMark className="size-7 rounded-[4px]" />
                 <span className="min-w-0 flex-1 text-xs leading-snug">
                     <span className="flex items-baseline gap-2">
-                        <span className="font-medium">Voxbit</span>
+                        <span className="font-medium">Netizo</span>
                         <span className="ml-auto text-[11px] text-muted-foreground">teraz</span>
                     </span>
                     <span className="relative mt-0.5 block">

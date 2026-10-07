@@ -9,7 +9,7 @@ import { BUILD_STEPS, SHOP_CODE, SHOP_URL } from './shop-data';
  *
  *  Projekt    0.0–2.0  the phone slides in; wireframes draw in (desktop + phone); the cursor drags out the photo
  *                      slots, clicks the button
- *  Design     2.0–4.5  real text rises, photos resolve pixel → sharp (colour enters), prices land, the phone too
+ *  Design     2.0–4.5  real text rises, photos fade in (colour enters), prices land, the phone too
  *  Kod        4.5–6.5  the editor slides in and types the page's component; typed lines light up their section
  *  Wdrożenie  6.5–9.4  pipeline ticks, "Opublikowano", score ring to 100, an order lands on the phone
  *  hold       9.4–11.4 the finished composition (= the static frame for SSR, no JS and reduced motion)
@@ -152,12 +152,12 @@ function highlight(from: number, to: number): Track {
 
 /* ---------------------------------------------------------------------------------------------------------------- */
 
-/** When each photo starts resolving, and for how long (seconds). */
+/** When each photo starts fading in, and for how long (seconds). */
 export const PHOTO_REVEALS: Record<string, { at: number; duration: number }> = {
-    hero: { at: 2.25, duration: 1.1 },
-    'card-0': { at: 2.6, duration: 1 },
-    'card-1': { at: 2.75, duration: 1 },
-    'card-2': { at: 2.9, duration: 1 },
+    hero: { at: 2.25, duration: 0.7 },
+    'card-0': { at: 2.6, duration: 0.6 },
+    'card-1': { at: 2.75, duration: 0.6 },
+    'card-2': { at: 2.9, duration: 0.6 },
 };
 
 /** URL typed into the address bar at the start, erased again during the wipe. */

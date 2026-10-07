@@ -52,7 +52,7 @@ export function LaunchArtifact({ state }: { state: StepState }) {
                             key: 'live',
                             node: (
                                 <span className="flex items-center gap-1.5 text-foreground">
-                                    <span className="vx-relay-blink size-1.5 bg-foreground" />
+                                    <span className="nz-relay-blink size-1.5 bg-foreground" />
                                     na żywo
                                 </span>
                             ),

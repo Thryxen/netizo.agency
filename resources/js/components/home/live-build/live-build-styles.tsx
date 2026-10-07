@@ -32,7 +32,7 @@ const LIVE_BUILD_CSS = `
 [data-lb-cover] { transform: translateX(101%); }
 [data-lb-marquee] { transform: scale(0); }
 
-.dark [data-lb-photo] > :is(img, canvas) { filter: brightness(0.88) contrast(1.04); }
+.dark [data-lb-photo] > img { filter: brightness(0.88) contrast(1.04); }
 
 [data-lb-step] > [data-lb-marker] { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 32%, transparent); }
 [data-lb-step] > [data-lb-label] { color: var(--muted-foreground); }

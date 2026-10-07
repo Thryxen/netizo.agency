@@ -13,12 +13,12 @@ return [
         'defaults' => [
             'title' => false,
             'titleBefore' => false,
-            'description' => 'Voxbit - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia. React, Next.js, Node.js, Laravel. 150+ projektów, 8 lat doświadczenia.',
+            'description' => 'Netizo - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia. React, Next.js, Node.js, Laravel. 150+ projektów, 8 lat doświadczenia.',
             'separator' => ' | ',
             'keywords' => [
                 'software house', 'aplikacje webowe', 'aplikacje mobilne', 'systemy enterprise',
                 'React', 'Next.js', 'Node.js', 'Laravel', 'programowanie', 'tworzenie stron',
-                'web development', 'mobile development', 'Polska', 'voxbit', 'Wielkopolska',
+                'web development', 'mobile development', 'Polska', 'netizo', 'Wielkopolska',
                 // Leszno
                 'Leszno', 'programista Leszno', 'tworzenie stron Leszno', 'software house Leszno',
                 // Duże miasta
@@ -64,11 +64,11 @@ return [
          * The default configurations to be used by the opengraph generator.
          */
         'defaults' => [
-            'title' => 'Voxbit | Software House',
-            'description' => 'Voxbit - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia.',
+            'title' => 'Netizo | Software House',
+            'description' => 'Netizo - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia.',
             'url' => null,
             'type' => 'website',
-            'site_name' => 'Voxbit',
+            'site_name' => 'Netizo',
             'images' => [env('APP_URL').'/assets/images/og-image.jpg'],
         ],
     ],
@@ -78,7 +78,6 @@ return [
          */
         'defaults' => [
             'card' => 'summary_large_image',
-            'site' => '@voxbit',
             'image' => env('APP_URL').'/assets/images/og-image.jpg',
         ],
     ],
@@ -87,8 +86,8 @@ return [
          * The default configurations to be used by the json-ld generator.
          */
         'defaults' => [
-            'title' => 'Voxbit | Software House',
-            'description' => 'Voxbit - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia.',
+            'title' => 'Netizo | Software House',
+            'description' => 'Netizo - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia.',
             'url' => 'full',
             'type' => 'WebPage',
             'images' => [env('APP_URL').'/assets/images/og-image.jpg'],

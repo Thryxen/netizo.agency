@@ -88,7 +88,7 @@ export type BoardTask = {
     priority: Priority;
     attachments?: number;
     comments?: number;
-    /** Voxbit is on it (shows the team's avatar bit). */
+    /** Netizo is on it (shows the team's avatar bit). */
     assigned?: boolean;
 };
 

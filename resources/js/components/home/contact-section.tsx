@@ -1,7 +1,6 @@
 import { Mail, Phone } from 'lucide-react';
 import { BriefWizard } from '@/components/home/brief/brief-wizard';
 import { type ContactTab, isContactTab, useHomeUi } from '@/components/home/home-ui-context';
-import { Pixel } from '@/components/home/pixel';
 import { QuickContactForm } from '@/components/home/quick-contact-form';
 import { ContactScene } from '@/components/home/scenes/contact-scene';
 import { bleedClassName, gutterClassName, Rivet, Section, SectionHeading } from '@/components/home/section';
@@ -48,9 +47,8 @@ export function ContactSection() {
                                     <TabsTrigger
                                         key={tab.value}
                                         value={tab.value}
-                                        className="group h-auto items-start justify-start gap-2.5 rounded-none px-1 pt-2 pb-3.5 text-left whitespace-normal group-data-[orientation=horizontal]/tabs:after:bottom-[-1px] sm:px-2 forced-colors:after:forced-color-adjust-none forced-colors:data-[state=active]:after:bg-[Highlight]"
+                                        className="h-auto items-start justify-start rounded-none px-1 pt-2 pb-3.5 text-left whitespace-normal group-data-[orientation=horizontal]/tabs:after:bottom-[-1px] sm:px-2 forced-colors:after:forced-color-adjust-none forced-colors:data-[state=active]:after:bg-[Highlight]"
                                     >
-                                        <Pixel size="sm" className="mt-[7px] bg-border transition-colors group-data-[state=active]:bg-foreground" />
                                         <span className="flex flex-col gap-0.5">
                                             <span className="text-[13px] sm:text-sm">{tab.label}</span>
                                             <span className="text-xs font-normal text-muted-foreground">{tab.hint}</span>

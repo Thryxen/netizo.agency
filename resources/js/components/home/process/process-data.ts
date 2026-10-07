@@ -4,7 +4,7 @@
  */
 
 export type ProcessStep = {
-    /** A real sequence, so numbered (font-pixel). */
+    /** A real sequence, so numbered (font-mono). */
     number: string;
     title: string;
     /** One plain sentence: what happens in this step. */

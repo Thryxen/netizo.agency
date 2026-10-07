@@ -63,7 +63,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             if ($status >= 500 && $status !== 503 && ! app()->hasDebugModeEnabled()) {
                 return back()->withErrors([
-                    'form' => 'Nie udało się wysłać formularza. Spróbuj ponownie za chwilę albo napisz na kontakt@voxbit.pl.',
+                    'form' => 'Nie udało się wysłać formularza. Spróbuj ponownie za chwilę albo napisz na kontakt@netizo.pl.',
                 ]);
             }
 

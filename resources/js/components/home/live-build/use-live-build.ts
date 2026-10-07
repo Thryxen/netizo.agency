@@ -1,6 +1,6 @@
 import { type RefObject, useEffect } from 'react';
 import { useCanAnimate, useReducedMotionPreference } from '@/components/motion/motion-env';
-import { createPhotoReveal, type PhotoReveal } from './pixel-photo';
+import { createPhotoReveal, type PhotoReveal } from './stage-photo';
 import {
     clamp01,
     CODE_SCHEDULE,

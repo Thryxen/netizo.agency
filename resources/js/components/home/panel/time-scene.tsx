@@ -169,7 +169,7 @@ function LiveRow({ step, running, seconds }: LiveRowProps) {
                     data-show={running}
                     className="col-start-1 row-start-1 flex items-center gap-[0.45em] transition-[opacity,translate] delay-150 duration-300 ease-expo-out data-[show=false]:-translate-y-[0.4em] data-[show=false]:opacity-0 data-[show=false]:delay-0 data-[show=false]:duration-150"
                 >
-                    <span className={cn('size-[0.5em] shrink-0 rounded-[0.1em]', RUNNING_DOT, step === TIME.tick && 'vx-panel-pulse')} />
+                    <span className={cn('size-[0.5em] shrink-0 rounded-[0.1em]', RUNNING_DOT, step === TIME.tick && 'nz-panel-pulse')} />
                     <RollingClock seconds={seconds} />
                 </span>
                 <span
@@ -201,7 +201,7 @@ function RollingClock({ seconds }: { seconds: number }) {
         <span className="flex font-medium tabular-nums">
             {[...formatClock(seconds)].map((character, index) => (
                 <span key={index} className="relative overflow-hidden">
-                    <span key={character} className="vx-panel-roll block">
+                    <span key={character} className="nz-panel-roll block">
                         {character}
                     </span>
                 </span>

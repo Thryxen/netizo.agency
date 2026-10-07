@@ -129,7 +129,7 @@ it('renders the FAQ JSON-LD and SEO tags in the root view', function () {
         ->assertSee('"@type":"FAQPage"', false)
         ->assertSee('"name":"Ile kosztuje strona internetowa lub aplikacja?"', false)
         ->assertSee('"name":"Czy strona będzie widoczna w Google?"', false)
-        ->assertSee('<title>Tworzymy Strony WWW dla Ambitnych Firm | Voxbit</title>', false)
+        ->assertSee('<title>Tworzymy Strony WWW dla Ambitnych Firm | Netizo</title>', false)
         ->assertSee('<script data-page="app" type="application/json">', false)
         ->assertSee('<div id="app"', false)
         ->assertDontSee('livewire', false);
@@ -155,7 +155,8 @@ it('renders the organization JSON-LD built in the controller', function () {
     $organization = $schemas->firstWhere('@type', 'ProfessionalService');
 
     expect($organization)->not->toBeNull()
-        ->and($organization['name'])->toBe('Voxbit')
+        ->and($organization['name'])->toBe('Netizo')
+        ->and($organization)->not->toHaveKey('sameAs')
         ->and($organization['address'])->toBe(['@type' => 'PostalAddress', 'addressLocality' => 'Leszno', 'addressRegion' => 'wielkopolskie', 'addressCountry' => 'PL'])
         ->and($organization['image'])->toBe(asset('assets/images/og-image.jpg'))
         ->and($organization['areaServed'])->toBe(['@type' => 'Country', 'name' => 'Polska'])
