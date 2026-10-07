@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @see https://github.com/artesaos/seotools
  */
@@ -9,12 +10,12 @@ return [
         /*
          * The default configurations to be used by the meta generator.
          */
-        'defaults'       => [
-            'title'        => false,
-            'titleBefore'  => false,
-            'description'  => 'Voxbit - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia. React, Next.js, Node.js, Laravel. 150+ projektów, 8 lat doświadczenia.',
-            'separator'    => ' | ',
-            'keywords'     => [
+        'defaults' => [
+            'title' => false,
+            'titleBefore' => false,
+            'description' => 'Voxbit - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia. React, Next.js, Node.js, Laravel. 150+ projektów, 8 lat doświadczenia.',
+            'separator' => ' | ',
+            'keywords' => [
                 'software house', 'aplikacje webowe', 'aplikacje mobilne', 'systemy enterprise',
                 'React', 'Next.js', 'Node.js', 'Laravel', 'programowanie', 'tworzenie stron',
                 'web development', 'mobile development', 'Polska', 'voxbit', 'Wielkopolska',
@@ -41,19 +42,19 @@ return [
                 'Jutrosin', 'programista Jutrosin', 'tworzenie stron Jutrosin',
                 'Miejska Górka', 'programista Miejska Górka', 'tworzenie stron Miejska Górka',
             ],
-            'canonical'    => 'full',
-            'robots'       => 'index, follow',
+            'canonical' => 'full',
+            'robots' => 'index, follow',
         ],
         /*
          * Webmaster tags are always added.
          */
         'webmaster_tags' => [
-            'google'    => null,
-            'bing'      => null,
-            'alexa'     => null,
+            'google' => null,
+            'bing' => null,
+            'alexa' => null,
             'pinterest' => null,
-            'yandex'    => null,
-            'norton'    => null,
+            'yandex' => null,
+            'norton' => null,
         ],
 
         'add_notranslate_class' => false,
@@ -63,12 +64,12 @@ return [
          * The default configurations to be used by the opengraph generator.
          */
         'defaults' => [
-            'title'       => 'Voxbit | Software House',
+            'title' => 'Voxbit | Software House',
             'description' => 'Voxbit - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia.',
-            'url'         => null,
-            'type'        => 'website',
-            'site_name'   => 'Voxbit',
-            'images'      => [env('APP_URL') . '/assets/images/voxbit.png'],
+            'url' => null,
+            'type' => 'website',
+            'site_name' => 'Voxbit',
+            'images' => [env('APP_URL').'/assets/images/og-image.jpg'],
         ],
     ],
     'twitter' => [
@@ -76,9 +77,9 @@ return [
          * The default values to be used by the twitter cards generator.
          */
         'defaults' => [
-            'card'        => 'summary_large_image',
-            'site'        => '@voxbit',
-            'image'       => env('APP_URL') . '/assets/images/voxbit.png',
+            'card' => 'summary_large_image',
+            'site' => '@voxbit',
+            'image' => env('APP_URL').'/assets/images/og-image.jpg',
         ],
     ],
     'json-ld' => [
@@ -86,11 +87,11 @@ return [
          * The default configurations to be used by the json-ld generator.
          */
         'defaults' => [
-            'title'       => 'Voxbit | Software House',
+            'title' => 'Voxbit | Software House',
             'description' => 'Voxbit - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia.',
-            'url'         => 'full',
-            'type'        => 'WebPage',
-            'images'      => [env('APP_URL') . '/assets/images/voxbit.png'],
+            'url' => 'full',
+            'type' => 'WebPage',
+            'images' => [env('APP_URL').'/assets/images/og-image.jpg'],
         ],
     ],
 ];

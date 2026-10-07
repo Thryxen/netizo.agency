@@ -157,10 +157,26 @@ it('renders the organization JSON-LD built in the controller', function () {
     expect($organization)->not->toBeNull()
         ->and($organization['name'])->toBe('Voxbit')
         ->and($organization['address'])->toBe(['@type' => 'PostalAddress', 'addressLocality' => 'Leszno', 'addressRegion' => 'wielkopolskie', 'addressCountry' => 'PL'])
-        ->and($organization['image'])->toBe(asset('assets/images/voxbit.png'))
+        ->and($organization['image'])->toBe(asset('assets/images/og-image.jpg'))
         ->and($organization['areaServed'])->toBe(['@type' => 'Country', 'name' => 'Polska'])
         ->and($organization['priceRange'])->toBe('$$')
         ->and($schemas->firstWhere('@type', 'WebPage'))->toBeNull();
+});
+
+it('points the share image tags at a 1200x630 file under the size link previews accept', function () {
+    $response = $this->get('/')->assertOk();
+    $imageUrl = asset('assets/images/og-image.jpg');
+    $imagePath = public_path('assets/images/og-image.jpg');
+
+    $response
+        ->assertSee('<meta property="og:image" content="'.$imageUrl.'">', false)
+        ->assertSee('<meta property="og:image:width" content="1200">', false)
+        ->assertSee('<meta property="og:image:height" content="630">', false)
+        ->assertSee('<meta name="twitter:image" content="'.$imageUrl.'">', false);
+
+    expect($imagePath)->toBeFile()
+        ->and(array_slice(getimagesize($imagePath), 0, 2))->toBe([1200, 630])
+        ->and(filesize($imagePath))->toBeLessThan(300 * 1024);
 });
 
 it('sets the dark class on the root element from the appearance cookie', function () {
