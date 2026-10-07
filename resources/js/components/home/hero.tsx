@@ -76,7 +76,7 @@ export function Hero() {
                             id="hero-heading"
                             lines={HEADING_LINES}
                             wideLines={HEADING_WIDE_LINES}
-                            className="text-[clamp(2.75rem,min(6.5vw,10.5svh),5rem)] leading-[1.02] font-semibold tracking-[-0.04em] lg:text-[clamp(2.5rem,min(15.6cqw,4.6vw,9.5svh),4.5rem)]"
+                            className="text-[clamp(2.375rem,min(6vw,9svh),4.25rem)] leading-[1.04] font-semibold tracking-[-0.04em] lg:text-[clamp(2.25rem,min(12.5cqw,3.9vw,7.5svh),3.5rem)]"
                         />
                         <p data-hero-rise="" style={riseDelay(0)} className="mt-6 max-w-xl text-lg leading-relaxed text-pretty text-muted-foreground lg:text-[1.0625rem] xl:text-lg">
                             Strony, aplikacje webowe i mobilne oraz systemy dla firm. Projektujemy, programujemy i opiekujemy się nimi po
