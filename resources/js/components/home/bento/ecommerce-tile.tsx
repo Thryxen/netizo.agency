@@ -13,7 +13,7 @@ const FIRST_LIVE_ORDER = 1048;
 const INITIAL_ORDERS = [1047, 1046, 1045, 1044];
 const INITIAL_REVENUE = 12_480;
 const VISIBLE_ROWS = 3;
-const FIRST_ARRIVAL_MS = 1400;
+const FIRST_ARRIVAL_MS = 300;
 const ARRIVAL_MS = 3600;
 
 function amountOf(order: number): number {

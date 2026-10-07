@@ -1,17 +1,14 @@
 /**
- * The generated photo series (spec v2 §3) in public/assets/images/photos: each photo ships at its native width
+ * The generated photo series (spec v2 §3, v3 §3) in public/assets/images/photos: each photo ships at its native width
  * (`{name}.webp`) and as a 768w variant (`{name}-768.webp`). Sizes are the generated sizes.
  *
- * `lqip`: the photo averaged down to 8 columns (lossless WebP data URI, ~370 B), only for the above-the-fold photo.
- * PixelatedImage paints it, pixelated, from the first paint, so the hero opens on its mosaic instead of a blank frame.
- * Regenerate it whenever the photo changes (e.g. sharp: resize(8, 12, { fit: 'fill' }).webp({ lossless: true })).
+ * `lqip` (optional): the photo averaged down to ~8 columns (lossless WebP data URI, ~370 B), only for a `priority`
+ * photo above the fold, which PixelatedImage then paints pixelated from the first paint. None needs it at the moment
+ * (the hero is the LiveBuild stage). Regenerate it with the photo (sharp: resize(8, h, { fit: 'fill' }).webp({ lossless: true })).
+ *
+ * `shop-*`: the knitwear shop the hero's LiveBuild stage builds (shop-hero 3:2, the products 1:1).
  */
 const PHOTOS = {
-    'hero-studio': {
-        width: 1024,
-        height: 1536,
-        lqip: 'data:image/webp;base64,UklGRmgBAABXRUJQVlA4TFsBAAAvB8ACAPfiMJJkVTn/rjixkH9GzkkariPJVpXj8h7uRMAvqZB/Au6u13EjSYrUvEw/vrPhzn+rlrF3/mPtZZGICJsHKSqIvwlhlnbpGwHgl/4N5kHTtMoqT+ohMtH8VP1iRgruQj2khqggJgclBvogJlg7ISR/ER/ErZsEsYo5LJoDC6hAUZos5da9T94Ff98tjy8mExeBgIZGTBQk3xRiSED44vRA3zT8cI1okJZE/EL1cP+nazPTmgJThMwA0M9UjRx3fxgd2zXGUH7A3oqpBuyfIn09Fj/LNKTLzn22mkqqbT+eXKovgqb7rB1TphN27G/s9XedI2he4DAAAKLVlG27rdm2bZsR/Y9swutMpru9FfcbveF2YxbyZT1VKxmV4lf5NOuX/qCqitTpGtVi7yeK3c9sOhLIdvBrdcNOxl2u1qPcSyBn4/kiKcFQ+//gGRoBuOPhFiJwEAA=',
-    },
     'bento-mobile': { width: 1024, height: 1536 },
     'bento-ecommerce': { width: 1536, height: 1024 },
     'mission-workshop': { width: 1536, height: 1024 },
@@ -20,6 +17,10 @@ const PHOTOS = {
     'process-development': { width: 1536, height: 1024 },
     'process-launch': { width: 1536, height: 1024 },
     'contact-desk': { width: 1024, height: 1024 },
+    'shop-hero': { width: 1536, height: 1024 },
+    'shop-sweater': { width: 1024, height: 1024 },
+    'shop-scarf': { width: 1024, height: 1024 },
+    'shop-hat': { width: 1024, height: 1024 },
 } as const satisfies Record<string, { width: number; height: number; lqip?: string }>;
 
 export type PhotoName = keyof typeof PHOTOS;

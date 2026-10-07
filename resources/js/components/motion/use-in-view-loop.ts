@@ -17,9 +17,9 @@ function usePageVisible(): boolean {
 }
 
 export type InViewLoopOptions = {
-    /** Fraction of the element that must be visible for the loop to run (default 0.2). */
+    /** Fraction of the element that must be visible for the loop to run (default 0: as soon as it enters). */
     amount?: number;
-    /** IntersectionObserver rootMargin, e.g. '100px 0px' to start a little early. */
+    /** IntersectionObserver rootMargin (default: start 100px before the element scrolls in from below). */
     rootMargin?: string;
 };
 
@@ -40,7 +40,7 @@ export type InViewLoop<T extends Element> = {
  * under reduced motion `active` is false, so components must render a complete static frame in that state.
  * For CSS loops: `style={{ animationPlayState: active ? 'running' : 'paused' }}`.
  */
-export function useInViewLoop<T extends Element = HTMLDivElement>({ amount = 0.2, rootMargin = '0px' }: InViewLoopOptions = {}): InViewLoop<T> {
+export function useInViewLoop<T extends Element = HTMLDivElement>({ amount = 0, rootMargin = '0px 0px 100px 0px' }: InViewLoopOptions = {}): InViewLoop<T> {
     const ref = useRef<T>(null);
     const [inView, setInView] = useState(false);
     const reducedMotion = useReducedMotionPreference();
@@ -87,7 +87,9 @@ export type LoopStepOptions = {
 
 /**
  * Step clock for a calm loop: shows step i for `durations[i]` ms, then i + 1, wrapping around. Starts from
- * `staticStep` (so SSR → live has no jump), holds while inactive and resumes where it stopped.
+ * `staticStep` (so SSR → live has no jump), holds while inactive and resumes where it stopped. The first time the loop
+ * becomes active it moves on from the static frame at once instead of holding it, so motion starts the moment the
+ * element is seen.
  *
  * @example
  * const loop = useInViewLoop<HTMLDivElement>();
@@ -96,6 +98,7 @@ export type LoopStepOptions = {
 export function useLoopStep(durations: readonly number[], { active, staticStep = 0, reducedMotion = false }: LoopStepOptions): number {
     const count = Math.max(1, durations.length);
     const [step, setStep] = useState(staticStep % count);
+    const started = useRef(false);
     const current = step % count;
     const delay = durations[current] ?? 0;
 
@@ -104,7 +107,10 @@ export function useLoopStep(durations: readonly number[], { active, staticStep =
             return;
         }
 
-        const timer = window.setTimeout(() => setStep((value) => (value + 1) % count), delay);
+        const firstRun = !started.current;
+        started.current = true;
+
+        const timer = window.setTimeout(() => setStep((value) => (value + 1) % count), firstRun ? 0 : delay);
 
         return () => window.clearTimeout(timer);
     }, [active, current, count, delay]);

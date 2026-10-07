@@ -40,7 +40,7 @@ export function BackendTile({ service, rivets }: { service: BentoService; rivets
             return;
         }
 
-        const timer = window.setInterval(() => {
+        const tick = (): void => {
             readingRef.current = (readingRef.current + 1) % REQUESTS.length;
 
             if (requestsRef.current) {
@@ -50,9 +50,14 @@ export function BackendTile({ service, rivets }: { service: BentoService; rivets
             if (p95Ref.current) {
                 p95Ref.current.textContent = P95[readingRef.current];
             }
-        }, TICK_MS);
+        };
+        const first = window.setTimeout(tick, 150);
+        const timer = window.setInterval(tick, TICK_MS);
 
-        return () => window.clearInterval(timer);
+        return () => {
+            window.clearTimeout(first);
+            window.clearInterval(timer);
+        };
     }, [active]);
 
     return (

@@ -13,7 +13,7 @@ const MIN_BLOCK_PX = 2;
 const RESOLVE_MS = 1100;
 const MAX_DEVICE_PIXEL_RATIO = 2;
 /** The photo must be this visible before it resolves. */
-const START_AMOUNT = 0.35;
+const START_AMOUNT = 0.15;
 /** Release the canvas once its fade-out (150 ms) is over. */
 const RELEASE_AFTER_MS = 400;
 /** Photos that would start together (a row scrolling in) start at least this far apart, in reading order. */

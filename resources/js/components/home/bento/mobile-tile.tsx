@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Appear, BentoTile, type BentoRivet, BentoTileText, type BentoService, liveVisualProps, tileGutterBottom, tileGutterX } from './bento-tile';
 
 /** notification shown (static frame) → slides away → nothing → the next booking slides in. */
-const PHASE_MS = [3200, 600, 1400] as const;
+const PHASE_MS = [3200, 500, 600] as const;
 const SHOWN = 0;
 const GONE = 2;
 
