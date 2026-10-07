@@ -21,6 +21,7 @@ const SECTIONS: NavSection[] = [
     { id: 'misja', label: 'Misja' },
     { id: 'klienci', label: 'Klienci' },
     { id: 'proces', label: 'Proces' },
+    { id: 'panel', label: 'Panel klienta' },
     { id: 'faq', label: 'FAQ' },
     { id: 'newsletter', label: 'Newsletter' },
     { id: 'kontakt', label: 'Kontakt' },
@@ -243,7 +244,7 @@ export function SiteHeader() {
                                             rel="noopener"
                                             className={cn('flex h-11 items-center rounded-md px-2 text-muted-foreground hover:text-foreground', focusRing)}
                                         >
-                                            Panel klienta
+                                            Zaloguj się do panelu
                                         </ExternalLink>
                                     </li>
                                     {infoLinks.map(({ href, label }) => (

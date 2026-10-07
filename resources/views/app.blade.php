@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl" @class(['dark' => ($appearance ?? 'system') === 'dark'])>
+<html lang="pl" @class(['dark' => ($appearance ?? 'light') === 'dark'])>
 <head>
     {{-- Trusted Types Policy for XSS Protection --}}
     <script>
@@ -22,19 +22,13 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    @if (($appearance ?? 'system') === 'system')
-        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
-    @else
-        <meta name="theme-color" content="{{ $appearance === 'dark' ? '#0a0a0a' : '#ffffff' }}">
-    @endif
+    <meta name="theme-color" content="{{ ($appearance ?? 'light') === 'dark' ? '#0a0a0a' : '#ffffff' }}">
     <meta name="author" content="Voxbit">
 
-    {{-- Resolve the "system" appearance before first paint (no theme flash) --}}
+    {{-- Light by default; dark only when the visitor switched to it (cookie). Set before first paint (no flash). --}}
     <script>
         (function () {
-            var appearance = @json($appearance ?? 'system');
-            var dark = appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            var dark = @json(($appearance ?? 'light') === 'dark');
             document.documentElement.classList.toggle('dark', dark);
             document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
         })();

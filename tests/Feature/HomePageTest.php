@@ -179,15 +179,19 @@ it('uses a single light theme color for the light appearance', function () {
         ->assertOk()
         ->assertSee('<html lang="pl" class="">', false)
         ->assertSee('<meta name="theme-color" content="#ffffff">', false)
-        ->assertDontSee('media="(prefers-color-scheme: dark)"', false);
+        ->assertDontSee('prefers-color-scheme', false);
 });
 
-it('follows the system color scheme for the system appearance', function () {
-    $this->withUnencryptedCookie('appearance', 'system')
-        ->get('/')
+it('is light by default, whatever the operating system prefers', function (?string $cookie) {
+    $request = $cookie === null ? $this : $this->withUnencryptedCookie('appearance', $cookie);
+
+    $request->get('/')
         ->assertOk()
         ->assertSee('<html lang="pl" class="">', false)
-        ->assertSee('<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">', false)
-        ->assertSee('<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">', false)
-        ->assertSee('var appearance = "system";', false);
-});
+        ->assertSee('<meta name="theme-color" content="#ffffff">', false)
+        ->assertSee('var dark = false;', false)
+        ->assertDontSee('prefers-color-scheme', false);
+})->with([
+    'no cookie' => [null],
+    'legacy system value' => ['system'],
+]);

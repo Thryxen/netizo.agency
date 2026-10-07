@@ -10,14 +10,14 @@ use Symfony\Component\HttpFoundation\Response;
 class HandleAppearance
 {
     /**
-     * Allowed values of the `appearance` cookie.
+     * Allowed values of the `appearance` cookie. The site is light unless the visitor switched it to dark.
      *
      * @var list<string>
      */
-    private const APPEARANCES = ['light', 'dark', 'system'];
+    private const APPEARANCES = ['light', 'dark'];
 
     /**
-     * Share the visitor's colour scheme preference with the root view.
+     * Share the visitor's colour scheme with the root view.
      *
      * @param  Closure(Request): (Response)  $next
      */
@@ -25,7 +25,7 @@ class HandleAppearance
     {
         $appearance = $request->cookie('appearance');
 
-        View::share('appearance', in_array($appearance, self::APPEARANCES, true) ? $appearance : 'system');
+        View::share('appearance', in_array($appearance, self::APPEARANCES, true) ? $appearance : 'light');
 
         return $next($request);
     }

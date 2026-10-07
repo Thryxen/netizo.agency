@@ -1,31 +1,19 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
-export type ResolvedAppearance = 'light' | 'dark';
-export type Appearance = ResolvedAppearance | 'system';
+export type Appearance = 'light' | 'dark';
 
 export type UseAppearanceReturn = {
     readonly appearance: Appearance;
-    readonly resolvedAppearance: ResolvedAppearance;
     readonly updateAppearance: (mode: Appearance) => void;
+    /** Light ↔ dark, saved for the next visits. */
+    readonly toggleAppearance: () => void;
 };
 
 const STORAGE_KEY = 'appearance';
-const THEME_COLORS: Record<ResolvedAppearance, string> = { light: '#ffffff', dark: '#0a0a0a' };
+const THEME_COLORS: Record<Appearance, string> = { light: '#ffffff', dark: '#0a0a0a' };
 
 const listeners = new Set<() => void>();
-let currentAppearance: Appearance = 'system';
-
-const isAppearance = (value: unknown): value is Appearance => value === 'light' || value === 'dark' || value === 'system';
-
-const mediaQuery = (): MediaQueryList | null => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-        return null;
-    }
-
-    return window.matchMedia('(prefers-color-scheme: dark)');
-};
-
-const prefersDark = (): boolean => mediaQuery()?.matches ?? false;
+let currentAppearance: Appearance = 'light';
 
 const setCookie = (name: string, value: string, days = 365): void => {
     if (typeof document === 'undefined') {
@@ -64,32 +52,27 @@ const writeStorage = (value: Appearance): void => {
     }
 };
 
+/** Dark only when the visitor chose it; anything else (nothing stored, an old "system" value) is light. */
 const getStoredAppearance = (): Appearance => {
     if (typeof window === 'undefined') {
-        return 'system';
+        return 'light';
     }
 
-    const stored = readStorage() ?? readCookie(STORAGE_KEY);
-
-    return isAppearance(stored) ? stored : 'system';
+    return (readCookie(STORAGE_KEY) ?? readStorage()) === 'dark' ? 'dark' : 'light';
 };
-
-const resolveAppearance = (appearance: Appearance): ResolvedAppearance =>
-    appearance === 'dark' || (appearance === 'system' && prefersDark()) ? 'dark' : 'light';
 
 const applyTheme = (appearance: Appearance): void => {
     if (typeof document === 'undefined') {
         return;
     }
 
-    const resolved = resolveAppearance(appearance);
     const root = document.documentElement;
 
-    root.classList.toggle('dark', resolved === 'dark');
-    root.style.colorScheme = resolved;
+    root.classList.toggle('dark', appearance === 'dark');
+    root.style.colorScheme = appearance;
 
     document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
-        meta.content = THEME_COLORS[resolved];
+        meta.content = THEME_COLORS[appearance];
     });
 };
 
@@ -103,15 +86,15 @@ const subscribe = (callback: () => void): (() => void) => {
 
 const notify = (): void => listeners.forEach((listener) => listener());
 
-const handleSystemThemeChange = (): void => {
-    applyTheme(currentAppearance);
-    notify();
+const persist = (appearance: Appearance): void => {
+    writeStorage(appearance);
+    setCookie(STORAGE_KEY, appearance);
 };
 
 let initialized = false;
 
 /**
- * Sync the <html> class with the stored preference and follow OS changes while on "system".
+ * Sync the <html> class and the saved preference (the cookie the server renders from, mirrored in localStorage).
  * Called once from app.tsx; safe to call on the server (no-op).
  */
 export function initializeTheme(): void {
@@ -122,32 +105,30 @@ export function initializeTheme(): void {
     initialized = true;
     currentAppearance = getStoredAppearance();
 
-    if (readStorage() === null) {
-        writeStorage(currentAppearance);
-    }
-
-    if (readCookie(STORAGE_KEY) !== currentAppearance) {
-        setCookie(STORAGE_KEY, currentAppearance);
+    if (readCookie(STORAGE_KEY) !== currentAppearance || readStorage() !== currentAppearance) {
+        persist(currentAppearance);
     }
 
     applyTheme(currentAppearance);
-    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
 export function useAppearance(): UseAppearanceReturn {
     const appearance = useSyncExternalStore<Appearance>(
         subscribe,
         () => currentAppearance,
-        () => 'system',
+        () => 'light',
     );
 
     const updateAppearance = useCallback((mode: Appearance): void => {
         currentAppearance = mode;
-        writeStorage(mode);
-        setCookie(STORAGE_KEY, mode);
+        persist(mode);
         applyTheme(mode);
         notify();
     }, []);
 
-    return { appearance, resolvedAppearance: resolveAppearance(appearance), updateAppearance } as const;
+    const toggleAppearance = useCallback((): void => {
+        updateAppearance(currentAppearance === 'dark' ? 'light' : 'dark');
+    }, [updateAppearance]);
+
+    return { appearance, updateAppearance, toggleAppearance } as const;
 }

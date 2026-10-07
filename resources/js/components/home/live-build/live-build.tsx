@@ -1,6 +1,7 @@
 import { type CSSProperties, type ReactNode, useRef } from 'react';
 import { Rivet } from '@/components/home/section';
 import { cn } from '@/lib/utils';
+import { HeroTiles } from './hero-tiles';
 import { LiveBuildStyles } from './live-build-styles';
 import { ShopWindow } from './shop-window';
 import { CodeEditor, PhoneMock, PipelineChip, PublishedToast, ScoreCard, StepIndicator } from './stage-parts';
@@ -49,6 +50,7 @@ export function LiveBuild({ className }: { className?: string }) {
             <LiveBuildStyles />
             <div ref={rootRef} data-lb-root="" className="@container relative h-full overflow-hidden select-none">
                 <div data-lb-grid="" className="absolute inset-0" />
+                <HeroTiles />
                 <div data-lb-viewport="" className="relative flex h-full items-center justify-center py-[2.5em] lg:py-[1.5em]">
                     <div data-lb-scene="" className="relative h-[62em] w-[60em] shrink-0 sm:w-[72em]">
                         <Layer className="top-[5em] left-0 w-[58em]">

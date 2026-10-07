@@ -1,46 +1,28 @@
-import { Monitor, Moon, Sun } from 'lucide-react';
-import type { ComponentType, SVGProps } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuRadioGroup,
-    DropdownMenuRadioItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { type Appearance, useAppearance } from '@/hooks/use-appearance';
+import { useAppearance } from '@/hooks/use-appearance';
 import { cn } from '@/lib/utils';
 
-const OPTIONS: { value: Appearance; label: string; icon: ComponentType<SVGProps<SVGSVGElement>> }[] = [
-    { value: 'light', label: 'Jasny', icon: Sun },
-    { value: 'dark', label: 'Ciemny', icon: Moon },
-    { value: 'system', label: 'Systemowy', icon: Monitor },
-];
-
-const isAppearance = (value: string): value is Appearance => OPTIONS.some((option) => option.value === value);
-
+/**
+ * One click switches light ↔ dark (saved for the next visits). The icon shows what the click does: a moon on the
+ * light page, a sun on the dark one. Icon and label follow the <html class="dark"> set before paint, so the server
+ * render and hydration always agree.
+ */
 export function ThemeToggle({ className }: { className?: string }) {
-    const { appearance, updateAppearance } = useAppearance();
+    const { toggleAppearance } = useAppearance();
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Zmień motyw" className={cn('relative', className)}>
-                    {/* Icon follows the <html class="dark"> set before paint, so SSR and hydration always agree. */}
-                    <Sun aria-hidden="true" className="dark:hidden" />
-                    <Moon aria-hidden="true" className="hidden dark:block" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-40">
-                <DropdownMenuRadioGroup value={appearance} onValueChange={(value) => isAppearance(value) && updateAppearance(value)}>
-                    {OPTIONS.map(({ value, label, icon: Icon }) => (
-                        <DropdownMenuRadioItem key={value} value={value}>
-                            <Icon aria-hidden="true" />
-                            {label}
-                        </DropdownMenuRadioItem>
-                    ))}
-                </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <Button variant="ghost" size="icon" onClick={toggleAppearance} className={cn('relative overflow-hidden', className)}>
+            <span className="sr-only dark:hidden">Włącz ciemny motyw</span>
+            <span className="sr-only hidden dark:inline">Włącz jasny motyw</span>
+            <Moon
+                aria-hidden="true"
+                className="transition-[rotate,scale,opacity] duration-300 ease-out motion-reduce:transition-none dark:scale-50 dark:-rotate-90 dark:opacity-0"
+            />
+            <Sun
+                aria-hidden="true"
+                className="absolute scale-50 rotate-90 opacity-0 transition-[rotate,scale,opacity] duration-300 ease-out motion-reduce:transition-none dark:scale-100 dark:rotate-0 dark:opacity-100"
+            />
+        </Button>
     );
 }
