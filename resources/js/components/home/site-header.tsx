@@ -132,7 +132,7 @@ export function SiteHeader() {
         <header ref={headerRef} className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/85">
             <Container className="flex h-(--header-height) items-center gap-2">
                 <a href="#" aria-label="Voxbit – strona główna" className={cn('-ml-1 inline-flex min-h-11 shrink-0 items-center rounded-sm p-1 lg:min-h-0', focusRing)}>
-                    <Logo className="h-7" />
+                    <Logo className="h-9" />
                 </a>
 
                 <nav aria-label="Sekcje strony" className="ml-8 hidden lg:block xl:ml-12">
