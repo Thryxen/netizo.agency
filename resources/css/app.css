@@ -361,9 +361,8 @@ html:not(.js) [data-marquee-static] {
     filter: brightness(0.7) saturate(0.95);
 }
 
-/* The scenes' own photos (Misja, FAQ, Newsletter, Kontakt, the client cards) step down a little further than other
-   photos, so a bright wall or window never outshines the type on a near-black page. */
-.dark [data-scene] > img[data-photo],
+/* The scenes' own photos (Misja, FAQ, Newsletter, Kontakt) step down a little further than other photos, so a bright
+   wall or window never outshines the type on a near-black page. */
 .dark [data-scene] [data-pixelate]:has(> img[data-photo]) > :is(img, canvas) {
     filter: brightness(0.8) contrast(1.05);
 }

@@ -8,6 +8,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -38,9 +39,34 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            SecurityHeaders::class,
         ]);
+
+        // Global, so responses produced outside the web group (routing 404/405, CSRF 419, maintenance 503) get the headers too.
+        $middleware->append(SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        /*
+         * Inertia shows any non-Inertia error response as a whole page in a modal over the form. For the homepage forms,
+         * an expired session (419) or a server error (5xx outside debug mode, except maintenance) goes back to the form
+         * with an inline message instead, like the `forms` rate limiter does for 429, so nothing the visitor typed is lost.
+         */
+        $exceptions->respond(function (Response $response, Throwable $exception, Request $request): Response {
+            if (! $request->header('X-Inertia') || $request->isMethod('GET')) {
+                return $response;
+            }
+
+            $status = $response->getStatusCode();
+
+            if ($status === 419) {
+                return back()->withErrors(['form' => 'Formularz wygasł. Wyślij go jeszcze raz.']);
+            }
+
+            if ($status >= 500 && $status !== 503 && ! app()->hasDebugModeEnabled()) {
+                return back()->withErrors([
+                    'form' => 'Nie udało się wysłać formularza. Spróbuj ponownie za chwilę albo napisz na kontakt@voxbit.pl.',
+                ]);
+            }
+
+            return $response;
+        });
     })->create();

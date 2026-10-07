@@ -66,6 +66,18 @@ it('allows every loopback spelling of a local Vite dev server', function () {
         ->toContain('wss://127.0.0.1:5173');
 });
 
+it('sends the security headers on responses produced outside the web group', function (string $method, string $uri, int $status) {
+    $response = $this->call($method, $uri)
+        ->assertStatus($status)
+        ->assertHeader('X-Content-Type-Options', 'nosniff')
+        ->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+
+    expect($response->headers->get('Content-Security-Policy'))->toContain("default-src 'self'");
+})->with([
+    'unknown route (404)' => ['GET', '/this-page-does-not-exist', 404],
+    'wrong method (405)' => ['GET', '/kontakt', 405],
+]);
+
 it('allows only the configured host of a remote Vite dev server', function () {
     writeViteHotFile('https://voxbit.test:5173');
 

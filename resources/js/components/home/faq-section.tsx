@@ -10,7 +10,8 @@ import type { FaqItem } from '@/types/home';
 /**
  * From lg: heading + CTA on the left with the photo scene under them (a client asking, Voxbit answering: what "Napisz
  * do nas" leads to), the questions on the right. The questions span both rows; the scene's row is the flexible one,
- * so opening an answer never moves the scene. Below lg: heading, questions, then the scene in a wide crop.
+ * so opening an answer never moves the scene, and the scene sticks under the header while the questions scroll.
+ * Below lg: heading, questions, then the scene in a wide crop.
  */
 export function FaqSection({ faq }: { faq: FaqItem[] }) {
     const { openContact } = useHomeUi();
@@ -46,7 +47,7 @@ export function FaqSection({ faq }: { faq: FaqItem[] }) {
 
                 <FaqScene
                     sizes="(min-width: 1248px) 331px, (min-width: 1024px) 25vw, calc(100vw - 2rem)"
-                    className="aspect-[4/3] sm:aspect-[16/9] md:aspect-[2/1] lg:col-span-4 lg:col-start-1 lg:row-start-2 lg:aspect-[4/5] lg:self-start"
+                    className="aspect-[4/3] sm:aspect-[16/9] md:aspect-[2/1] lg:sticky lg:top-[calc(var(--header-height)+2.5rem)] lg:col-span-4 lg:col-start-1 lg:row-start-2 lg:aspect-[4/5] lg:self-start"
                 />
             </div>
         </Section>

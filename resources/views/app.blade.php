@@ -70,12 +70,12 @@
         </script>
     @endisset
 
-    <link rel="icon" type="image/png" href="{{ asset('favicon-96x96.png') }}" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}" />
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}" />
+    {{-- Same icons as the client panel: the SVG follows the system light/dark theme; ?v busts old cached icons. --}}
+    <link rel="icon" href="{{ asset('favicon.ico') }}?v=2" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=2" />
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}?v=2" />
     <meta name="apple-mobile-web-app-title" content="Voxbit.pl" />
-    <link rel="manifest" href="{{ asset('site.webmanifest') }}" />
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}?v=2" />
 
     {{-- Geist (latin + latin-ext for Polish) renders the first screen; fetch it with the CSS instead of after it. --}}
     @foreach (rescue(fn () => [

@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
  * and the header (z-40), lifted above the banner while it shows (`--cookie-banner-height`, set by the
  * cookie-consent view); hidden while the dialog is open and refocused when it closes.
  * Desktop only: below lg the header's phone button is the callback trigger, so the FAB would be a
- * duplicate that permanently covers content in the narrow gutter.
+ * duplicate that permanently covers content in the narrow gutter. Below xl it hugs the viewport edge, so it stays
+ * clear of the content column, which runs closer to the edge there.
  */
 export function CallbackFab() {
     const { callbackOpen, openCallback } = useHomeUi();
@@ -18,7 +19,7 @@ export function CallbackFab() {
             aria-label="Zamów rozmowę telefoniczną"
             onClick={(event) => openCallback(event.currentTarget)}
             className={cn(
-                'fixed right-[max(1.25rem,env(safe-area-inset-right))] bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))_+_var(--cookie-banner-height,0px))] z-30 size-[52px] rounded-none p-0 ring-4 ring-background max-lg:hidden',
+                'fixed right-[max(0.5rem,env(safe-area-inset-right))] bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))_+_var(--cookie-banner-height,0px))] z-30 size-[52px] rounded-none p-0 ring-4 ring-background max-lg:hidden xl:right-[max(1.25rem,env(safe-area-inset-right))]',
                 callbackOpen && 'hidden',
             )}
         >

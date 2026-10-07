@@ -70,7 +70,7 @@ class HomeController extends Controller
             ->setImage($imageUrl);
 
         // JSON-LD Structured Data - Organization (SEO::generate() renders the JsonLdMulti instance, not JsonLd)
-        JsonLdMulti::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Voxbit')
+        JsonLdMulti::setTitle('Voxbit')
             ->setDescription('Profesjonalne tworzenie stron internetowych i aplikacji webowych dla firm. Nowoczesny design, szybkość i SEO w standardzie. 150+ projektów, 8 lat doświadczenia.')
             ->setType('ProfessionalService')
             ->setUrl(url('/'))
@@ -80,6 +80,12 @@ class HomeController extends Controller
                 'https://instagram.com/voxbitpl',
                 'https://linkedin.com/company/voxbitpl',
                 'https://github.com/voxbit-pl',
+            ])
+            ->addValue('address', [
+                '@type' => 'PostalAddress',
+                'addressLocality' => 'Leszno',
+                'addressRegion' => 'wielkopolskie',
+                'addressCountry' => 'PL',
             ])
             ->addValue('areaServed', [
                 '@type' => 'Country',
@@ -101,6 +107,7 @@ class HomeController extends Controller
 
     /**
      * Frequently asked questions — the single source for the FAQ section and its JSON-LD.
+     * Ranges keep together: a word joiner (U+2060) after the dash, a no-break space (U+00A0) before the unit.
      *
      * @return list<array{question: string, answer: string}>
      */
@@ -108,28 +115,48 @@ class HomeController extends Controller
     {
         return [
             [
-                'question' => 'Ile kosztuje strona lub aplikacja?',
-                'answer' => 'To zależy od zakresu. Prosta strona to zwykle 1–5 tys. zł, rozbudowana strona lub mały sklep 5–15 tys. zł, aplikacja webowa 15–50 tys. zł, a duże systemy od 50 tys. zł. Dokładną wycenę dostajesz po briefie.',
+                'question' => 'Ile kosztuje strona internetowa lub aplikacja?',
+                'answer' => "Prosta strona kosztuje zwykle 1–\u{2060}5\u{00A0}tys.\u{00A0}zł, rozbudowana strona lub mały sklep 5–\u{2060}15\u{00A0}tys.\u{00A0}zł, aplikacja webowa 15–\u{2060}50\u{00A0}tys.\u{00A0}zł, a duże systemy od 50\u{00A0}tys.\u{00A0}zł. Ostateczna cena zależy od zakresu, a dokładną wycenę dostajesz bezpłatnie po briefie.",
             ],
             [
-                'question' => 'Jak długo trwa realizacja projektu?',
-                'answer' => 'Landing page to 2–3 tygodnie, strona firmowa 4–6 tygodni, aplikacja webowa 2–4 miesiące. Dokładny czas ustalamy po określeniu zakresu. Pracujemy w dwutygodniowych etapach i po każdym pokazujemy postępy.',
+                'question' => 'Ile trwa stworzenie strony lub aplikacji?',
+                'answer' => "Landing page powstaje zwykle w 2–\u{2060}3\u{00A0}tygodnie, strona firmowa w 4–\u{2060}6\u{00A0}tygodni, a aplikacja webowa w 2–\u{2060}4\u{00A0}miesiące. Dokładny termin ustalamy po briefie, gdy znamy zakres prac.",
             ],
             [
-                'question' => 'Czy zapewniacie wsparcie po wdrożeniu?',
-                'answer' => 'Tak. Po starcie zostajemy z Tobą: hosting, aktualizacje bezpieczeństwa, kopie zapasowe i rozwój strony, a poprawki zgłaszasz jako zadania w panelu klienta. Większość klientów zostaje z nami na stałe.',
+                'question' => 'Czy strona będzie widoczna w Google?',
+                'answer' => 'Tak. Każdą stronę budujemy z myślą o wyszukiwarce: szybkie ładowanie, poprawna struktura nagłówków, tytuły i opisy do wyników wyszukiwania, dane strukturalne i mapa witryny. Konkretnej pozycji nikt uczciwie nie zagwarantuje, bo zależy ona też od konkurencji i treści, ale dostajesz solidne podstawy do pozycjonowania, także lokalnego.',
             ],
             [
-                'question' => 'Jakie technologie wykorzystujecie?',
-                'answer' => 'Frontend: React, Next.js, Vue.js, Tailwind CSS. Backend: Node.js, Go, Laravel, Python. Bazy danych: PostgreSQL, MongoDB, Redis. Cloud: AWS, GCP, Vercel. Dobieramy stack do potrzeb projektu.',
+                'question' => 'Czy mogę samodzielnie zmieniać treści na stronie?',
+                'answer' => 'Tak. Jeśli chcesz to robić we własnym zakresie, dodajemy prosty system do zarządzania treścią (CMS): zmienisz w nim teksty, zdjęcia i wpisy, a my pokażemy, jak z niego korzystać. Większe zmiany zgłaszasz nam jako zadanie w panelu klienta.',
+            ],
+            [
+                'question' => 'Czy zaprojektujecie wygląd strony, jeśli nie mam projektu?',
+                'answer' => 'Tak. Mamy w zespole projektantów UI/UX: zaprojektujemy wygląd od zera albo oprzemy się na Twoich szkicach, logo i identyfikacji wizualnej. Zanim zaczniemy programować, dostajesz projekt i klikalny prototyp w Figmie do przejrzenia i akceptacji.',
+            ],
+            [
+                'question' => 'Czy możecie odświeżyć moją obecną stronę, zamiast budować nową?',
+                'answer' => 'Tak. Zaczynamy od przeglądu obecnej strony: co działa, co ją spowalnia i co zniechęca klientów. Potem proponujemy odświeżenie wyglądu i treści albo przebudowę, jeśli stara technologia ogranicza rozwój. Przy przebudowie przekierowujemy stare adresy na nowe, żeby ograniczyć ryzyko spadków w Google.',
+            ],
+            [
+                'question' => 'Czy zajmiecie się domeną, hostingiem i pocztą firmową?',
+                'answer' => 'Tak. Pomagamy wybrać i skonfigurować domenę, hosting i firmową pocztę albo pracujemy na tym, co już masz. Dostępy trzymasz w zaszyfrowanym sejfie w panelu klienta, a zanim minie termin odnowienia domeny lub hostingu, dostajesz tam przypomnienie.',
+            ],
+            [
+                'question' => 'Czy zapewniacie opiekę nad stroną po wdrożeniu?',
+                'answer' => 'Tak. Po publikacji zostajemy z Tobą: dbamy o hosting, aktualizacje bezpieczeństwa, kopie zapasowe, monitoring i dalszy rozwój strony. Poprawki zgłaszasz jako zadania w panelu klienta, a przy stałej współpracy co miesiąc dostajesz rozliczenie z rozpisanymi godzinami.',
             ],
             [
                 'question' => 'Czy mogę zobaczyć postępy w trakcie pracy?',
-                'answer' => 'Tak. Od pierwszego dnia masz dostęp do panelu klienta: widzisz zadania i ich etap, czas pracy, dokumenty i czat z zespołem. Co dwa tygodnie pokazujemy postępy na wersji testowej.',
+                'answer' => 'Tak. Od początku współpracy masz dostęp do panelu klienta: widzisz zadania i etap każdego z nich, czas pracy i dokumenty, a z zespołem piszesz na czacie. Co dwa tygodnie pokazujemy postępy na wersji testowej.',
             ],
             [
-                'question' => 'Czy pomagacie z designem, jeśli go nie mam?',
-                'answer' => 'Tak, mamy w zespole doświadczonych UI/UX designerów. Możemy stworzyć kompletny projekt graficzny od zera lub pracować na Twoich szkicach i wytycznych brandingowych. Design jest zawsze dostarczany w Figmie.',
+                'question' => 'Czy pracujecie tylko z firmami z Leszna?',
+                'answer' => 'Nie. Jesteśmy z Leszna w Wielkopolsce, ale realizujemy projekty dla firm z całej Polski. Większość spraw załatwiamy online: na rozmowach wideo i w panelu klienta. Z firmami z Leszna i okolic chętnie spotkamy się na miejscu.',
+            ],
+            [
+                'question' => 'Jakie technologie wykorzystujecie?',
+                'answer' => 'Technologie dobieramy do potrzeb projektu. Najczęściej pracujemy na takim zestawie: interfejs – React, Next.js, Vue.js i Tailwind CSS; serwer – Node.js, Go, Laravel i Python; bazy danych – PostgreSQL, MongoDB i Redis; chmura – AWS, GCP i Vercel.',
             ],
         ];
     }
