@@ -5,21 +5,18 @@ import { ArtifactFrame, chipClassName, Swap, type TickStatus } from './artifact-
 import { ARTIFACT_MS, type StepState } from './process-data';
 import { useStepClock } from './use-process-relay';
 
-const PIPELINE = ['Build', 'Testy', 'Deploy'] as const;
+const PIPELINE = ['Testy', 'Publikacja', 'Monitoring'] as const;
 
-/** Clock: queued (0), Build, Testy, Deploy run in turn (1–3), the site is live (4), the client panel is on (5). */
+/** Clock: queued (0), Testy, Publikacja, Monitoring run in turn (1–3), the site is live (4), the client panel is on (5). */
 const LIVE = 4;
 const PANEL = 5;
 
-/** Response times of the last hours (relative, 0–100), integers so the path is identical on server and client. */
-const SPARK = [44, 42, 45, 43, 41, 44, 40, 42, 39, 41, 43, 39, 40, 38, 40, 37] as const;
-const SPARK_W = 96;
-const SPARK_H = 24;
-const sparkY = (value: number): number => SPARK_H - 4 - ((value - 34) / 14) * (SPARK_H - 8);
-const SPARK_STEP = SPARK_W / (SPARK.length - 1);
-const SPARK_PATH = SPARK.map((value, index) => `${index === 0 ? 'M' : 'L'}${(index * SPARK_STEP).toFixed(2)} ${sparkY(value).toFixed(2)}`).join('');
-const SPARK_AREA = `${SPARK_PATH}L${SPARK_W} ${SPARK_H}L0 ${SPARK_H}Z`;
-const SPARK_END_Y = sparkY(SPARK[SPARK.length - 1]);
+/** The last 30 days of availability as bits: every day up, one short dip (99,9%, not a perfect 100). */
+const UPTIME_DAYS = Array.from({ length: 30 }, (_, day) => day);
+const DIP_DAY = 17;
+
+/** The bits light up left to right once the site is live (ms between two days). */
+const UPTIME_STAGGER_MS = 16;
 
 function pipeStatus(index: number, step: number): TickStatus {
     if (step >= LIVE || index < step - 1) {
@@ -30,8 +27,8 @@ function pipeStatus(index: number, step: number): TickStatus {
 }
 
 /**
- * Wdrożenie: the release. Build, Testy and Deploy go green in turn, the site is live (availability with its sparkline)
- * and the client panel is switched on. Final frame: all green, live, panel active.
+ * Wdrożenie: the release. Testy, Publikacja and Monitoring go green in turn, the site is live (availability with the
+ * last 30 days as bits) and the client panel is switched on. Final frame: all green, live, panel active.
  */
 export function LaunchArtifact({ state }: { state: StepState }) {
     const step = useStepClock(ARTIFACT_MS.launch, state);
@@ -82,42 +79,35 @@ export function LaunchArtifact({ state }: { state: StepState }) {
                                         </span>
                                     )}
                                     <PipeBox status={status} />
-                                    <span className="text-[12px] leading-4 font-medium">{label}</span>
+                                    <span className="text-[11px] leading-4 font-medium tracking-tight @[14rem]:text-[12px] @[14rem]:tracking-normal">{label}</span>
                                 </li>
                             );
                         })}
                     </ol>
 
-                    <div className="flex items-center justify-between gap-3 border-t pt-3.5">
-                        <span className="whitespace-nowrap">
-                            <span className="text-muted-foreground">Dostępność</span>{' '}
-                            <span data-on={live} className="text-[14px] font-semibold tabular-nums transition-opacity duration-300 data-[on=false]:opacity-30">
-                                99,9%
+                    <div className="flex flex-col gap-2 border-t pt-3">
+                        <span className="flex items-baseline justify-between gap-3 whitespace-nowrap">
+                            <span>
+                                <span className="text-muted-foreground">Dostępność</span>{' '}
+                                <span data-on={live} className="text-[14px] font-semibold tabular-nums transition-opacity duration-300 data-[on=false]:opacity-30">
+                                    99,9%
+                                </span>
                             </span>
+                            <span className="hidden text-[11px] text-muted-foreground @[14rem]:inline">ostatnie 30 dni</span>
                         </span>
-                        <svg viewBox={`0 0 ${SPARK_W} ${SPARK_H}`} aria-hidden="true" className="h-6 w-[4.5rem] shrink-0 overflow-visible @[14rem]:w-24">
-                            <path
-                                d={SPARK_AREA}
-                                data-on={live}
-                                className="fill-foreground/[0.07] transition-opacity delay-300 duration-500 data-[on=false]:opacity-0 data-[on=false]:delay-0"
-                            />
-                            <path
-                                d={SPARK_PATH}
-                                pathLength={1}
-                                data-on={live}
-                                strokeWidth={1.5}
-                                strokeLinejoin="round"
-                                className="fill-none stroke-foreground [stroke-dasharray:1] transition-[stroke-dashoffset] duration-700 ease-expo-out data-[on=false]:[stroke-dashoffset:1]"
-                            />
-                            <rect
-                                x={SPARK_W - 2}
-                                y={SPARK_END_Y - 2}
-                                width={4}
-                                height={4}
-                                data-on={live}
-                                className={cn('fill-foreground transition-opacity delay-500 duration-200 data-[on=false]:opacity-0 data-[on=false]:delay-0', live && 'vx-relay-blink')}
-                            />
-                        </svg>
+                        <span className="grid grid-cols-[repeat(30,minmax(0,1fr))] gap-[2px]">
+                            {UPTIME_DAYS.map((day) => (
+                                <span
+                                    key={day}
+                                    data-on={live}
+                                    style={live ? { transitionDelay: `${day * UPTIME_STAGGER_MS}ms` } : undefined}
+                                    className={cn(
+                                        'aspect-square rounded-[1px] transition-opacity duration-200 data-[on=false]:opacity-15',
+                                        day === DIP_DAY ? 'bg-foreground/25' : 'bg-foreground',
+                                    )}
+                                />
+                            ))}
+                        </span>
                     </div>
                 </div>
 

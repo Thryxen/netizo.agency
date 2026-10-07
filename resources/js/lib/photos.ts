@@ -7,6 +7,11 @@
  * (the hero is the LiveBuild stage). Regenerate it with the photo (sharp: resize(8, h, { fit: 'fill' }).webp({ lossless: true })).
  *
  * `shop-*`: the knitwear shop the hero's LiveBuild stage builds (shop-hero 3:2, the products 1:1).
+ * `backdrop-*`: the sets the live mock-ups float on (spec v7, 3:2, colour at the edges, a calm defocused centre):
+ * the knitwear workshop behind the hero's LiveBuild, the office corner behind the client panel.
+ * `world-*`: the worlds of the clients: TreePro trees, Vetly pets, KrainaMT2 gaming and leasing cars (1:1) on the
+ * Klienci cards; `world-wool` (3:2), the knitwear shop's wool, under the FAQ chat.
+ * `newsletter-reading`: the Newsletter photo (4:5).
  */
 const PHOTOS = {
     'bento-mobile': { width: 1024, height: 1536 },
@@ -17,6 +22,14 @@ const PHOTOS = {
     'shop-sweater': { width: 1024, height: 1024 },
     'shop-scarf': { width: 1024, height: 1024 },
     'shop-hat': { width: 1024, height: 1024 },
+    'backdrop-workshop': { width: 1536, height: 1024 },
+    'backdrop-office': { width: 1536, height: 1024 },
+    'world-wool': { width: 1536, height: 1024 },
+    'world-trees': { width: 1024, height: 1024 },
+    'world-pets': { width: 1024, height: 1024 },
+    'world-gaming': { width: 1024, height: 1024 },
+    'world-cars': { width: 1024, height: 1024 },
+    'newsletter-reading': { width: 1024, height: 1280 },
 } as const satisfies Record<string, { width: number; height: number; lqip?: string }>;
 
 export type PhotoName = keyof typeof PHOTOS;

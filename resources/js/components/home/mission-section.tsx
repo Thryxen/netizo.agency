@@ -1,7 +1,6 @@
 import { Pixel } from '@/components/home/pixel';
+import { MissionScene } from '@/components/home/scenes/mission-scene';
 import { Section, SectionHeading } from '@/components/home/section';
-import { PixelatedImage } from '@/components/motion';
-import { photo } from '@/lib/photos';
 
 export function MissionSection() {
     return (
@@ -23,12 +22,7 @@ export function MissionSection() {
                     </SectionHeading>
                 </div>
 
-                <PixelatedImage
-                    {...photo('mission-workshop')}
-                    sizes="(min-width: 1248px) 625px, (min-width: 1024px) 50vw, calc(100vw - 3rem)"
-                    alt=""
-                    className="aspect-[3/2] border lg:col-span-7"
-                />
+                <MissionScene className="aspect-[3/2] lg:col-span-7" />
             </div>
         </Section>
     );

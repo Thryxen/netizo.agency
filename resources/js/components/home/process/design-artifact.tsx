@@ -164,33 +164,39 @@ export function DesignArtifact({ state }: { state: StepState }) {
     );
 }
 
-/** The client's comment, pinned under the photo's corner: a question, then resolved. */
+/**
+ * The client's comment, pinned under the photo's corner: the question, then once resolved it collapses to a tick
+ * beside the avatar (the text folds away to zero width), so the final frame shows the grown photo, not the bubble.
+ */
 function Comment({ show, resolved }: { show: boolean; resolved: boolean }) {
     return (
         <span
             data-show={show}
             className="absolute top-[6.375rem] right-2 z-10 flex items-center gap-1.5 transition-[opacity,translate,scale] duration-300 ease-expo-out data-[show=false]:translate-y-1 data-[show=false]:scale-95 data-[show=false]:opacity-0"
         >
-            <span className="rounded-md border bg-background px-2 py-1 text-[11px] leading-none font-medium whitespace-nowrap shadow-[0_0.1rem_0.4rem_rgb(0_0_0/0.08)] dark:bg-[oklch(0.22_0_0)] dark:shadow-none">
-                <Swap
-                    current={resolved ? 'resolved' : 'question'}
-                    items={[
-                        { key: 'question', node: <span className="py-px">Większe zdjęcie?</span> },
-                        {
-                            key: 'resolved',
-                            node: (
-                                <span className="flex items-center gap-1 py-px">
-                                    <Check aria-hidden="true" className="size-3" strokeWidth={2.75} />
-                                    Rozwiązane
-                                </span>
-                            ),
-                        },
-                    ]}
-                />
+            <span className="flex items-center rounded-md border bg-background px-1.5 py-1 text-[11px] leading-none font-medium whitespace-nowrap shadow-[0_0.1rem_0.4rem_rgb(0_0_0/0.08)] dark:bg-[oklch(0.22_0_0)] dark:shadow-none">
+                <Fold open={!resolved}>
+                    <span className="block px-0.5 py-px">Większe zdjęcie?</span>
+                </Fold>
+                <Fold open={resolved}>
+                    <Check aria-hidden="true" className="size-3" strokeWidth={2.75} />
+                </Fold>
             </span>
             <span className="flex size-[1.125rem] shrink-0 items-center justify-center rounded-[4px] rounded-bl-none bg-foreground text-[8px] font-semibold text-background">
                 TF
             </span>
+        </span>
+    );
+}
+
+/** Content that folds to zero width (and fades) when closed, so the bubble around it is always as wide as what shows. */
+function Fold({ open, children }: { open: boolean; children: ReactNode }) {
+    return (
+        <span
+            data-open={open}
+            className="grid grid-cols-[1fr] transition-[grid-template-columns,opacity] duration-300 ease-expo-out data-[open=false]:grid-cols-[0fr] data-[open=false]:opacity-0"
+        >
+            <span className="flex min-w-0 items-center overflow-hidden">{children}</span>
         </span>
     );
 }

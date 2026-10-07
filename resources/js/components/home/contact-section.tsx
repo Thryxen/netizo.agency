@@ -3,11 +3,10 @@ import { BriefWizard } from '@/components/home/brief/brief-wizard';
 import { type ContactTab, isContactTab, useHomeUi } from '@/components/home/home-ui-context';
 import { Pixel } from '@/components/home/pixel';
 import { QuickContactForm } from '@/components/home/quick-contact-form';
+import { ContactScene } from '@/components/home/scenes/contact-scene';
 import { bleedClassName, gutterClassName, Rivet, Section, SectionHeading } from '@/components/home/section';
-import { PixelatedImage } from '@/components/motion';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { photo } from '@/lib/photos';
 import { contact } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
@@ -83,7 +82,7 @@ export function ContactSection() {
                     >
                         {/* Phones skip the photo so the phone and e-mail alternative follows the form directly. */}
                         <div className="hidden bg-background sm:block">
-                            <PixelatedImage {...photo('contact-desk')} sizes="(min-width: 1024px) 400px, 50vw" alt="" className="aspect-square" />
+                            <ContactScene className="aspect-square" />
                         </div>
 
                         <div className="flex flex-col gap-6 bg-background px-4 py-10 sm:p-6 lg:p-8">

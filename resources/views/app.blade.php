@@ -25,10 +25,21 @@
     <meta name="theme-color" content="{{ ($appearance ?? 'light') === 'dark' ? '#0a0a0a' : '#ffffff' }}">
     <meta name="author" content="Voxbit">
 
-    {{-- Light by default; dark only when the visitor switched to it (cookie). Set before first paint (no flash). --}}
+    {{-- Light by default; dark only when the visitor switched to it (cookie, or its localStorage copy when the cookie
+         is gone). Set before first paint (no flash). --}}
     <script>
         (function () {
             var dark = @json(($appearance ?? 'light') === 'dark');
+            if (!@json($appearanceFromCookie ?? false)) {
+                try {
+                    dark = window.localStorage.getItem('appearance') === 'dark';
+                } catch (e) {}
+                if (dark) {
+                    document.querySelectorAll('meta[name="theme-color"]').forEach(function (meta) {
+                        meta.content = '#0a0a0a';
+                    });
+                }
+            }
             document.documentElement.classList.toggle('dark', dark);
             document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
         })();

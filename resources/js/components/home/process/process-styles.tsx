@@ -6,14 +6,14 @@
  * the static frame is the finished row: rail full, markers filled, artifacts at their final frame.
  *
  * - Rail: each step owns one segment (md+: along its cell's top edge; below md: down the left rail to the next step).
- *   It grows over the step's time (`--relay-ms`) while the step holds the baton; a rewind fades it out, then it snaps
- *   back to empty unseen.
+ *   It grows over the step's time (`--relay-ms`) while the step holds the baton; a reset (out of view) snaps it back to
+ *   empty unseen.
  * - Marker: outlined until reached, filled from then on; it pulses while its step is active.
- * - Artifact: dimmed until reached, outlined a step darker while it plays.
+ * - Artifact: slightly dimmed until reached (it reads as next, not missing), outlined a step darker while it plays.
  * - `data-relay-instant`: a quiet reset (all transitions off for two frames). `data-relay-live`: CSS loops may run.
  */
 const PROCESS_CSS = `
-@keyframes vx-relay-blink { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+@keyframes vx-relay-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 @keyframes vx-relay-pulse { 50% { opacity: 0.35; } }
 
 [data-relay-fill] {
@@ -45,7 +45,7 @@ const PROCESS_CSS = `
 [data-step-state='active'] [data-relay-number], [data-step-state='done'] [data-relay-number] { color: var(--foreground); }
 
 [data-artifact] { transition: opacity 450ms linear, border-color 400ms linear; }
-[data-step-state='pending'] [data-artifact] { opacity: 0.42; }
+[data-step-state='pending'] [data-artifact] { opacity: 0.7; }
 [data-step-state='active'] [data-artifact] { border-color: color-mix(in oklab, var(--foreground) 32%, transparent); }
 
 .vx-relay-blink { animation: vx-relay-blink 1.2s ease-in-out infinite; }

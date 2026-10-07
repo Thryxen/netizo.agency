@@ -20,19 +20,14 @@ const LIVE_BUILD_CSS = `
     [data-lb-viewport] { font-size: min(calc(100cqw / 74), 11px); }
 }
 @media (width >= 64rem) {
-    [data-lb-viewport] { font-size: max(6px, min(calc(100cqw / 74), calc((100svh - var(--header-height) - 11.5rem) / 62))); }
+    /* Desktop: the scene leaves a margin of the workshop photo on every side, so its colour frames the build. */
+    [data-lb-viewport] { font-size: max(6px, min(calc(100cqw / 82), calc((100svh - var(--header-height) - 11.5rem) / 68))); }
 }
 
 [data-lb-scene] { transform-style: preserve-3d; }
 /* Depth planes: pushed toward the viewer by --lb-z (em, unitless), scaled back so they keep their designed size; the
    tilt then shifts each plane in proportion to its depth (parallax). */
 [data-lb-depth] { transform: translateZ(calc(var(--lb-z, 0) * 1em)) scale(calc(1 - var(--lb-z, 0) / 160)); }
-
-[data-lb-grid] {
-    background-image: conic-gradient(at 1px 1px, transparent 75%, color-mix(in oklab, var(--foreground) 16%, transparent) 0);
-    background-size: 1.5rem 1.5rem;
-    background-position: 0.75rem 0.75rem;
-}
 
 [data-lb-cover] { transform: translateX(101%); }
 [data-lb-marquee] { transform: scale(0); }
@@ -51,6 +46,8 @@ const LIVE_BUILD_CSS = `
 
 @media screen and (prefers-reduced-motion: no-preference) {
     [data-lb-live] [data-lb-step][data-state='live'] > [data-lb-marker] { animation: lb-pulse 1.1s ease-in-out infinite; }
+    /* Offscreen or in a hidden tab the clock stops; the pulse pauses with it (keeping its phase). */
+    [data-lb-live]:not([data-lb-running]) [data-lb-step] > [data-lb-marker] { animation-play-state: paused; }
 
     .js [data-lb-root]:not([data-lb-live]) [data-lb-in] { opacity: 0; }
     .js [data-lb-root]:not([data-lb-live]) [data-lb-fill] { transform: scaleX(0); }

@@ -108,16 +108,16 @@ class HomeController extends Controller
     {
         return [
             [
-                'question' => 'Ile kosztuje stworzenie aplikacji webowej?',
-                'answer' => 'Koszt zależy od złożoności projektu. Proste strony zaczynają się od 1–5k PLN, rozbudowane strony i małe sklepy od 5–15k PLN, aplikacje webowe od 15–50k PLN, a systemy enterprise od 50k PLN wzwyż. Każdy projekt wyceniamy indywidualnie po analizie wymagań.',
+                'question' => 'Ile kosztuje strona lub aplikacja?',
+                'answer' => 'To zależy od zakresu. Prosta strona to zwykle 1–5 tys. zł, rozbudowana strona lub mały sklep 5–15 tys. zł, aplikacja webowa 15–50 tys. zł, a duże systemy od 50 tys. zł. Dokładną wycenę dostajesz po briefie.',
             ],
             [
                 'question' => 'Jak długo trwa realizacja projektu?',
-                'answer' => 'Landing page to 2–3 tygodnie, strona firmowa 4–6 tygodni, aplikacja webowa 2–4 miesiące. Dokładny czas ustalamy po określeniu zakresu. Pracujemy w metodologii Agile z regularnymi dostawami.',
+                'answer' => 'Landing page to 2–3 tygodnie, strona firmowa 4–6 tygodni, aplikacja webowa 2–4 miesiące. Dokładny czas ustalamy po określeniu zakresu. Pracujemy w dwutygodniowych etapach i po każdym pokazujemy postępy.',
             ],
             [
                 'question' => 'Czy zapewniacie wsparcie po wdrożeniu?',
-                'answer' => 'Tak, oferujemy pakiety wsparcia SLA z gwarantowanym czasem reakcji. Zajmujemy się hostingiem, aktualizacjami bezpieczeństwa, backupami i rozwojem funkcjonalności. Większość klientów zostaje z nami na stałe.',
+                'answer' => 'Tak. Po starcie zostajemy z Tobą: hosting, aktualizacje bezpieczeństwa, kopie zapasowe i rozwój strony, a poprawki zgłaszasz jako zadania w panelu klienta. Większość klientów zostaje z nami na stałe.',
             ],
             [
                 'question' => 'Jakie technologie wykorzystujecie?',
@@ -125,7 +125,7 @@ class HomeController extends Controller
             ],
             [
                 'question' => 'Czy mogę zobaczyć postępy w trakcie pracy?',
-                'answer' => 'Oczywiście! Pracujemy transparentnie – masz dostęp do repozytorium kodu, środowiska staging i regularnych demo co 1–2 tygodnie. Używamy Slack/Discord do bieżącej komunikacji i Linear do śledzenia zadań.',
+                'answer' => 'Tak. Od pierwszego dnia masz dostęp do panelu klienta: widzisz zadania i ich etap, czas pracy, dokumenty i czat z zespołem. Co dwa tygodnie pokazujemy postępy na wersji testowej.',
             ],
             [
                 'question' => 'Czy pomagacie z designem, jeśli go nie mam?',

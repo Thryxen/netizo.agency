@@ -93,9 +93,22 @@ const persist = (appearance: Appearance): void => {
 
 let initialized = false;
 
+/** Another tab switched the theme: follow it (the cookie is shared, so the next load agrees too). */
+const onStorage = (event: StorageEvent): void => {
+    if (event.key !== STORAGE_KEY) {
+        return;
+    }
+
+    currentAppearance = event.newValue === 'dark' ? 'dark' : 'light';
+    applyTheme(currentAppearance);
+    notify();
+};
+
 /**
  * Sync the <html> class and the saved preference (the cookie the server renders from, mirrored in localStorage).
- * Called once from app.tsx; safe to call on the server (no-op).
+ * Nothing is written for a visitor who never chose (light is the default); a saved choice is repaired when its two
+ * copies disagree (e.g. the cookie expired but localStorage kept "dark", or an old "system" value). Follows theme
+ * switches made in other tabs. Called once from app.tsx; safe to call on the server (no-op).
  */
 export function initializeTheme(): void {
     if (typeof window === 'undefined' || initialized) {
@@ -105,11 +118,16 @@ export function initializeTheme(): void {
     initialized = true;
     currentAppearance = getStoredAppearance();
 
-    if (readCookie(STORAGE_KEY) !== currentAppearance || readStorage() !== currentAppearance) {
+    const cookie = readCookie(STORAGE_KEY);
+    const stored = readStorage();
+    const chosen = cookie !== null || stored !== null;
+
+    if (chosen && (cookie !== currentAppearance || stored !== currentAppearance)) {
         persist(currentAppearance);
     }
 
     applyTheme(currentAppearance);
+    window.addEventListener('storage', onStorage);
 }
 
 export function useAppearance(): UseAppearanceReturn {

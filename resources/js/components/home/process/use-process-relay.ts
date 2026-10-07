@@ -1,7 +1,7 @@
 import { type RefObject, useEffect, useState, useSyncExternalStore } from 'react';
 import { useCanAnimate } from '@/components/motion/motion-env';
 import { useInViewLoop } from '@/components/motion/use-in-view-loop';
-import { HOLD_MS, REWIND_MS, STEP_MS, type StepState } from './process-data';
+import { STEP_MS, type StepState } from './process-data';
 
 const STEP_COUNT = STEP_MS.length;
 const ALL_DONE: StepState[] = Array.from({ length: STEP_COUNT }, () => 'done');
@@ -9,8 +9,7 @@ const ALL_PENDING: StepState[] = Array.from({ length: STEP_COUNT }, () => 'pendi
 
 /** Relay cursor: a step index while that step holds the baton, or one of these. */
 const FINISHED = STEP_COUNT;
-const REWIND = -1;
-const RESET = -2;
+const RESET = -1;
 
 /** md+: the steps sit side by side (a row of four, or 2 × 2) and run as one relay. Below: a list, step by step. */
 const ROW_QUERY = '(min-width: 48rem)';
@@ -64,9 +63,10 @@ export type ProcessRelay = {
  *
  * - md+ (row of four, 2 × 2): when the row comes into view (first pixel + 100 px, useInViewLoop) step 1 takes the baton
  *   at once; each step holds it for STEP_MS while its artifact plays and the rail runs to the next marker. After step 4
- *   the row holds, rewinds softly and runs again while in view. Leaving the view resets it quietly, so it starts fresh
- *   (and nothing runs offscreen).
- * - Below md (a vertical list): each step plays when its own artifact comes into view and resets once it is out of view.
+ *   the row stays finished (it plays once per entry). Leaving the view resets it quietly, so it plays again on the next
+ *   entry (and nothing runs offscreen).
+ * - Below md (a vertical list): each step plays when its own artifact comes into view (after the step before it, if
+ *   that one is still playing) and resets once it is out of view.
  */
 export function useProcessRelay(): ProcessRelay {
     const canAnimate = useCanAnimate();
@@ -137,9 +137,11 @@ export function useProcessRelay(): ProcessRelay {
             return;
         }
 
-        const delay = cursor === FINISHED ? HOLD_MS : cursor === REWIND ? REWIND_MS : STEP_MS[cursor];
-        const next = cursor === FINISHED ? REWIND : cursor === REWIND ? 0 : cursor + 1;
-        const timer = window.setTimeout(() => setCursor(next), delay);
+        if (cursor === FINISHED) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => setCursor(cursor + 1), STEP_MS[cursor]);
 
         return () => window.clearTimeout(timer);
     }, [prepared, rowLayout, row.active, cursor, instant]);

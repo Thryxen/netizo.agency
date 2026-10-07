@@ -71,7 +71,7 @@ export function Hero() {
                 <div className="grid lg:min-h-[min(calc(100svh-var(--header-height)-8.5rem),56rem)] lg:grid-cols-12">
                     {/* From lg the column is a size container: the heading scales with the column's width (the widest line,
                         "dla ambitnych", is ~6.23 em), so its four lines never re-wrap on wide or tall screens. */}
-                    <div className="max-w-2xl pt-14 pb-12 sm:pt-16 lg:col-span-5 lg:flex lg:max-w-none lg:flex-col lg:justify-center lg:py-14 lg:pr-8 lg:[container-type:inline-size] xl:pr-10 [@media(min-width:1024px)_and_(max-height:820px)]:py-10">
+                    <div className="max-w-2xl pt-8 pb-12 sm:pt-16 lg:col-span-5 lg:flex lg:max-w-none lg:flex-col lg:justify-center lg:py-14 lg:pr-8 lg:[container-type:inline-size] xl:pr-10 [@media(min-width:1024px)_and_(max-height:820px)]:py-10">
                         <SplitLines
                             id="hero-heading"
                             lines={HEADING_LINES}
@@ -90,7 +90,9 @@ export function Hero() {
                                 <a href="#projekty">Zobacz realizacje</a>
                             </Button>
                         </div>
-                        <p data-hero-rise="" style={riseDelay(2)} className="mt-6 text-sm text-muted-foreground">
+                        {/* Phones: left out, so more of the stage (and its photo) makes the first screen; it is quoted again
+                            in the FAQ and on the contact form. */}
+                        <p data-hero-rise="" style={riseDelay(2)} className="mt-6 hidden text-sm text-muted-foreground sm:block">
                             Odpowiadamy w ciągu 24 godzin.
                         </p>
                     </div>

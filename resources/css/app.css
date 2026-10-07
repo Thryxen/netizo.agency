@@ -335,6 +335,54 @@ html:not(.js) [data-marquee-static] {
     display: block;
 }
 
+/*
+ * Photo scenes (components/home/scenes): the backdrops behind the hero and panel mock-ups drift very slowly (paused
+ * offscreen via data-paused), typing dots blink only while their scene is live; dark mode dims the backdrops so the
+ * floating UI keeps its contrast. Reduced motion: no drift, no blink (static final frames).
+ */
+@keyframes scene-drift {
+    to {
+        transform: scale(1.04) translate3d(-0.6%, -0.5%, 0);
+    }
+}
+
+@keyframes scene-blink {
+    0%,
+    100% {
+        opacity: 0.25;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.dark [data-scene-backdrop] > img {
+    filter: brightness(0.7) saturate(0.95);
+}
+
+/* The scenes' own photos (Misja, FAQ, Newsletter, Kontakt, the client cards) step down a little further than other
+   photos, so a bright wall or window never outshines the type on a near-black page. */
+.dark [data-scene] > img[data-photo],
+.dark [data-scene] [data-pixelate]:has(> img[data-photo]) > :is(img, canvas) {
+    filter: brightness(0.8) contrast(1.05);
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+    [data-scene-backdrop] > img {
+        animation: scene-drift 22s ease-in-out infinite alternate;
+        transform-origin: 50% 50%;
+    }
+
+    [data-scene-backdrop][data-paused] > img {
+        animation-play-state: paused;
+    }
+
+    [data-scene-live] [data-scene-blink] {
+        animation: scene-blink 1.2s ease-in-out var(--scene-delay, 0s) infinite;
+    }
+}
+
 /* Spotlight (bento tiles): monochrome radial wash following the mouse, over the whole tile (text, UI and photos). */
 [data-spotlight-layer] {
     --spotlight-strength: 4%;

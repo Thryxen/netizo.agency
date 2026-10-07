@@ -127,7 +127,7 @@ it('renders the FAQ JSON-LD and SEO tags in the root view', function () {
     $response
         ->assertSee('<script type="application/ld+json">', false)
         ->assertSee('"@type":"FAQPage"', false)
-        ->assertSee('"name":"Ile kosztuje stworzenie aplikacji webowej?"', false)
+        ->assertSee('"name":"Ile kosztuje strona lub aplikacja?"', false)
         ->assertSee('<title>Tworzymy Strony WWW dla Ambitnych Firm | Voxbit</title>', false)
         ->assertSee('<script data-page="app" type="application/json">', false)
         ->assertSee('<div id="app"', false)
@@ -181,6 +181,34 @@ it('uses a single light theme color for the light appearance', function () {
         ->assertSee('<meta name="theme-color" content="#ffffff">', false)
         ->assertDontSee('prefers-color-scheme', false);
 });
+
+it('re-issues a valid appearance cookie from the server', function () {
+    $response = $this->withUnencryptedCookie('appearance', 'dark')->get('/')->assertOk();
+
+    $cookie = collect($response->headers->getCookies())->first(fn ($cookie): bool => $cookie->getName() === 'appearance');
+
+    expect($cookie)->not->toBeNull()
+        ->and($cookie->getValue())->toBe('dark')
+        ->and($cookie->isHttpOnly())->toBeFalse()
+        ->and($cookie->getPath())->toBe('/')
+        ->and($cookie->getSameSite())->toBe('lax')
+        ->and($cookie->getExpiresTime())->toBeGreaterThan(now()->addDays(364)->getTimestamp());
+
+    $response->assertSee('if (!true) {', false);
+});
+
+it('sets no appearance cookie for a visitor who never chose one', function (?string $cookie) {
+    $request = $cookie === null ? $this : $this->withUnencryptedCookie('appearance', $cookie);
+
+    $response = $request->get('/')->assertOk();
+
+    expect(collect($response->headers->getCookies())->map->getName())->not->toContain('appearance');
+
+    $response->assertSee('if (!false) {', false);
+})->with([
+    'no cookie' => [null],
+    'legacy system value' => ['system'],
+]);
 
 it('is light by default, whatever the operating system prefers', function (?string $cookie) {
     $request = $cookie === null ? $this : $this->withUnencryptedCookie('appearance', $cookie);

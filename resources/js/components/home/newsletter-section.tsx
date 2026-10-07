@@ -2,13 +2,14 @@ import { useForm } from '@inertiajs/react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { FieldError, fieldError, FormErrorAlert, formLevelError, invalidProps, SubmitButton } from '@/components/home/brief/fields';
 import { Pixel } from '@/components/home/pixel';
+import { NewsletterScene } from '@/components/home/scenes/newsletter-scene';
 import { bleedClassName, gutterClassName, Section, SectionHeading } from '@/components/home/section';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { endpoints } from '@/lib/endpoints';
 import { cn } from '@/lib/utils';
 
-const perks = ['Trendy technologiczne', 'Case studies projektów', 'Porady dla startupów'];
+const perks = ['Trendy technologiczne', 'Case studies projektów', 'Praktyczne porady dla firm'];
 
 function NewsletterForm() {
     const form = useForm<{ email: string }>(() => ({ email: '' }));
@@ -109,8 +110,9 @@ function NewsletterForm() {
 }
 
 /**
- * A bleed split band: heading + perks on the left, the form on the right, sharing one vertical hairline.
- * The section's own top hairline and the next section's hairline are the band's edges (no container padding).
+ * A bleed split band: heading + perks on the left; on the right the photo scene (an issue arriving on a phone) over
+ * the form, all sharing hairlines. Below lg: heading, a wide crop of the scene, the form. The section's own top
+ * hairline and the next section's hairline are the band's edges (no container padding).
  */
 export function NewsletterSection() {
     return (
@@ -120,7 +122,7 @@ export function NewsletterSection() {
                     id="newsletter-heading"
                     title="Newsletter raz w miesiącu"
                     lead="Przegląd najważniejszych trendów, case studies i praktyczne porady dla firm."
-                    className={cn('mb-0 bg-background pt-20 pb-12 md:mb-0 md:pt-28 md:pb-16 lg:col-span-7 lg:pb-28', gutterClassName)}
+                    className={cn('mb-0 bg-background pt-20 pb-12 md:mb-0 md:pt-28 md:pb-16 lg:col-span-6 lg:row-span-2 lg:pb-28 xl:col-span-7', gutterClassName)}
                 >
                     <ul className="mt-8 grid gap-3" aria-label="Co znajdziesz w newsletterze">
                         {perks.map((perk) => (
@@ -132,7 +134,9 @@ export function NewsletterSection() {
                     </ul>
                 </SectionHeading>
 
-                <div className={cn('flex flex-col justify-center bg-background py-12 md:py-16 lg:col-span-5', gutterClassName)}>
+                <NewsletterScene className="aspect-[16/9] sm:aspect-[21/9] lg:col-span-6 lg:aspect-auto lg:min-h-64 xl:col-span-5" />
+
+                <div className={cn('flex flex-col justify-center bg-background py-12 md:py-14 lg:col-span-6 lg:py-12 xl:col-span-5', gutterClassName)}>
                     <NewsletterForm />
                 </div>
             </div>

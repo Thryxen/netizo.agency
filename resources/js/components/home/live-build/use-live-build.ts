@@ -421,6 +421,9 @@ export function useLiveBuild(rootRef: RefObject<HTMLElement | null>): void {
         const update = (): void => {
             const run = inView && document.visibilityState === 'visible';
 
+            // CSS loops on the stage (the current step's pulse) run only while the clock does.
+            root.toggleAttribute('data-lb-running', run);
+
             if (run && frame === 0) {
                 last = null;
                 frame = window.requestAnimationFrame(tick);
@@ -448,6 +451,7 @@ export function useLiveBuild(rootRef: RefObject<HTMLElement | null>): void {
             tilt?.destroy();
             stage.reset();
             root.removeAttribute('data-lb-live');
+            root.removeAttribute('data-lb-running');
         };
     }, [rootRef, reduced, canAnimate]);
 }

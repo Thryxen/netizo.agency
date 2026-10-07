@@ -8,7 +8,8 @@
  *   - below 32.5rem (phones): no sidebar, three board columns (Pilne hidden), the stage is 38 em wide;
  *   - 32.5–41.25rem (tablets, lg's narrow stage): an icon rail, four columns, 56 em;
  *   - from 41.25rem: the full sidebar, four columns, 62 em.
- * The unit is capped at 11px; wider stages widen the window (the board's columns are fluid).
+ * The unit is capped at 11px; wider stages widen the window (the board's columns are fluid). The side padding leaves
+ * a band of the photo set (backdrop-office) visible around the window.
  *
  * States: the markup is always one frame of the loop. Without `data-panel-live` (SSR, no JS, offscreen, reduced
  * motion) it shows its final state without animations; reduced motion switches every animation and transition off.
@@ -30,21 +31,15 @@ const PANEL_CSS = `
         --panel-col-shift: 0;
         --panel-toast-x: -1.2em;
         font-size: min(11px, calc(100cqw / 56));
-        padding: 3em 1.6em 2em;
+        padding: 3.2em 2.6em 2.2em;
     }
 }
 @container panel (width >= 41.25rem) {
     [data-panel-viewport] {
         --panel-toast-x: -1.4em;
         font-size: min(11px, calc(100cqw / 62));
-        padding: 3em 2.2em 2.2em;
+        padding: 3.6em 4.4em 2.6em;
     }
-}
-
-[data-panel-grid] {
-    background-image: conic-gradient(at 1px 1px, transparent 75%, color-mix(in oklab, var(--foreground) 16%, transparent) 0);
-    background-size: 1.5rem 1.5rem;
-    background-position: 0.75rem 0.75rem;
 }
 
 [data-panel-columns] { grid-template-columns: repeat(var(--panel-cols), minmax(0, 1fr)); column-gap: var(--panel-gap); }

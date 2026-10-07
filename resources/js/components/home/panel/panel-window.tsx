@@ -1,4 +1,4 @@
-import { Bell, ChevronsUpDown, Lock, MessagesSquare, PanelLeft } from 'lucide-react';
+import { Bell, ChevronsUpDown, Lock, MessagesSquare } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
 import { clientPanelUrl } from '@/lib/site';
 import { cn } from '@/lib/utils';
@@ -58,7 +58,11 @@ export function PanelWindow({ mode, notify, children }: PanelWindowProps) {
 
                 <div className="flex min-w-0 flex-1 flex-col">
                     <div className="flex h-[3.3em] items-center gap-[0.9em] border-b px-[1.4em]">
-                        <PanelLeft aria-hidden="true" className="size-[1.15em] shrink-0 text-muted-foreground @min-[32.5rem]/panel:hidden" strokeWidth={1.75} />
+                        {/* Phones (no sidebar): the panel's mark and name stand in for it, so the mock still reads as the panel. */}
+                        <span className="flex shrink-0 items-center gap-[0.6em] @min-[32.5rem]/panel:hidden">
+                            <PanelMark className="size-[1.6em]" />
+                            <span className="text-[1.02em] font-medium whitespace-nowrap">Panel klienta</span>
+                        </span>
                         <span className="h-[1.2em] w-px shrink-0 bg-border @min-[32.5rem]/panel:hidden" />
                         <span className="flex min-w-0 items-center gap-[0.5em] text-[1.02em]">
                             <span className="truncate text-muted-foreground">Twoja firma</span>
@@ -96,7 +100,7 @@ export function PanelWindow({ mode, notify, children }: PanelWindowProps) {
     );
 }
 
-/** Full sidebar from 41.25rem of stage, an icon rail from 32.5rem, none on phones (the top bar's toggle stands in). */
+/** Full sidebar from 41.25rem of stage, an icon rail from 32.5rem, none on phones (the top bar's mark stands in). */
 function Sidebar({ activeIndex }: { activeIndex: number }) {
     return (
         <div

@@ -1,5 +1,6 @@
 import { Download, type LucideIcon, MessageSquare, ReceiptText } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { SceneBackdrop, STAGE_SIZES, WINDOW_SHADOW } from '@/components/home/scenes/scene-parts';
 import { useInViewLoop } from '@/components/motion/use-in-view-loop';
 import { cn } from '@/lib/utils';
 import { BoardScene } from './board-scene';
@@ -14,8 +15,9 @@ const FLOAT_SURFACE =
     'border bg-background shadow-[0_0.1em_0.25em_rgb(0_0_0/0.05),0_1.4em_2.6em_-1em_rgb(0_0_0/0.2)] dark:bg-[oklch(0.205_0_0)] dark:shadow-none';
 
 /**
- * The live mock of the client panel: the window on a dot-grid canvas, the active mode's page looping while it is in
- * view (Tablica or Czas pracy), its notification floating over the window's edge, and the "Dane przykładowe." caption.
+ * The live mock of the client panel: the window floating on a photo of a bright office corner (spec v7, like the
+ * hero's build on its workshop), the active mode's page looping while it is in view (Tablica or Czas pracy), its
+ * notification floating over the window's edge, and the "Dane przykładowe." caption on a solid label.
  * Switching modes crossfades the page (≤ 300 ms) and slides the sidebar's highlight; the newly shown page starts
  * its loop from the top. Static (SSR, no JS, offscreen before first view, reduced motion): the finished frame.
  */
@@ -30,20 +32,22 @@ export function PanelStage({ mode, className }: { mode: PanelMode; className?: s
     return (
         <figure ref={ref} data-panel-stage="" data-panel-live={live ? '' : undefined} className={cn('@container/panel relative overflow-hidden select-none', className)}>
             <PanelStyles />
-            <div aria-hidden="true" data-panel-grid="" className="absolute inset-0" />
+            <SceneBackdrop name="backdrop-office" sizes={STAGE_SIZES} imgClassName="object-[50%_40%]" />
 
             <div data-panel-viewport="" className="relative flex h-full flex-col justify-center">
                 <div role="img" aria-label={label} className="relative">
-                    <PanelWindow mode={mode} notify={boardToast || timeToast}>
-                        <div className="grid h-full">
-                            <Scene show={mode === 'project'}>
-                                <BoardScene step={boardStep} />
-                            </Scene>
-                            <Scene show={mode === 'retainer'}>
-                                <TimeScene step={timeStep} live={live && mode === 'retainer'} />
-                            </Scene>
-                        </div>
-                    </PanelWindow>
+                    <div className={WINDOW_SHADOW}>
+                        <PanelWindow mode={mode} notify={boardToast || timeToast}>
+                            <div className="grid h-full">
+                                <Scene show={mode === 'project'}>
+                                    <BoardScene step={boardStep} />
+                                </Scene>
+                                <Scene show={mode === 'retainer'}>
+                                    <TimeScene step={timeStep} live={live && mode === 'retainer'} />
+                                </Scene>
+                            </div>
+                        </PanelWindow>
+                    </div>
 
                     <PanelToast show={boardToast} icon={MessageSquare} title={BOARD_TOAST.title} body={BOARD_TOAST.body} />
                     <PanelToast
@@ -60,7 +64,9 @@ export function PanelStage({ mode, className }: { mode: PanelMode; className?: s
                     />
                 </div>
 
-                <figcaption className="mt-[2.9em] text-xs text-muted-foreground">Dane przykładowe.</figcaption>
+                <figcaption className="mt-[2.9em] w-fit rounded-[3px] border bg-background px-2 py-1 text-xs leading-none text-muted-foreground">
+                    Dane przykładowe.
+                </figcaption>
             </div>
         </figure>
     );

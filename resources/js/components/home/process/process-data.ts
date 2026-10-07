@@ -20,28 +20,28 @@ export const PROCESS_STEPS: ProcessStep[] = [
         title: 'Odkrywanie',
         text: 'Poznajemy Twój biznes, cele i konkurencję, a potem spisujemy zakres prac.',
         deliverable: 'brief i zakres prac do akceptacji',
-        tags: ['Warsztaty', 'Research', 'Strategia'],
+        tags: ['Warsztaty', 'Analiza', 'Strategia'],
     },
     {
         number: '02',
         title: 'Projektowanie',
         text: 'Projektujemy wygląd i klikalny prototyp, zanim powstanie linijka kodu.',
         deliverable: 'klikalny prototyp do przetestowania',
-        tags: ['Wireframes', 'Prototypy', 'UI/UX'],
+        tags: ['Makiety', 'Prototyp', 'Projekt graficzny'],
     },
     {
         number: '03',
         title: 'Rozwój',
         text: 'Programujemy w dwutygodniowych sprintach i co sprint pokazujemy postępy.',
         deliverable: 'dostęp do wersji testowej i regularne demo',
-        tags: ['Agile', 'CI/CD', 'Testy'],
+        tags: ['Sprinty', 'Testy', 'Wersja testowa'],
     },
     {
         number: '04',
         title: 'Wdrożenie',
         text: 'Publikujemy stronę, monitorujemy ją i zostajemy z Tobą po starcie.',
         deliverable: 'działająca strona, monitoring i dostęp do panelu klienta',
-        tags: ['Deploy', 'Monitoring', 'Wsparcie'],
+        tags: ['Publikacja', 'Monitoring', 'Wsparcie'],
     },
 ];
 
@@ -53,17 +53,11 @@ export const PROCESS_STEPS: ProcessStep[] = [
 export type StepState = 'pending' | 'active' | 'done';
 
 /**
- * How long each step holds the baton (ms): its artifact's sequence (≈ 1.4–1.65 s, see ARTIFACT_MS) plus a short
+ * How long each step holds the baton (ms): its artifact's sequence (≈ 1.4–1.65 s, see ARTIFACT_MS) plus a very short
  * settle on the finished frame. The rail's segment fills over the same time, so it reaches the next marker exactly
- * when the next step starts. 7.5 s in all.
+ * when the next step starts. 6.3 s in all; the row then stays finished (it plays once per entry into view).
  */
-export const STEP_MS = [1800, 2000, 1800, 1900] as const;
-
-/** The finished row holds this long before the relay rewinds and runs again (only while in view). */
-export const HOLD_MS = 3500;
-
-/** The rewind between two runs: the rail fades out and every artifact returns to its first frame. */
-export const REWIND_MS = 700;
+export const STEP_MS = [1500, 1700, 1500, 1600] as const;
 
 /**
  * The artifacts' sub-step clocks (ms per sub-step; the final frame follows the last one). Kept here so their totals
@@ -74,8 +68,8 @@ export const ARTIFACT_MS = {
     brief: [300, 300, 300, 500],
     /** wireframe → design resolves → comment → bigger photo → "Rozwiązane", v2 (1.65 s). */
     design: [300, 500, 450, 400],
-    /** three commits land (CI, then a check), staging updated (1.5 s). */
+    /** three changes land (each checked, then ticked), the test version updated (1.5 s). */
     sprint: [150, 340, 340, 340, 330],
-    /** Build, Testy, Deploy run in turn, the site is live, the panel is switched on (1.5 s). */
+    /** Testy, Publikacja, Monitoring run in turn, the site is live, the panel is switched on (1.5 s). */
     launch: [200, 300, 300, 300, 400],
 } as const satisfies Record<string, readonly number[]>;

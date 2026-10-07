@@ -1,30 +1,31 @@
-import { Check, GitBranch, LoaderCircle } from 'lucide-react';
+import { MonitorSmartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ArtifactFrame, chipClassName, Tick, type TickStatus } from './artifact-parts';
 import { ARTIFACT_MS, type StepState } from './process-data';
 import { useStepClock } from './use-process-relay';
 
-/** The sprint's commits, oldest first, with the day each one landed (shown from 14rem of artifact width). */
-const COMMITS = [
-    { message: 'feat: koszyk', day: 'pon.' },
-    { message: 'fix: stopka', day: 'śr.' },
-    { message: 'feat: płatności', day: 'dziś' },
+/** What the sprint delivered, in the client's words, oldest first, with the day each one landed (from 14rem). */
+const CHANGES = [
+    { message: 'Koszyk gotowy', day: 'pon.' },
+    { message: 'Poprawiona stopka', day: 'śr.' },
+    { message: 'Płatności online', day: 'dziś' },
 ] as const;
 
-/** Clock: nothing yet (0), commits 1–3 land one by one, each checked by CI (1–3), all green (4), staging updated (5). */
+/** Clock: nothing yet (0), changes 1–3 land one by one, each checked (1–3), all ticked (4), test version updated (5). */
 const STAGING = 5;
 
 /**
- * Rozwój: the sprint's feed. Commits tick in (CI runs, then a check) and the sprint ends on the staging server the
- * client can open, with the demo every two weeks. Final frame: three green commits, staging up to date.
+ * Rozwój: the test version the client can open. Finished changes tick in one by one (checked, then ticked) and the
+ * sprint ends with the test version updated, with the demo every two weeks. Final frame: three ticked changes, the
+ * test version up to date.
  */
 export function SprintArtifact({ state }: { state: StepState }) {
     const step = useStepClock(ARTIFACT_MS.sprint, state);
-    const landed = Math.min(step, COMMITS.length);
-    const checking = step >= 1 && step <= COMMITS.length ? step - 1 : -1;
+    const landed = Math.min(step, CHANGES.length);
+    const checking = step >= 1 && step <= CHANGES.length ? step - 1 : -1;
     const updated = step >= STAGING;
 
-    const commitStatus = (index: number): TickStatus => {
+    const changeStatus = (index: number): TickStatus => {
         if (index >= landed) {
             return 'pending';
         }
@@ -34,23 +35,13 @@ export function SprintArtifact({ state }: { state: StepState }) {
 
     return (
         <ArtifactFrame
-            icon={GitBranch}
-            title="Sprint 4"
-            aside={
-                <span className={cn(chipClassName, 'h-5 gap-1 px-1.5', landed === 0 && 'border-dashed border-foreground/30 font-normal text-muted-foreground')}>
-                    {checking >= 0 ? (
-                        <LoaderCircle aria-hidden="true" className="size-3 animate-spin" strokeWidth={2.5} />
-                    ) : (
-                        landed > 0 && <Check aria-hidden="true" className="size-3" strokeWidth={2.75} />
-                    )}
-                    CI
-                </span>
-            }
+            icon={MonitorSmartphone}
+            title="Wersja testowa"
         >
             <div className="flex h-full flex-col">
                 <ul className="flex flex-1 flex-col justify-center gap-0.5 px-3">
-                    {COMMITS.map(({ message, day }, index) => {
-                        const status = commitStatus(index);
+                    {CHANGES.map(({ message, day }, index) => {
+                        const status = changeStatus(index);
                         const shown = index < landed;
 
                         return (
