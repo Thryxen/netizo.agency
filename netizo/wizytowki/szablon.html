@@ -161,10 +161,17 @@
             height: 9mm;
         }
 
+        /* Tył: dwie domeny w jednej linii, szare, rozdzielone ukośnikiem w kolorze nitów. */
         .url {
-            font-size: 6.3pt;
+            display: inline-flex;
+            gap: 1.5mm;
+            font-size: 5.6pt;
             line-height: 1;
             color: var(--muted);
+        }
+
+        .url__sep {
+            color: var(--rivet-color);
         }
 
         .person {
@@ -186,10 +193,19 @@
             letter-spacing: -0.035em;
         }
 
+        /* Wizytówka firmowa: nagłówek średniej wielkości, bo pod nim stoi dłuższe zdanie, a nie samo stanowisko. */
+        .person--company .name {
+            font-size: 12pt;
+        }
+
         .role {
             font-size: 7.5pt;
             line-height: 1.3;
             color: var(--muted);
+        }
+
+        .role:empty {
+            display: none;
         }
 
         .qr {
@@ -229,6 +245,20 @@
         .stat--email {
             left: calc(var(--b) + 6mm);
             width: 41mm;
+        }
+
+        /* Przód: prawy górny pas z domenami pod sobą, szare, wyrównane do prawego marginesu karty (6 mm od cięcia). */
+        .sites {
+            position: absolute;
+            top: var(--b);
+            left: calc(var(--b) + 50mm);
+            right: calc(var(--b) + 6mm);
+            height: 15mm;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 1.2mm;
         }
 
         .stat--phone {
@@ -292,23 +322,27 @@
     <section class="card">
         <span class="hairline" style="--y: 15mm"></span>
         <span class="hairline" style="--y: 39mm"></span>
-        <span class="divider" style="--x: 50mm; --y: 15mm"></span>
+        <span class="divider" style="--x: 50mm; top: 0"></span>
         <span class="rivet" style="--x: 50mm; --y: 15mm"></span>
         <span class="rivet" style="--x: 50mm; --y: 39mm"></span>
 
         <div class="top">
             <div class="logo svg-fit">{{logo}}</div>
-            <span class="url mono">netizo.pl</span>
         </div>
 
-        <div class="person">
+        <div class="sites">
+            <span class="url mono">netizo.pl</span>
+            <span class="url mono">netizo.agency</span>
+        </div>
+
+        <div class="person{{personClass}}">
             <p class="name" data-fit="wrap">{{name}}</p>
             <p class="role">{{role}}</p>
         </div>
 
         <div class="qr">
             <div class="svg-fit">{{qr}}</div>
-            <span class="qr__caption">Zapisz kontakt</span>
+            <span class="qr__caption">zapisz kontakt</span>
         </div>
 
         <div class="stat stat--email">
@@ -330,10 +364,10 @@
 
         <div class="back-logo svg-fit">{{logo}}</div>
 
-        <p class="headline">Tworzymy<br>strony WWW<br>dla ambitnych<br>firm.</p>
+        <p class="headline">Tworzymy<br>strony WWW<br>dla ambitnych.</p>
 
         <div class="back-url">
-            <span class="url mono">netizo.pl</span>
+            <span class="url mono"><span>netizo.pl</span><span class="url__sep">/</span><span>netizo.agency</span></span>
         </div>
     </section>
 </body>

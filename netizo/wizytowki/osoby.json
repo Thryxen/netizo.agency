@@ -4,5 +4,26 @@
         "role": "Project Manager",
         "phone": "+48 884 343 924",
         "email": "jan.kowalski@netizo.pl"
+    },
+    {
+        "name": "Damian Idzik",
+        "role": "Dyrektor Techniczny",
+        "phone": "+48 884 343 924",
+        "email": "d.idzik@netizo.pl"
+    },
+    {
+        "name": "Kamil Nawrot",
+        "role": "Dyrektor Generalny",
+        "phone": "+48 519 465 724",
+        "email": "k.nawrot@netizo.pl"
+    },
+    {
+        "slug": "firma",
+        "company": true,
+        "name": "Netizo",
+        "heading": "Porozmawiajmy",
+        "subheading": "Wysłuchamy, czego oczekujesz",
+        "phone": "+48 884 343 924",
+        "email": "kontakt@netizo.pl"
     }
 ]

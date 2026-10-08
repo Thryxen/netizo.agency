@@ -3,6 +3,10 @@
  * spadu, strona 1 przód, strona 2 tył, wektorowo z osadzonymi fontami) do pdf/ oraz podglądy PNG przyciętych kart do
  * podglad/. Kod QR na przodzie zapisuje kontakt (vCard) w telefonie.
  *
+ * Pola osoby: name, role, phone, email. Wizytówka firmowa: "company": true (role niepotrzebne, w vCard kontakt jest
+ * firmą), a w polu po lewej zamiast imienia i stanowiska stoją "heading" i "subheading". Opcjonalne "slug" nadaje nazwę
+ * plików (domyślnie z name).
+ *
  * Uruchomienie (z katalogu projektu, bez instalowania niczego w projekcie):
  *   npx -y -p playwright@1.58.0 -p qrcode@1.5.4 node netizo/wizytowki/generuj.cjs
  * Gdy brakuje przeglądarki: npx -y playwright@1.58.0 install chromium
@@ -66,7 +70,8 @@ function vcard(person) {
         `N:${escapeVcard(lastName)};${escapeVcard(firstName)};;;`,
         `FN:${escapeVcard(person.name)}`,
         'ORG:Netizo',
-        `TITLE:${escapeVcard(person.role)}`,
+        ...(person.role ? [`TITLE:${escapeVcard(person.role)}`] : []),
+        ...(person.company ? ['X-ABShowAs:COMPANY'] : []),
         `TEL:${person.phone.replace(/[^\d+]/g, '')}`,
         `EMAIL:${person.email}`,
         'URL:https://netizo.pl',
@@ -159,7 +164,7 @@ function fitText() {
     const people = JSON.parse(fs.readFileSync(path.join(DIR, 'osoby.json'), 'utf8'));
 
     for (const [index, person] of people.entries()) {
-        for (const field of ['name', 'role', 'phone', 'email']) {
+        for (const field of person.company ? ['name', 'phone', 'email'] : ['name', 'role', 'phone', 'email']) {
             if (!person[field]) {
                 throw new Error(`osoby.json, pozycja ${index + 1}: brak pola "${field}".`);
             }
@@ -182,12 +187,13 @@ function fitText() {
     const page = await browser.newPage({ deviceScaleFactor: PREVIEW_SCALE });
 
     for (const person of people) {
-        const slug = slugify(person.name);
+        const slug = person.slug ?? slugify(person.name);
         const html = render(template, {
             ...shared,
             qr: qrSvg(QRCode, vcard(person)),
-            name: escapeHtml(person.name),
-            role: escapeHtml(person.role),
+            personClass: person.company ? ' person--company' : '',
+            name: escapeHtml(person.heading ?? person.name),
+            role: escapeHtml(person.subheading ?? person.role ?? ''),
             phone: escapeHtml(person.phone),
             email: escapeHtml(person.email),
         });
