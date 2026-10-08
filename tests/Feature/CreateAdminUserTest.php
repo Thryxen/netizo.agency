@@ -54,3 +54,17 @@ it('rejects an invalid email address', function () {
 
     assertDatabaseMissing('users', ['name' => 'Ktoś']);
 });
+
+it('creates an account that can log in to the panel', function () {
+    $this->artisan('admin:create', [
+        '--name' => 'Dawid Idzik',
+        '--email' => 'admin@netizo.pl',
+        '--password' => 'super-secret',
+    ])->assertSuccessful();
+
+    $this->withoutVite()
+        ->post(route('admin.login.store'), ['email' => 'admin@netizo.pl', 'password' => 'super-secret'])
+        ->assertRedirect(route('admin.home'));
+
+    $this->assertAuthenticated();
+});

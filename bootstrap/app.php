@@ -8,6 +8,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -15,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function (): void {
+            Route::middleware('web')->group(base_path('routes/admin.php'));
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         /*
@@ -33,7 +37,10 @@ return Application::configure(basePath: dirname(__DIR__))
             headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO,
         );
 
-        $middleware->encryptCookies(except: ['appearance']);
+        $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+
+        $middleware->redirectGuestsTo(fn (Request $request): string => route('admin.login'));
+        $middleware->redirectUsersTo(fn (Request $request): string => route('admin.home'));
 
         $middleware->web(append: [
             HandleAppearance::class,

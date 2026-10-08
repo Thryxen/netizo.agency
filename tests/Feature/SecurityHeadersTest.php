@@ -86,3 +86,11 @@ it('allows only the configured host of a remote Vite dev server', function () {
         ->toContain('wss://netizo.agency.test:5173')
         ->not->toContain('localhost');
 });
+
+it('sends the strict content security policy on admin pages too', function () {
+    $response = $this->withoutVite()->get('/admin/login')->assertOk();
+
+    expect($response->headers->get('Content-Security-Policy'))
+        ->toContain("require-trusted-types-for 'script'")
+        ->not->toContain('livewire');
+});
