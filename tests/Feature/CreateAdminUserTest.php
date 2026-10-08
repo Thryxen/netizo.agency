@@ -1,13 +1,12 @@
 <?php
 
 use App\Models\User;
-use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Hash;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 
-it('creates an admin user that can access the panel', function () {
+it('creates an admin user with a hashed password', function () {
     $this->artisan('admin:create', [
         '--name' => 'Dawid Idzik',
         '--email' => 'admin@netizo.pl',
@@ -21,8 +20,7 @@ it('creates an admin user that can access the panel', function () {
 
     $user = User::whereEmail('admin@netizo.pl')->first();
 
-    expect(Hash::check('super-secret', $user->password))->toBeTrue()
-        ->and($user->canAccessPanel(Filament::getPanel('admin')))->toBeTrue();
+    expect(Hash::check('super-secret', $user->password))->toBeTrue();
 });
 
 it('fails when the email is already taken', function () {

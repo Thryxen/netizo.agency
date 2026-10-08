@@ -1,7 +1,9 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\CookiesServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\CookiesServiceProvider::class,
-    App\Providers\Filament\AdminPanelProvider::class,
+    AppServiceProvider::class,
+    CookiesServiceProvider::class,
 ];

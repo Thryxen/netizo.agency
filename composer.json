@@ -8,13 +8,10 @@
     "require": {
         "php": "^8.2",
         "artesaos/seotools": "^1.3",
-        "filament/filament": "^3.2",
         "inertiajs/inertia-laravel": "^3.0",
         "intervention/image": "^2.7",
-        "joshembling/image-optimizer": "^1.6",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
-        "livewire/livewire": "^3.7",
         "whitecube/laravel-cookie-consent": "^1.3"
     },
     "require-dev": {
@@ -66,8 +63,7 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi",
-            "@php artisan filament:upgrade"
+            "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"

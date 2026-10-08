@@ -18,11 +18,6 @@ class SecurityHeaders
     {
         $response = $next($request);
 
-        // Skip for Filament admin panel (may have compatibility issues)
-        if ($request->is('panel/*') || $request->is('livewire/*')) {
-            return $response;
-        }
-
         // Build CSP with Trusted Types
         $csp = $this->buildContentSecurityPolicy();
 
@@ -51,7 +46,7 @@ class SecurityHeaders
             // Scripts - allow trusted sources
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms https://*.clarity.ms https://fonts.googleapis.com".$devServer['http'],
 
-            // Styles - allow inline for Tailwind/Livewire and Google Fonts
+            // Styles - allow inline for Tailwind and Google Fonts
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com".$devServer['http'],
 
             // Images
@@ -84,8 +79,8 @@ class SecurityHeaders
             // Trusted Types for DOM XSS protection
             "require-trusted-types-for 'script'",
 
-            // Trusted Types policy - allow default policy for GTM, Clarity, and Livewire
-            'trusted-types default dompurify livewire gtm clarity',
+            // Trusted Types policy - allow default policy for GTM and Clarity
+            'trusted-types default dompurify gtm clarity',
         ];
 
         return implode('; ', $directives);
