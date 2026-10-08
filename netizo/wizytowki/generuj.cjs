@@ -1,14 +1,14 @@
 /**
  * Generuje wizytówki do druku z szablon.html i danych z osoby.json: dla każdej osoby PDF 91 × 61 mm (85 × 55 + 3 mm
- * spadu, strona 1 przód, strona 2 tył, wektorowo z osadzonymi fontami) do pdf/ oraz podglądy PNG przyciętych kart do
- * podglad/. Kod QR na przodzie zapisuje kontakt (vCard) w telefonie.
+ * spadu, strona 1 przód, strona 2 tył, wektorowo z osadzonymi fontami, z TrimBox i BleedBox dla drukarni) do pdf/ oraz
+ * podglądy PNG przyciętych kart do podglad/. Kod QR na przodzie zapisuje kontakt (vCard) w telefonie.
  *
  * Pola osoby: name, role, phone, email. Wizytówka firmowa: "company": true (role niepotrzebne, w vCard kontakt jest
  * firmą), a w polu po lewej zamiast imienia i stanowiska stoją "heading" i "subheading". Opcjonalne "slug" nadaje nazwę
  * plików (domyślnie z name).
  *
  * Uruchomienie (z katalogu projektu, bez instalowania niczego w projekcie):
- *   npx -y -p playwright@1.58.0 -p qrcode@1.5.4 node netizo/wizytowki/generuj.cjs
+ *   npx -y -p playwright@1.58.0 -p qrcode@1.5.4 -p pdf-lib@1.17.1 node netizo/wizytowki/generuj.cjs
  * Gdy brakuje przeglądarki: npx -y playwright@1.58.0 install chromium
  */
 const fs = require('fs');
@@ -20,7 +20,8 @@ const CARD_MM = { width: 85, height: 55 };
 const PX_PER_MM = 96 / 25.4;
 /** Podgląd w ~600 dpi. */
 const PREVIEW_SCALE = 6;
-const RUN_COMMAND = 'npx -y -p playwright@1.58.0 -p qrcode@1.5.4 node netizo/wizytowki/generuj.cjs';
+const PT_PER_MM = 72 / 25.4;
+const RUN_COMMAND = 'npx -y -p playwright@1.58.0 -p qrcode@1.5.4 -p pdf-lib@1.17.1 node netizo/wizytowki/generuj.cjs';
 
 /** Pakiety z `npx -p` nie są widoczne dla require(), więc szukamy ich też w katalogach .bin z PATH. */
 function loadModule(name) {
@@ -217,6 +218,32 @@ function drawPattern({ bleed, card }) {
     }
 }
 
+/**
+ * Chromium zaokrągla stronę PDF w górę do siatki 1/300 cala (91 × 61 mm → 258 × 173,04 pt), a treść przycina do
+ * dokładnego rozmiaru z @page, przyklejoną do lewego górnego rogu. Przy prawej i dolnej krawędzi zostawał przez to
+ * niezadrukowany pasek ułamka punktu, widoczny jako biała linia na ciemnym tyle. Przycinamy MediaBox do treści
+ * (91 × 61 mm; wysokość treści Chromium zaokrągla do 1/64 px, więc bywa o tysięczne części milimetra mniejsza) i dodajemy
+ * TrimBox (linia cięcia, 85 × 55 mm, liczona od lewego górnego rogu jak w szablonie) oraz BleedBox (spad).
+ */
+async function fitPageBoxes(PDFDocument, pdf) {
+    const document = await PDFDocument.load(pdf, { updateMetadata: false });
+    const contentPt = (mm) => Math.min(mm * PT_PER_MM, (Math.round(mm * PX_PER_MM * 64) / 64) * 0.75);
+    const bleed = BLEED_MM * PT_PER_MM;
+    const width = contentPt(CARD_MM.width + 2 * BLEED_MM);
+    const height = contentPt(CARD_MM.height + 2 * BLEED_MM);
+    const trim = { width: CARD_MM.width * PT_PER_MM, height: CARD_MM.height * PT_PER_MM };
+
+    for (const page of document.getPages()) {
+        const top = page.getMediaBox().height;
+
+        page.setMediaBox(0, top - height, width, height);
+        page.setBleedBox(0, top - height, width, height);
+        page.setTrimBox(bleed, top - bleed - trim.height, trim.width, trim.height);
+    }
+
+    return document.save({ useObjectStreams: false });
+}
+
 (async () => {
     const people = JSON.parse(fs.readFileSync(path.join(DIR, 'osoby.json'), 'utf8'));
 
@@ -230,6 +257,7 @@ function drawPattern({ bleed, card }) {
 
     const QRCode = loadModule('qrcode');
     const { chromium } = loadModule('playwright');
+    const { PDFDocument } = loadModule('pdf-lib');
 
     const template = inlineFonts(fs.readFileSync(path.join(DIR, 'szablon.html'), 'utf8'));
     const shared = {
@@ -260,7 +288,9 @@ function drawPattern({ bleed, card }) {
         await page.evaluate(fitText);
         await page.evaluate(drawPattern, { bleed: BLEED_MM, card: CARD_MM });
 
-        await page.pdf({ path: path.join(DIR, 'pdf', `${slug}.pdf`), preferCSSPageSize: true, printBackground: true });
+        const pdf = await page.pdf({ preferCSSPageSize: true, printBackground: true });
+
+        fs.writeFileSync(path.join(DIR, 'pdf', `${slug}.pdf`), await fitPageBoxes(PDFDocument, pdf));
 
         const cards = await page.$$('.card');
 
