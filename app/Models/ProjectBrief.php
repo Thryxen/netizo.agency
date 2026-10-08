@@ -2,10 +2,15 @@
 
 namespace App\Models;
 
+use Database\Factories\ProjectBriefFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ProjectBrief extends Model
 {
+    /** @use HasFactory<ProjectBriefFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'types',
         'features',

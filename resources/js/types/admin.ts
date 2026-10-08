@@ -98,3 +98,5 @@ export type AdminBrief = AdminBriefRow & {
 };
 
 export type AdminCallbackRow = { id: number; phone: string; createdAt: string };
+
+export type BriefFilters = LeadFilters & { budget: string; timeline: string };
