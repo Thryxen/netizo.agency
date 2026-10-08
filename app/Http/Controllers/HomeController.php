@@ -18,7 +18,7 @@ class HomeController extends Controller
     {
         $projects = Project::active()->ordered()->get();
         $clients = Client::active()->ordered()->get();
-        $imageUrl = asset('assets/images/og-netizo.png');
+        $imageUrl = asset('assets/images/og-netizo-2.png');
 
         // Meta tags
         SEOMeta::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Netizo');

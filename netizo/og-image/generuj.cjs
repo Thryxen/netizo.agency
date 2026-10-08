@@ -1,5 +1,5 @@
 /**
- * Generuje obraz do podglądów linków (og:image, twitter:image): public/assets/images/og-netizo.png, 1200 × 630 px, z
+ * Generuje obraz do podglądów linków (og:image, twitter:image): public/assets/images/og-netizo-2.png, 1200 × 630 px, z
  * szablon.html. Logo, sygnet i fonty są wspólne z wizytówkami (netizo/wizytowki), więc marka zmienia się w jednym miejscu.
  *
  * Uruchomienie (z katalogu projektu, bez instalowania niczego w projekcie):
@@ -14,7 +14,7 @@ const path = require('path');
 
 const DIR = __dirname;
 const SHARED = path.join(DIR, '..', 'wizytowki');
-const OUTPUT = path.join(DIR, '..', '..', 'public', 'assets', 'images', 'og-netizo.png');
+const OUTPUT = path.join(DIR, '..', '..', 'public', 'assets', 'images', 'og-netizo-2.png');
 const SIZE = { width: 1200, height: 630 };
 /** WhatsApp pomija podgląd z obrazem większym niż 300 KB. */
 const MAX_BYTES = 300 * 1024;

@@ -30,14 +30,11 @@ const STAT_CELL_BORDERS = ['border-r border-b lg:border-b-0', 'border-b lg:borde
 const STAT_VALUE_CLASS = 'text-[2.25rem] leading-none font-semibold tracking-tight tabular-nums sm:text-[2.5rem] lg:text-[2.75rem]';
 
 /**
- * The heading as fixed lines: four in the narrow column (phones, and from lg beside the stage), two between md and lg
+ * The heading as fixed lines: three in the narrow column (phones, and from lg beside the stage), two between md and lg
  * where it spans the full width.
  */
-const HEADING_LINES = ['Tworzymy', 'strony WWW', 'dla ambitnych', 'firm.'];
-const HEADING_WIDE_LINES = [
-    [0, 1],
-    [2, 3],
-];
+const HEADING_LINES = ['Tworzymy', 'strony WWW', 'dla ambitnych.'];
+const HEADING_WIDE_LINES = [[0, 1], [2]];
 
 /**
  * The first screen plays from the first paint, in CSS only (app.css: `[data-split-line]`, `[data-hero-rise]`), so it
@@ -70,7 +67,7 @@ export function Hero() {
                 {/* From lg the hero (with its stats strip) fills the first screen; the copy centres in it. */}
                 <div className="grid lg:min-h-[min(calc(100svh-var(--header-height)-8.5rem),56rem)] lg:grid-cols-12">
                     {/* From lg the column is a size container: the heading scales with the column's width (the widest line,
-                        "dla ambitnych", is ~6.23 em), so its four lines never re-wrap on wide or tall screens. */}
+                        "dla ambitnych.", is ~6.5 em), so its three lines never re-wrap on wide or tall screens. */}
                     <div className="max-w-2xl pt-8 pb-12 sm:pt-16 lg:col-span-5 lg:flex lg:max-w-none lg:flex-col lg:justify-center lg:py-14 lg:pr-8 lg:[container-type:inline-size] xl:pr-10 [@media(min-width:1024px)_and_(max-height:820px)]:py-10">
                         <SplitLines
                             id="hero-heading"
