@@ -1,0 +1,224 @@
+<!doctype html>
+<!--
+    Fanpage netizo na Facebooku: okładka 1640 × 720 px (2× od 820 × 360) i zdjęcie profilowe 1080 × 1080 px, w motywie
+    jasnym i ciemnym netizo.pl (generuj.cjs ustawia data-theme na body i zapisuje oba).
+    Okładka: Facebook pokazuje ją na komputerze jako 820 × 312 (ucina po 48 px u góry i u dołu), a na telefonie jako
+    640 × 360 (ucina po 180 px z boków). Boczne szyny z nitami stoją tuż za bocznymi cięciami telefonu, więc to, co
+    między nimi, widać wszędzie. Lewy dolny róg zakrywa zdjęcie profilowe (na telefonie sięga wyżej i dalej w prawo),
+    dlatego lewa komórka siatki ma tylko wielki sygnet N ton w ton przycięty krawędzią, a nagłówek z hero i domeny stoją
+    w prawej, jak na przodzie wizytówki. Bez logo: tuż pod okładką Facebook pokazuje zdjęcie profilowe i nazwę strony.
+    Zdjęcie profilowe: sam sygnet N, wyśrodkowany optycznie w kole, w które Facebook je przycina.
+    Tło obu grafik: drobny wzór z sygnetów N jak na wizytówkach, wygaszany w stronę wielkiego N (rysuje go generuj.cjs).
+    Znaczniki w podwójnych klamrach wypełnia generuj.cjs; nie wpisuj ich w komentarzach, bo wstawione SVG zawierają
+    własne komentarze i przedwcześnie zamknęłyby ten.
+-->
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <title>Facebook netizo</title>
+    <style>
+        @font-face {
+            font-family: 'Geist';
+            font-weight: 600;
+            src: url('fonts/geist-600.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Geist Mono';
+            font-weight: 400;
+            src: url('fonts/geist-mono-400.ttf') format('truetype');
+        }
+
+        /*
+         * Tokeny strony netizo.pl: jasny motyw, a niżej ciemny. --mark to wielki sygnet ton w ton, --pattern najmocniejszy
+         * ton wzoru z N (słabsze miesza generator z --paper), jak na wizytówkach.
+         */
+        body {
+            --ink: #0a0a0a;
+            --paper: #ffffff;
+            --muted: #6e6e6e;
+            --line: #d6d6d6;
+            --rivet: #b3b3b3;
+            --mark: #f0f0f0;
+            --pattern: #ededed;
+        }
+
+        body[data-theme='dark'] {
+            --ink: #fafafa;
+            --paper: #0a0a0a;
+            --muted: #a1a1a1;
+            --line: #2b2b2b;
+            --rivet: #4a4a4a;
+            --mark: #1c1c1c;
+            --pattern: #1a1a1a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            background: var(--paper);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .canvas {
+            position: relative;
+            overflow: hidden;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'Geist', sans-serif;
+        }
+
+        /* Wstawione SVG skalują się do wysokości kontenera; overflow: visible chroni zaokrąglone końce N. */
+        .svg-fit svg {
+            display: block;
+            width: auto;
+            height: 100%;
+            overflow: visible;
+        }
+
+        /*
+         * Wzór z sygnetów N (rysuje go generator, patrz drawPattern w generuj.cjs): siatka co data-pitch px wyśrodkowana
+         * na obrazie, więc linie, szyny i przegroda okładki (co 80 px od 60 w poziomie i od 80 w pionie) biegną dokładnie
+         * między kolumnami i rzędami znaków.
+         */
+        .pattern {
+            position: absolute;
+            inset: 0;
+        }
+
+        .pattern__mark {
+            position: absolute;
+        }
+
+        /*
+         * Okładka. Linie mają 2 px i nity 14 px, bo Facebook pokazuje obraz mniej więcej w połowie rozmiaru: na ekranie
+         * to linia 1 px i nit 7 px, jak na stronie. Treść prawej komórki zaczyna się 64 px za przegrodą.
+         */
+        .cover {
+            --rail-left: 220px;
+            --rail-right: 1420px;
+            --divider: 620px;
+            --content-x: 684px;
+            --line-top: 160px;
+            --line-bottom: 560px;
+
+            width: 1640px;
+            height: 720px;
+        }
+
+        .cover .mark {
+            position: absolute;
+            left: -60px;
+            top: -40px;
+            height: 800px;
+            color: var(--mark);
+        }
+
+        .hairline {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--line);
+        }
+
+        .rail {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--line);
+        }
+
+        .rivet {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: var(--rivet);
+        }
+
+        /* Dwie domeny w jednej linii, szare, rozdzielone ukośnikiem w kolorze nitów, jak na tyle wizytówki. */
+        .url {
+            position: absolute;
+            left: var(--content-x);
+            top: 48px;
+            height: calc(var(--line-top) - 48px);
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 36px;
+            color: var(--muted);
+        }
+
+        .url__sep {
+            color: var(--rivet);
+        }
+
+        .headline {
+            position: absolute;
+            left: var(--content-x);
+            top: var(--line-top);
+            height: calc(var(--line-bottom) - var(--line-top));
+            display: flex;
+            align-items: center;
+            font-size: 100px;
+            font-weight: 600;
+            line-height: 1.04;
+            letter-spacing: -0.035em;
+        }
+
+        /* Zdjęcie profilowe: N szerokie na 59% boku, przesunięte o 1% w lewo, bo prawa laska N jest cięższa. */
+        .avatar {
+            width: 1080px;
+            height: 1080px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar .mark {
+            position: relative;
+            height: 580px;
+            margin-left: -22px;
+            color: var(--ink);
+        }
+    </style>
+</head>
+<body>
+    <!-- Wzorzec znaku dla [data-pattern]. -->
+    <template id="sygnet">{{sygnet}}</template>
+
+    <section class="canvas cover" data-export="okladka">
+        <div class="pattern" data-pattern data-pitch="80" data-size="32" data-fade="560 0 1640 720"></div>
+        <div class="mark svg-fit">{{sygnet}}</div>
+
+        <span class="hairline" style="top: calc(var(--line-top) - 1px)"></span>
+        <span class="hairline" style="top: calc(var(--line-bottom) - 1px)"></span>
+        <span class="rail" style="left: calc(var(--rail-left) - 1px)"></span>
+        <span class="rail" style="left: calc(var(--rail-right) - 1px)"></span>
+        <span class="rail" style="left: calc(var(--divider) - 1px)"></span>
+        <span class="rivet" style="left: calc(var(--rail-left) - 7px); top: calc(var(--line-top) - 7px)"></span>
+        <span class="rivet" style="left: calc(var(--rail-left) - 7px); top: calc(var(--line-bottom) - 7px)"></span>
+        <span class="rivet" style="left: calc(var(--divider) - 7px); top: calc(var(--line-top) - 7px)"></span>
+        <span class="rivet" style="left: calc(var(--divider) - 7px); top: calc(var(--line-bottom) - 7px)"></span>
+        <span class="rivet" style="left: calc(var(--rail-right) - 7px); top: calc(var(--line-top) - 7px)"></span>
+        <span class="rivet" style="left: calc(var(--rail-right) - 7px); top: calc(var(--line-bottom) - 7px)"></span>
+
+        <p class="url"><span>netizo.pl</span><span class="url__sep">/</span><span>netizo.agency</span></p>
+
+        <p class="headline">Tworzymy<br>strony WWW<br>dla ambitnych.</p>
+    </section>
+
+    <section class="canvas avatar" data-export="avatar">
+        <div class="pattern" data-pattern data-pitch="80" data-size="32" data-fade="0 0 1080 1080"></div>
+        <div class="mark svg-fit">{{sygnet}}</div>
+    </section>
+</body>
+</html>
