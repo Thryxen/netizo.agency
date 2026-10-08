@@ -162,10 +162,12 @@ function fitText() {
 }
 
 /**
- * Uruchamiane w stronie: wypełnia każde [data-pattern] sygnetami N z <template id="sygnet">, w siatce co data-pitch mm
- * (środki na jej węzłach liczonych od linii cięcia), znaki wysokości data-size mm. data-fade="x0 y0 x1 y1" (mm od cięcia)
- * wygasza wzór: od punktu (x0, y0), gdzie go nie ma, do (x1, y1), gdzie ma pełny kolor --pattern. Pośrednie tony to
- * pełne kolory zmieszane z --paper, nie przezroczystość, żeby PDF do druku jej nie zawierał.
+ * Uruchamiane w stronie: wypełnia każde [data-pattern] sygnetami N z <template id="sygnet">, znaki wysokości data-size mm.
+ * data-grid="kolumny rzędy" rozpina siatkę na cały format netto: skrajne znaki stoją data-inset mm od linii cięcia, a
+ * rozstaw wynika z liczby znaków. Nóż nie przecina więc żadnego znaku, a spad zostaje gładki, bez wzoru.
+ * data-fade="x0 y0 x1 y1" (mm od cięcia) wygasza wzór: od punktu (x0, y0), gdzie go nie ma, do (x1, y1), gdzie ma pełny
+ * kolor --pattern. Pośrednie tony to pełne kolory zmieszane z --paper, nie przezroczystość, żeby PDF do druku jej
+ * nie zawierał.
  */
 function drawPattern({ bleed, card }) {
     const source = document.querySelector('#sygnet').content.firstElementChild;
@@ -177,9 +179,10 @@ function drawPattern({ bleed, card }) {
     };
 
     for (const layer of document.querySelectorAll('[data-pattern]')) {
-        const pitch = parseFloat(layer.dataset.pitch);
+        const [columns, rows] = layer.dataset.grid.split(/\s+/).map(Number);
         const height = parseFloat(layer.dataset.size);
         const width = (height * viewWidth) / viewHeight;
+        const inset = parseFloat(layer.dataset.inset);
         const fade = layer.dataset.fade?.split(/\s+/).map(Number);
         const strength = (x, y) => {
             if (!fade) {
@@ -192,12 +195,18 @@ function drawPattern({ bleed, card }) {
 
             return smoothstep(((x - fromX) * dx + (y - fromY) * dy) / (dx * dx + dy * dy));
         };
-        const firstNode = (extent) => -Math.floor((bleed + extent / 2) / pitch) * pitch;
+        /** Środki count znaków o rozmiarze extent, równo rozłożonych od inset do length - inset. */
+        const nodes = (length, extent, count) => {
+            const first = inset + extent / 2;
+            const pitch = (length - 2 * first) / (count - 1);
+
+            return Array.from({ length: count }, (_, index) => first + index * pitch);
+        };
 
         layer.replaceChildren();
 
-        for (let y = firstNode(height); y - height / 2 < card.height + bleed; y += pitch) {
-            for (let x = firstNode(width); x - width / 2 < card.width + bleed; x += pitch) {
+        for (const y of nodes(card.height, height, rows)) {
+            for (const x of nodes(card.width, width, columns)) {
                 const tone = strength(x, y);
 
                 if (tone < 0.06) {
