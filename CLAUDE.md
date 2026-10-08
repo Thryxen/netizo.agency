@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Netizo (netizo.pl) is a Polish web agency website built with Laravel 12. The public homepage is a single-page Inertia v3 + React 19 + TypeScript app (shadcn/ui, server-side rendered). The admin panel at `/admin` is Filament 3 (Livewire 3) for managing projects, clients and the leads collected by the homepage forms.
+Netizo (netizo.pl) is a Polish web agency website built with Laravel 12. The public homepage is a single-page Inertia v3 + React 19 + TypeScript app (shadcn/ui, server-side rendered). The admin panel at `/admin` is an Inertia + React + shadcn app (client-rendered, behind a login) for managing projects, clients and the leads collected by the homepage forms.
 
 ## Commands
 
@@ -49,7 +49,7 @@ php artisan migrate   # Run migrations (uses SQLite in database/database.sqlite)
 - **UI**: shadcn/ui (new-york, neutral, CSS variables) on Radix (`radix-ui`), `lucide-react` icons, Tailwind CSS 4, `tw-animate-css`
 - **Fonts**: self-hosted Geist / Geist Mono (`@fontsource-variable/*`); no Google Fonts on the homepage
 - **Motion**: `motion` (motion.dev), used only for `MotionConfig` and scroll-linked values (`useScroll` + `useTransform`); entrances are CSS/canvas primitives in `components/motion/`
-- **Admin Panel**: Filament 3. Livewire 3 stays installed only because Filament needs it; the homepage has no Livewire components.
+- **Admin Panel**: Inertia + React + shadcn `Sidebar` layout at `/admin` (no Filament, no Livewire); drag-and-drop ordering with `@dnd-kit/*`; images converted to WebP by `intervention/image` 2.7
 - **Build**: Vite 7 (`vite.config.ts`, `laravel-vite-plugin`, `@inertiajs/vite`, `@vitejs/plugin-react`)
 - **Database**: SQLite (development)
 - **Testing**: Pest 4
@@ -57,7 +57,14 @@ php artisan migrate   # Run migrations (uses SQLite in database/database.sqlite)
 ### Request flow
 - `GET /` → `HomeController@index` sets the SEOTools meta and returns `Inertia::render('home', ['projects', 'clients', 'faq'])`. FAQ items have one source (`HomeController::faq()`) used for both the prop and the FAQ JSON-LD passed to the root view as `faqSchema`.
 - Root view `resources/views/app.blade.php`: Trusted Types default policy, gtag, theme-before-paint script, `SEO::generate()`, FAQ JSON-LD, favicons, `@vite`, `@inertiaHead`, `@cookieconsentscripts`; body has the GTM noscript, `@inertia`, then `@cookieconsentview` and Microsoft Clarity outside the Inertia root.
-- Middleware (`bootstrap/app.php`, web group): `HandleAppearance` (reads the `appearance` cookie: light/dark/system; the cookie is not encrypted), `HandleInertiaRequests`, `AddLinkHeadersForPreloadedAssets`, `SecurityHeaders` (CSP with Trusted Types; adds the Vite dev origin only while `public/hot` exists).
+- Middleware (`bootstrap/app.php`, web group): `HandleAppearance` (reads the `appearance` cookie: light/dark/system; the cookie is not encrypted), `HandleInertiaRequests`, `AddLinkHeadersForPreloadedAssets`, `SecurityHeaders` (CSP with Trusted Types; adds the Vite dev origin only while `public/hot` exists). `HandleInertiaRequests` also picks the root view (`admin` for `/admin*`, `app` otherwise), skips SSR for `/admin*` (`$withoutSsr`) and shares `auth`, `sidebarOpen` (cookie `sidebar_state`, not encrypted) and `flash.success` on admin requests only.
+
+### Admin panel (`/admin`)
+- Routes in `routes/admin.php` (loaded by `bootstrap/app.php` through `then:`), names `admin.*`; `/admin` redirects to the project list. Guests go to `admin.login`; every user in the `users` table may log in (create one with `php artisan admin:create`). Login is limited to 5 failed attempts per email + IP.
+- Root view `resources/views/admin.blade.php`: theme-before-paint script, Trusted Types policy, `noindex`, no GTM/Clarity/cookie banner.
+- Projects and clients: whole list loaded, client-side search and status filter, drag-and-drop order saved through `POST /admin/{projects,clients}/reorder` (`ReordersRecords` trait), bulk delete through `DELETE /admin/{resource}` with `ids[]`. Messages, briefs and callback requests: server-side lists (25 per page) filtered through the query string (`LeadIndexRequest` / `BriefIndexRequest` ignore anything outside the allowed sort columns and dates).
+- Project images go through `App\Services\ImageOptimizer` (WebP, 1600 px thumbnail / 1920 px full image, ULID names on the `public` disk); replacing or removing an image deletes the old file. `challenges` / `solutions` are stored as `[['challenge' => …]]` / `[['solution' => …]]` and read back from plain strings too.
+- Brief labels in the panel come from `resources/js/components/home/brief/brief-options.ts` (`components/admin/brief-labels.ts`).
 
 ### Form endpoints
 All in `routes/web.php` inside a `throttle:forms` group (10 req/min per IP, defined in `AppServiceProvider`; when exceeded it redirects back with an `errors.form` message instead of a 429 page). Each controller validates with a Form Request, saves the model, calls `DiscordWebhookService` where noted, and returns `back()`.
@@ -73,10 +80,10 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 
 ### Directory Structure
 
-**app/Filament/Resources/** - Admin panel resources:
-- `ProjectResource` - Portfolio project management with image optimization
-- `ClientResource` - Client management
-- `ContactMessageResource`, `CallbackRequestResource`, `ProjectBriefResource` - Lead/inquiry management (read-only)
+**app/Http/Controllers/Admin/** and **app/Http/Requests/Admin/** - Admin panel backend:
+- `ProjectController`, `ClientController` - CRUD, reorder, bulk delete (`SaveProjectRequest`, `SaveClientRequest`, `ReorderRequest`, `DestroyManyRequest`)
+- `ContactMessageController`, `ProjectBriefController`, `CallbackRequestController` - Lead lists, details, delete (`LeadIndexRequest`, `BriefIndexRequest`)
+- `Auth/LoginController` + `LoginRequest` - Panel login
 
 **app/Http/** - Homepage backend:
 - `Controllers/HomeController.php` - Page props, SEO, FAQ
@@ -87,14 +94,15 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 - `Project`, `Client` - Content entities
 - `ContactMessage`, `CallbackRequest`, `ProjectBrief`, `NewsletterSubscriber` - Lead capture
 
-**app/Services/DiscordWebhookService.php** - Discord notifications for new leads
+**app/Services/** - `DiscordWebhookService.php` (Discord notifications for new leads), `ImageOptimizer.php` (WebP conversion of uploaded images)
 
 **resources/js/** - Inertia React app:
 - `app.tsx` (client entry), `ssr.tsx` (SSR entry); both resolve pages through `lib/pages.ts`
 - `pages/home.tsx` - Page assembly (`HomeUiProvider`, header, sections, footer, callback FAB and dialog, skip link)
 - `components/home/` - Homepage sections and shared primitives: `section.tsx` (`Section`, `SectionHeading` (heading reveal built in), `Container`, `Rivet`, gutter/bleed class helpers), `photo.tsx` (`Photo`: a photo in a clipping frame, lazy `<img>`), `logo.tsx` (netizo `Logo`/`LogoMark`), `theme-toggle.tsx`, `tech-tag.tsx`, `external-link.tsx`, `home-ui-context.tsx` (`useHomeUi()`: callback dialog state, contact tab, `openContact()`), one file per section, `bento/` (services bento: one file per live tile, `bento-tile.tsx` shell, scoped `bento-styles.tsx`), `brief/` (6-step brief wizard, options, form field helpers)
 - `components/motion/` - Motion primitives, import from `@/components/motion`: `Reveal`, `SplitLines` (hero H1), `CountUp`, `Marquee`, `Spotlight`/`useSpotlight`, `useLiveLoop`/`useInViewLoop` (in-view gated loops), `useMotionStyle` (bind `useScroll`/`useTransform` values to a plain element), `MotionRoot` (wraps the page). Don't use `motion.*`/`m.*`/`animate()` (they pull in the animation engine, ~+27 KB gz); gate scroll-linked styles with `useReducedMotionPreference()`.
-- `components/ui/` - shadcn components (add new ones with `npx shadcn add`, then check the generated `cn` import points at `@/lib/utils`)
+- `components/ui/` - shadcn components (add new ones with `npx shadcn add`, answer "no" to overwriting existing ones, then check the generated `cn` import points at `@/lib/utils`, not the `cn` npm package, and that sidebar tokens stay monochrome)
+- `pages/admin/` + `components/admin/` - Admin panel: `AdminLayout` (sidebar, breadcrumb, flash notice), forms (`project-form`, `client-form`, `image-field`, `tags-input`, `repeater-list`), lists (`list-toolbar`, `sort-header`, `pagination`, `bulk-bar`, `sortable`, `record-toolbar`), `detail`, `brief-labels`; hooks `use-selection`, `use-record-list`, `use-list-filters`; URLs in `lib/admin-routes.ts`; types in `types/admin.ts`
 - `hooks/use-appearance.tsx` - Light/dark/system theme (cookie + localStorage)
 - `lib/` - `utils.ts` (`cn`), `endpoints.ts`, `pages.ts`, `photos.ts` (`photo(name)` → `src`/`srcSet`/size for the photo series), `site.ts`, `in-page-navigation.ts`
 - `types/home.ts` - Page prop types (`Project`, `Client`, `FaqItem`, `HomePageProps`)
@@ -102,7 +110,7 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 **resources/css/app.css** - Tailwind 4 entry: shadcn tokens on `:root` / `.dark`, fonts, base styles, `ease-expo-out`, motion primitive states/keyframes (gated by `html.js`), `mask-fade-x`
 
 **resources/views/** - Blade templates:
-- `app.blade.php` - Inertia root view
+- `app.blade.php` - Inertia root view of the public site; `admin.blade.php` - root view of the admin panel
 - `vendor/cookie-consent/` - Cookie banner, styled with the site tokens
 - `errors/` - Custom error pages (403, 404, 419, 429, 500, 503), self-contained
 
@@ -118,12 +126,10 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 - Section anchors: `#uslugi`, `#projekty`, `#misja`, `#klienci`, `#proces`, `#faq`, `#newsletter`, `#kontakt`.
 - Components must stay SSR-safe: no `window`/`document` access during render.
 
-### Filament Customization
-- Custom `OptimizedImageUpload` component at `app/Filament/Components/OptimizedImageUpload.php` for automatic image optimization on upload
-
 ### Key Integrations
 - **artesaos/seotools** - SEO meta tags management (config in `config/seotools.php`)
-- **joshembling/image-optimizer** - Image optimization for uploads
+- **intervention/image** (2.7) - WebP conversion and resizing of uploaded project images (`ImageOptimizer`)
+- **@dnd-kit/core, sortable, utilities** - Drag-and-drop ordering in the admin panel
 - **whitecube/laravel-cookie-consent** - GDPR cookie consent
 - **laravel-lang** - Multi-language support (Polish primary)
 
@@ -140,10 +146,8 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
 - php - 8.4.22
-- filament/filament (FILAMENT) - v3
 - laravel/framework (LARAVEL) - v12
 - laravel/prompts (PROMPTS) - v0
-- livewire/livewire (LIVEWIRE) - v3
 - laravel/mcp (MCP) - v0
 - laravel/pint (PINT) - v1
 - laravel/sail (SAIL) - v1
@@ -313,86 +317,6 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ### Models
 - Casts can and likely should be set in a `casts()` method on a model rather than the `$casts` property. Follow existing conventions from other models.
 
-=== livewire/core rules ===
-
-## Livewire
-
-- Use the `search-docs` tool to find exact version-specific documentation for how to write Livewire and Livewire tests.
-- Use the `php artisan make:livewire [Posts\CreatePost]` Artisan command to create new components.
-- State should live on the server, with the UI reflecting it.
-- All Livewire requests hit the Laravel backend; they're like regular HTTP requests. Always validate form data and run authorization checks in Livewire actions.
-
-## Livewire Best Practices
-- Livewire components require a single root element.
-- Use `wire:loading` and `wire:dirty` for delightful loading states.
-- Add `wire:key` in loops:
-
-    ```blade
-    @foreach ($items as $item)
-        <div wire:key="item-{{ $item->id }}">
-            {{ $item->name }}
-        </div>
-    @endforeach
-    ```
-
-- Prefer lifecycle hooks like `mount()`, `updatedFoo()` for initialization and reactive side effects:
-
-<code-snippet name="Lifecycle Hook Examples" lang="php">
-    public function mount(User $user) { $this->user = $user; }
-    public function updatedSearch() { $this->resetPage(); }
-</code-snippet>
-
-## Testing Livewire
-
-<code-snippet name="Example Livewire Component Test" lang="php">
-    Livewire::test(Counter::class)
-        ->assertSet('count', 0)
-        ->call('increment')
-        ->assertSet('count', 1)
-        ->assertSee(1)
-        ->assertStatus(200);
-</code-snippet>
-
-<code-snippet name="Testing Livewire Component Exists on Page" lang="php">
-    $this->get('/posts/create')
-    ->assertSeeLivewire(CreatePost::class);
-</code-snippet>
-
-=== livewire/v3 rules ===
-
-## Livewire 3
-
-### Key Changes From Livewire 2
-- These things changed in Livewire 3, but may not have been updated in this application. Verify this application's setup to ensure you conform with application conventions.
-    - Use `wire:model.live` for real-time updates, `wire:model` is now deferred by default.
-    - Components now use the `App\Livewire` namespace (not `App\Http\Livewire`).
-    - Use `$this->dispatch()` to dispatch events (not `emit` or `dispatchBrowserEvent`).
-    - Use the `components.layouts.app` view as the typical layout path (not `layouts.app`).
-
-### New Directives
-- `wire:show`, `wire:transition`, `wire:cloak`, `wire:offline`, `wire:target` are available for use. Use the documentation to find usage examples.
-
-### Alpine
-- Alpine is now included with Livewire; don't manually include Alpine.js.
-- Plugins included with Alpine: persist, intersect, collapse, and focus.
-
-### Lifecycle Hooks
-- You can listen for `livewire:init` to hook into Livewire initialization, and `fail.status === 419` for the page expiring:
-
-<code-snippet name="Livewire Init Hook Example" lang="js">
-document.addEventListener('livewire:init', function () {
-    Livewire.hook('request', ({ fail }) => {
-        if (fail && fail.status === 419) {
-            alert('Your session expired');
-        }
-    });
-
-    Livewire.hook('message.failed', (message, component) => {
-        console.error(message);
-    });
-});
-</code-snippet>
-
 === pint/core rules ===
 
 ## Laravel Pint Code Formatter
@@ -560,94 +484,5 @@ $pages->assertNoJavascriptErrors()->assertNoConsoleLogs();
 | decoration-slice | box-decoration-slice |
 | decoration-clone | box-decoration-clone |
 
-=== filament/filament rules ===
 
-## Filament
-- Filament is used by this application, check how and where to follow existing application conventions.
-- Filament is a Server-Driven UI (SDUI) framework for Laravel. It allows developers to define user interfaces in PHP using structured configuration objects. It is built on top of Livewire, Alpine.js, and Tailwind CSS.
-- You can use the `search-docs` tool to get information from the official Filament documentation when needed. This is very useful for Artisan command arguments, specific code examples, testing functionality, relationship management, and ensuring you're following idiomatic practices.
-- Utilize static `make()` methods for consistent component initialization.
-
-### Artisan
-- You must use the Filament specific Artisan commands to create new files or components for Filament. You can find these with the `list-artisan-commands` tool, or with `php artisan` and the `--help` option.
-- Inspect the required options, always pass `--no-interaction`, and valid arguments for other options when applicable.
-
-### Filament's Core Features
-- Actions: Handle doing something within the application, often with a button or link. Actions encapsulate the UI, the interactive modal window, and the logic that should be executed when the modal window is submitted. They can be used anywhere in the UI and are commonly used to perform one-time actions like deleting a record, sending an email, or updating data in the database based on modal form input.
-- Forms: Dynamic forms rendered within other features, such as resources, action modals, table filters, and more.
-- Infolists: Read-only lists of data.
-- Notifications: Flash notifications displayed to users within the application.
-- Panels: The top-level container in Filament that can include all other features like pages, resources, forms, tables, notifications, actions, infolists, and widgets.
-- Resources: Static classes that are used to build CRUD interfaces for Eloquent models. Typically live in `app/Filament/Resources`.
-- Schemas: Represent components that define the structure and behavior of the UI, such as forms, tables, or lists.
-- Tables: Interactive tables with filtering, sorting, pagination, and more.
-- Widgets: Small component included within dashboards, often used for displaying data in charts, tables, or as a stat.
-
-### Relationships
-- Determine if you can use the `relationship()` method on form components when you need `options` for a select, checkbox, repeater, or when building a `Fieldset`:
-
-<code-snippet name="Relationship example for Form Select" lang="php">
-Forms\Components\Select::make('user_id')
-    ->label('Author')
-    ->relationship('author')
-    ->required(),
-</code-snippet>
-
-## Testing
-- It's important to test Filament functionality for user satisfaction.
-- Ensure that you are authenticated to access the application within the test.
-- Filament uses Livewire, so start assertions with `livewire()` or `Livewire::test()`.
-
-### Example Tests
-
-<code-snippet name="Filament Table Test" lang="php">
-    livewire(ListUsers::class)
-        ->assertCanSeeTableRecords($users)
-        ->searchTable($users->first()->name)
-        ->assertCanSeeTableRecords($users->take(1))
-        ->assertCanNotSeeTableRecords($users->skip(1))
-        ->searchTable($users->last()->email)
-        ->assertCanSeeTableRecords($users->take(-1))
-        ->assertCanNotSeeTableRecords($users->take($users->count() - 1));
-</code-snippet>
-
-<code-snippet name="Filament Create Resource Test" lang="php">
-    livewire(CreateUser::class)
-        ->fillForm([
-            'name' => 'Howdy',
-            'email' => 'howdy@example.com',
-        ])
-        ->call('create')
-        ->assertNotified()
-        ->assertRedirect();
-
-    assertDatabaseHas(User::class, [
-        'name' => 'Howdy',
-        'email' => 'howdy@example.com',
-    ]);
-</code-snippet>
-
-<code-snippet name="Testing Multiple Panels (setup())" lang="php">
-    use Filament\Facades\Filament;
-
-    Filament::setCurrentPanel('app');
-</code-snippet>
-
-<code-snippet name="Calling an Action in a Test" lang="php">
-    livewire(EditInvoice::class, [
-        'invoice' => $invoice,
-    ])->callAction('send');
-
-    expect($invoice->refresh())->isSent()->toBeTrue();
-</code-snippet>
-
-## Version 3 Changes To Focus On
-- Resources are located in `app/Filament/Resources/` directory.
-- Resource pages (List, Create, Edit) are auto-generated within the resource's directory - e.g., `app/Filament/Resources/PostResource/Pages/`.
-- Forms use the `Forms\Components` namespace for form fields.
-- Tables use the `Tables\Columns` namespace for table columns.
-- A new `Filament\Forms\Components\RichEditor` component is available.
-- Form and table schemas now use fluent method chaining.
-- Added `php artisan filament:optimize` command for production optimization.
-- Requires implementing `FilamentUser` contract for production access control.
 </laravel-boost-guidelines>

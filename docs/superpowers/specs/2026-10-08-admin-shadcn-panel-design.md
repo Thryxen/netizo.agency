@@ -43,8 +43,7 @@ Poza zakresem: zmiany strony głównej (poza tokenami sidebara w `app.css` i ewe
 
 ### Kontrolery (`App\Http\Controllers\Admin`)
 
-- `ProjectController`, `ClientController`: `index`, `create`, `store`, `edit`, `update`, `destroy`, `destroyMany`.
-- `ProjectReorderController`, `ClientReorderController`: przyjmują uporządkowaną listę `ids`, zapisują `sort_order` w transakcji, odrzucają id spoza tabeli.
+- `ProjectController`, `ClientController`: `index`, `create`, `store`, `edit`, `update`, `destroy`, `destroyMany`, `reorder`. `reorder` przyjmuje uporządkowaną listę `ids`, zapisuje `sort_order` w transakcji (wspólny trait `ReordersRecords`) i odrzuca id spoza tabeli.
 - `ContactMessageController`, `ProjectBriefController`: `index`, `show`, `destroy`, `destroyMany`.
 - `CallbackRequestController`: `index`, `destroy`, `destroyMany`.
 - Listy leadów: paginacja 25 na stronę, `search`, `from`, `until`, `sort`, `direction` w query string; domyślnie `created_at desc`.
@@ -53,7 +52,7 @@ Poza zakresem: zmiany strony głównej (poza tokenami sidebara w `app.css` i ewe
 
 ### Form Requesty (`App\Http\Requests\Admin`)
 
-`StoreProjectRequest` / `UpdateProjectRequest`, `StoreClientRequest` / `UpdateClientRequest`, `DestroyManyRequest` (wspólny: `ids` – tablica unikalnych liczb całkowitych), `ReorderRequest`. Reguły przeniesione z Filament:
+`SaveProjectRequest` i `SaveClientRequest` (zapis i edycja), `DestroyManyRequest` i `ReorderRequest` (`ids` – tablica unikalnych liczb całkowitych), `LoginRequest`, `LeadIndexRequest` i `BriefIndexRequest` (listy leadów; bez reguł, bo wartości spoza dozwolonego zbioru są ignorowane, nie odrzucane). Reguły przeniesione z Filament:
 
 - Projekt: `title` (wymagane, max 255), `slug` (wymagane, max 255, unikalne z ignorowaniem rekordu), `url` i `category` (wymagane, max 255), `sort_order` (liczba całkowita, domyślnie 0), `is_active` (boolean), `description` i `full_description` (wymagane), `tech_stack` (wymagane, min 1), `metrics` (1–3 pozycje `value` + `label`), `challenges` i `solutions` (1–6 pozycji tekstowych), `thumbnail_image` i `full_image` (opcjonalne, obraz, do 50 MB).
 - Klient: `name` (wymagane, max 255), `url` (opcjonalny, poprawny URL, max 255), `sort_order`, `is_active`.
@@ -111,7 +110,7 @@ Dedykowany widok: skrypt motywu przed malowaniem (jak w `app.blade.php`), `@vite
 
 ### Brief
 
-Etykiety wartości z `components/home/brief/brief-options.ts`, jedno źródło wartości, które i tak musi zgadzać się z `StoreProjectBriefRequest`. Grupy, których tam nie ma (źródło, preferowany kontakt itd.), dopisane w małej mapie `components/admin/brief-labels.ts`. Nieznana wartość wyświetla się surowo.
+Etykiety wartości z `components/home/brief/brief-options.ts`, jedno źródło wartości, które i tak musi zgadzać się z `StoreProjectBriefRequest`. Plik zawiera wszystkie grupy, więc `components/admin/brief-labels.ts` to tylko helpery wyszukujące etykietę. Nieznana wartość wyświetla się surowo.
 
 ### Zasady
 
@@ -134,7 +133,7 @@ Pest, `tests/Feature` (i jeden `tests/Unit`).
 - **Klienci:** CRUD, kolejność, usuwanie zbiorcze, walidacja `url`.
 - **Wiadomości, briefy, prośby o kontakt:** lista z wyszukiwaniem, filtrem dat i paginacją; `show`; `destroy`; `destroyMany`.
 - **`ImageOptimizer`:** test jednostkowy (WebP, bez powiększania, nazwa ULID).
-- **Przepisane:** `ProjectImageUploadTest` z Livewire na żądania HTTP z zachowaniem obu scenariuszy; `CreateAdminUserTest` sprawdza logowanie utworzonego konta na `/admin/login` zamiast `canAccessPanel`; `SecurityHeadersTest` dostaje sprawdzenie CSP na ścieżce admina.
+- **Przepisane:** `ProjectImageUploadTest` z Livewire na test `ImageOptimizer` z zachowaniem obu scenariuszy (upload przez HTTP pokrywa `tests/Feature/Admin/ProjectTest.php`); `CreateAdminUserTest` sprawdza logowanie utworzonego konta na `/admin/login` zamiast `canAccessPanel`; `SecurityHeadersTest` dostaje sprawdzenie CSP na ścieżce admina.
 - **Frontend:** brak runnera JS i brak jego dodawania. Weryfikacja: `npm run types`, `npm run build`, przegląd w przeglądarce (motyw jasny i ciemny, zwijanie sidebara, przeciąganie, upload, mobile, brak naruszeń CSP w konsoli).
 - Przed zakończeniem: `vendor/bin/pint --dirty --format agent`, testy z filtrem po kolei i pełny zestaw na końcu.
 
