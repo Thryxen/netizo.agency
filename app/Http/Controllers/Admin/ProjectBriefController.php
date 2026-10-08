@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\RedirectsToList;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BriefIndexRequest;
 use App\Http\Requests\Admin\DestroyManyRequest;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class ProjectBriefController extends Controller
 {
+    use RedirectsToList;
+
     private const SEARCHABLE = ['name', 'email', 'company', 'phone', 'integrations', 'notes'];
 
     private const SORTABLE = ['name', 'email', 'company', 'budget', 'timeline', 'created_at'];
@@ -57,7 +60,7 @@ class ProjectBriefController extends Controller
     {
         $brief->delete();
 
-        return to_route('admin.briefs.index')->with('success', 'Usunięto brief.');
+        return $this->redirectToList('admin.briefs.index', 'Usunięto brief.');
     }
 
     public function destroyMany(DestroyManyRequest $request): RedirectResponse

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\RedirectsToList;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\DestroyManyRequest;
 use App\Http\Requests\Admin\LeadIndexRequest;
@@ -13,6 +14,8 @@ use Inertia\Response;
 
 class ContactMessageController extends Controller
 {
+    use RedirectsToList;
+
     private const SEARCHABLE = ['name', 'email', 'subject', 'message'];
 
     private const SORTABLE = ['name', 'email', 'subject', 'created_at'];
@@ -41,7 +44,7 @@ class ContactMessageController extends Controller
     {
         $message->delete();
 
-        return to_route('admin.messages.index')->with('success', 'Usunięto wiadomość.');
+        return $this->redirectToList('admin.messages.index', 'Usunięto wiadomość.');
     }
 
     public function destroyMany(DestroyManyRequest $request): RedirectResponse

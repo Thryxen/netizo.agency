@@ -71,6 +71,15 @@ it('deletes a callback request and goes back to the list', function () {
     assertDatabaseMissing('callback_requests', ['id' => $callback->id]);
 });
 
+it('stays on the filtered list after deleting one callback request from it', function () {
+    $callback = CallbackRequest::factory()->create(['phone' => '+48 111 222 333']);
+    $list = route('admin.callbacks.index', ['search' => '111', 'sort' => 'phone', 'direction' => 'asc']);
+
+    $this->from($list)->delete(route('admin.callbacks.destroy', $callback))->assertRedirect($list);
+
+    assertDatabaseMissing('callback_requests', ['id' => $callback->id]);
+});
+
 it('deletes many callback requests at once and leaves the others', function () {
     [$first, $second, $kept] = CallbackRequest::factory()->count(3)->create();
 

@@ -254,3 +254,19 @@ it('redirects guests away from the projects area and changes nothing', function 
     assertDatabaseHas('projects', ['id' => $project->id, 'sort_order' => 5]);
     assertDatabaseCount('projects', 1);
 });
+
+it('accepts an edit sent as a post with a spoofed method, as the form does', function () {
+    Storage::disk('public')->put('projects/full/old.webp', 'x');
+    $project = Project::factory()->create(['slug' => 'netizo-case-study', 'full_image' => 'projects/full/old.webp']);
+
+    $this->post(route('admin.projects.update', $project), validProjectPayload([
+        '_method' => 'put',
+        'title' => 'Zmieniony tytuł',
+        'full_image' => UploadedFile::fake()->image('new.png', 1000, 500),
+    ]))->assertRedirect(route('admin.projects.index'))->assertSessionHasNoErrors();
+
+    expect($project->fresh()->title)->toBe('Zmieniony tytuł')
+        ->and($project->fresh()->full_image)->not->toBe('projects/full/old.webp');
+
+    Storage::disk('public')->assertMissing('projects/full/old.webp');
+});

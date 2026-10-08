@@ -83,7 +83,7 @@ export function ProjectForm({ project, nextSortOrder = 1 }: ProjectFormProps) {
     const [tab, setTab] = useState<TabKey>('basic');
     const [slugEdited, setSlugEdited] = useState(Boolean(project));
 
-    const { data, setData, post, put, processing, errors, transform } = useForm<ProjectFormData>({
+    const { data, setData, post, processing, errors, transform } = useForm<ProjectFormData>({
         title: project?.title ?? '',
         slug: project?.slug ?? '',
         url: project?.url ?? '',
@@ -102,9 +102,11 @@ export function ProjectForm({ project, nextSortOrder = 1 }: ProjectFormProps) {
         solutions: project?.solutions ?? blankTexts(4),
     });
 
-    // Rows the user left blank are dropped, so the default empty rows do not block saving.
+    // Rows the user left blank are dropped, so the default empty rows do not block saving. An edit is sent as a
+    // POST with a spoofed method: PHP only parses a real multipart PUT body from 8.4 on.
     transform((form) => ({
         ...form,
+        ...(project ? { _method: 'put' } : {}),
         tech_stack: form.tech_stack.filter((tag) => tag.trim() !== ''),
         metrics: form.metrics.filter((metric) => metric.value.trim() !== '' || metric.label.trim() !== ''),
         challenges: form.challenges.filter((text) => text.trim() !== ''),
@@ -125,13 +127,7 @@ export function ProjectForm({ project, nextSortOrder = 1 }: ProjectFormProps) {
             },
         };
 
-        if (project) {
-            put(adminRoutes.projects.update(project.id), options);
-
-            return;
-        }
-
-        post(adminRoutes.projects.index, options);
+        post(project ? adminRoutes.projects.update(project.id) : adminRoutes.projects.index, options);
     };
 
     const changeTitle = (title: string): void => {

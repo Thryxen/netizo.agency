@@ -18,5 +18,14 @@ export function useSelection() {
 
     const clear = useCallback((): void => setSelected([]), []);
 
-    return { selected, toggle, toggleAll, clear };
+    /** Drops the ids that are no longer in the list (deleted elsewhere), so they never count in a bulk action. */
+    const retain = useCallback((ids: number[]): void => {
+        setSelected((current) => {
+            const kept = current.filter((id) => ids.includes(id));
+
+            return kept.length === current.length ? current : kept;
+        });
+    }, []);
+
+    return { selected, toggle, toggleAll, clear, retain };
 }

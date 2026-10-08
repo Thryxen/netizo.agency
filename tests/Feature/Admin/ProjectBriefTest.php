@@ -113,6 +113,23 @@ it('deletes a brief and goes back to the list', function () {
     assertDatabaseMissing('project_briefs', ['id' => $brief->id]);
 });
 
+it('stays on the filtered list after deleting one brief from it', function () {
+    $brief = ProjectBrief::factory()->create(['budget' => 'large']);
+    $list = route('admin.briefs.index', ['budget' => 'large', 'sort' => 'name', 'direction' => 'asc']);
+
+    $this->from($list)->delete(route('admin.briefs.destroy', $brief))->assertRedirect($list);
+
+    assertDatabaseMissing('project_briefs', ['id' => $brief->id]);
+});
+
+it('goes to the bare list after deleting a brief from its detail page', function () {
+    $brief = ProjectBrief::factory()->create();
+
+    $this->from(route('admin.briefs.show', $brief))
+        ->delete(route('admin.briefs.destroy', $brief))
+        ->assertRedirect(route('admin.briefs.index'));
+});
+
 it('deletes many briefs at once and leaves the others', function () {
     [$first, $second, $kept] = ProjectBrief::factory()->count(3)->create();
 

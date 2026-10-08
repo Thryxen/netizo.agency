@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\RedirectsToList;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\DestroyManyRequest;
 use App\Http\Requests\Admin\LeadIndexRequest;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class CallbackRequestController extends Controller
 {
+    use RedirectsToList;
+
     private const SEARCHABLE = ['phone'];
 
     private const SORTABLE = ['phone', 'created_at'];
@@ -33,7 +36,7 @@ class CallbackRequestController extends Controller
     {
         $callback->delete();
 
-        return to_route('admin.callbacks.index')->with('success', 'Usunięto prośbę o kontakt.');
+        return $this->redirectToList('admin.callbacks.index', 'Usunięto prośbę o kontakt.');
     }
 
     public function destroyMany(DestroyManyRequest $request): RedirectResponse

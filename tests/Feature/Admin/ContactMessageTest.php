@@ -125,6 +125,23 @@ it('deletes a message and goes back to the list', function () {
     assertDatabaseMissing('contact_messages', ['id' => $message->id]);
 });
 
+it('stays on the filtered list after deleting one message from it', function () {
+    $message = ContactMessage::factory()->create(['name' => 'Jan Kowalski']);
+    $list = route('admin.messages.index', ['search' => 'Kowalski', 'sort' => 'name', 'direction' => 'asc', 'page' => 2]);
+
+    $this->from($list)->delete(route('admin.messages.destroy', $message))->assertRedirect($list);
+
+    assertDatabaseMissing('contact_messages', ['id' => $message->id]);
+});
+
+it('goes to the bare list after deleting a message from its detail page', function () {
+    $message = ContactMessage::factory()->create();
+
+    $this->from(route('admin.messages.show', $message))
+        ->delete(route('admin.messages.destroy', $message))
+        ->assertRedirect(route('admin.messages.index'));
+});
+
 it('deletes many messages at once and leaves the others', function () {
     [$first, $second, $kept] = ContactMessage::factory()->count(3)->create();
 

@@ -20,11 +20,26 @@ type Options<T extends Orderable> = {
  */
 export function useRecordList<T extends Orderable>({ records, reorderUrl, searchText }: Options<T>) {
     const [rows, setRows] = useState(records);
-    const [search, setSearch] = useState('');
-    const [status, setStatus] = useState<StatusFilter>('all');
+    const [search, setSearchValue] = useState('');
+    const [status, setStatusValue] = useState<StatusFilter>('all');
     const selection = useSelection();
+    const { retain, clear } = selection;
 
-    useEffect(() => setRows(records), [records]);
+    useEffect(() => {
+        setRows(records);
+        retain(records.map((record) => record.id));
+    }, [records, retain]);
+
+    // A bulk action only touches what the user sees, so changing the filters starts a new selection.
+    const setSearch = (value: string): void => {
+        setSearchValue(value);
+        clear();
+    };
+
+    const setStatus = (value: StatusFilter): void => {
+        setStatusValue(value);
+        clear();
+    };
 
     const visibleRows = useMemo(() => {
         const needle = search.trim().toLowerCase();
