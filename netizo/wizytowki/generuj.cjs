@@ -160,6 +160,63 @@ function fitText() {
     }
 }
 
+/**
+ * Uruchamiane w stronie: wypełnia każde [data-pattern] sygnetami N z <template id="sygnet">, w siatce co data-pitch mm
+ * (środki na jej węzłach liczonych od linii cięcia), znaki wysokości data-size mm. data-fade="x0 y0 x1 y1" (mm od cięcia)
+ * wygasza wzór: od punktu (x0, y0), gdzie go nie ma, do (x1, y1), gdzie ma pełny kolor --pattern. Pośrednie tony to
+ * pełne kolory zmieszane z --paper, nie przezroczystość, żeby PDF do druku jej nie zawierał.
+ */
+function drawPattern({ bleed, card }) {
+    const source = document.querySelector('#sygnet').content.firstElementChild;
+    const [, , viewWidth, viewHeight] = source.getAttribute('viewBox').split(/\s+/).map(Number);
+    const smoothstep = (t) => {
+        const clamped = Math.min(1, Math.max(0, t));
+
+        return clamped * clamped * (3 - 2 * clamped);
+    };
+
+    for (const layer of document.querySelectorAll('[data-pattern]')) {
+        const pitch = parseFloat(layer.dataset.pitch);
+        const height = parseFloat(layer.dataset.size);
+        const width = (height * viewWidth) / viewHeight;
+        const fade = layer.dataset.fade?.split(/\s+/).map(Number);
+        const strength = (x, y) => {
+            if (!fade) {
+                return 1;
+            }
+
+            const [fromX, fromY, toX, toY] = fade;
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+
+            return smoothstep(((x - fromX) * dx + (y - fromY) * dy) / (dx * dx + dy * dy));
+        };
+        const firstNode = (extent) => -Math.floor((bleed + extent / 2) / pitch) * pitch;
+
+        layer.replaceChildren();
+
+        for (let y = firstNode(height); y - height / 2 < card.height + bleed; y += pitch) {
+            for (let x = firstNode(width); x - width / 2 < card.width + bleed; x += pitch) {
+                const tone = strength(x, y);
+
+                if (tone < 0.06) {
+                    continue;
+                }
+
+                const mark = document.createElement('div');
+
+                mark.className = 'pattern__mark svg-fit';
+                mark.style.left = `${bleed + x - width / 2}mm`;
+                mark.style.top = `${bleed + y - height / 2}mm`;
+                mark.style.height = `${height}mm`;
+                mark.style.color = `color-mix(in srgb, var(--pattern) ${(tone * 100).toFixed(1)}%, var(--paper))`;
+                mark.append(source.cloneNode(true));
+                layer.append(mark);
+            }
+        }
+    }
+}
+
 (async () => {
     const people = JSON.parse(fs.readFileSync(path.join(DIR, 'osoby.json'), 'utf8'));
 
@@ -201,6 +258,7 @@ function fitText() {
         await page.setContent(html, { waitUntil: 'load' });
         await page.evaluate(() => document.fonts.ready);
         await page.evaluate(fitText);
+        await page.evaluate(drawPattern, { bleed: BLEED_MM, card: CARD_MM });
 
         await page.pdf({ path: path.join(DIR, 'pdf', `${slug}.pdf`), preferCSSPageSize: true, printBackground: true });
 

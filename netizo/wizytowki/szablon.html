@@ -3,7 +3,8 @@
     Wizytówka netizo, 85 × 55 mm + 3 mm spadu (strona 91 × 61 mm): strona 1 przód (osoba), strona 2 tył (marka).
     Karta jak wycinek netizo.pl. Przód: pełne logo, linie od spadu do spadu z nitami, imię i nazwisko, kod QR
     z kontaktem, e-mail i telefon jak pasek statystyk w hero. Tył: ciemny motyw, pełne logo i nagłówek z hero na wielkim
-    sygnecie N przyciętym krawędzią karty.
+    sygnecie N przyciętym krawędzią karty. Tło obu stron: drobny wzór z sygnetów N, wygaszany w stronę treści; na
+    przodzie dochodzi do samego kodu QR.
     Położenia liczymy od linii cięcia: calc(var(--b) + …); treść trzyma się ≥ 4 mm od cięcia.
     Znaczniki w podwójnych klamrach wypełnia generuj.cjs danymi z osoby.json.
 -->
@@ -47,6 +48,8 @@
             --muted: #6e6e6e;
             --line: #d6d6d6;
             --rivet-color: #b3b3b3;
+            /* Najmocniejszy ton wzoru z N, słabsze miesza generator z --paper. */
+            --pattern: #ededed;
         }
 
         * {
@@ -88,6 +91,20 @@
             --muted: #a1a1a1;
             --line: #2b2b2b;
             --rivet-color: #4a4a4a;
+            --pattern: #1a1a1a;
+        }
+
+        /*
+         * Wzór z sygnetów N (rysuje go generator, patrz drawPattern w generuj.cjs): siatka co 6 mm od linii cięcia, więc
+         * linie karty (15, 39 i 50 mm) biegną dokładnie między rzędami i kolumnami znaków.
+         */
+        .pattern {
+            position: absolute;
+            inset: 0;
+        }
+
+        .pattern__mark {
+            position: absolute;
         }
 
         .mono {
@@ -221,8 +238,13 @@
             gap: 1.1mm;
         }
 
+        /*
+         * Białe tło tylko pod samym kodem: wzór dochodzi do jego krawędzi, a jasne moduły zostają czyste. Wzór przy kodzie
+         * jest na tyle jasny, że skaner bierze go za białą strefę ciszy.
+         */
         .qr .svg-fit {
             height: 16.5mm;
+            background: var(--paper);
         }
 
         .qr__caption {
@@ -319,7 +341,12 @@
     </style>
 </head>
 <body>
+    <!-- Wzorzec znaku dla [data-pattern]; przed kartami, żeby nie psuć .card:last-child. -->
+    <template id="sygnet">{{sygnet}}</template>
+
     <section class="card">
+        <div class="pattern" data-pattern data-pitch="6" data-size="2.4" data-fade="10 0 85 55"></div>
+
         <span class="hairline" style="--y: 15mm"></span>
         <span class="hairline" style="--y: 39mm"></span>
         <span class="divider" style="--x: 50mm; top: 0"></span>
@@ -357,6 +384,7 @@
     </section>
 
     <section class="card dark">
+        <div class="pattern" data-pattern data-pitch="6" data-size="2.4" data-fade="0 0 85 55"></div>
         <div class="mark svg-fit">{{sygnet}}</div>
 
         <span class="hairline" style="--y: 15mm"></span>
