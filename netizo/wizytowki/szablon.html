@@ -112,32 +112,40 @@
             font-family: 'Geist Mono', monospace;
         }
 
-        /* Linia od spadu do spadu, przegroda od --y w dół do spadu i nit na skrzyżowaniu, jak w sekcjach strony. */
-        .hairline {
+        /*
+         * Linie od spadu do spadu (pozioma i pionowa przegroda) i nity na skrzyżowaniach, jak w sekcjach strony. Rysuje je
+         * SVG, a nie tła elementów: Chromium przy druku zaokrągla tła do pełnych pikseli CSS (ok. 0,26 mm), więc nit
+         * lądował pół piksela obok środka linii, a linia drukowała się grubsza. Geometria SVG trafia do PDF dokładnie.
+         */
+        .rules {
             position: absolute;
-            left: 0;
-            right: 0;
-            top: calc(var(--b) + var(--y) - var(--hair) / 2);
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hairline {
+            x: 0;
+            y: calc(var(--b) + var(--y) - var(--hair) / 2);
+            width: 100%;
             height: var(--hair);
-            background: var(--line);
+            fill: var(--line);
         }
 
         .divider {
-            position: absolute;
-            top: calc(var(--b) + var(--y));
-            bottom: 0;
-            left: calc(var(--b) + var(--x) - var(--hair) / 2);
+            x: calc(var(--b) + var(--x) - var(--hair) / 2);
+            y: 0;
             width: var(--hair);
-            background: var(--line);
+            height: 100%;
+            fill: var(--line);
         }
 
         .rivet {
-            position: absolute;
-            left: calc(var(--b) + var(--x) - var(--rivet) / 2);
-            top: calc(var(--b) + var(--y) - var(--rivet) / 2);
+            x: calc(var(--b) + var(--x) - var(--rivet) / 2);
+            y: calc(var(--b) + var(--y) - var(--rivet) / 2);
             width: var(--rivet);
             height: var(--rivet);
-            background: var(--rivet-color);
+            fill: var(--rivet-color);
         }
 
         /*
@@ -348,11 +356,13 @@
     <section class="card">
         <div class="pattern" data-pattern data-grid="15 10" data-size="2.4" data-inset="1.1" data-fade="10 0 85 55"></div>
 
-        <span class="hairline" style="--y: 15mm"></span>
-        <span class="hairline" style="--y: 39mm"></span>
-        <span class="divider" style="--x: 50mm; top: 0"></span>
-        <span class="rivet" style="--x: 50mm; --y: 15mm"></span>
-        <span class="rivet" style="--x: 50mm; --y: 39mm"></span>
+        <svg class="rules">
+            <rect class="hairline" style="--y: 15mm" />
+            <rect class="hairline" style="--y: 39mm" />
+            <rect class="divider" style="--x: 50mm" />
+            <rect class="rivet" style="--x: 50mm; --y: 15mm" />
+            <rect class="rivet" style="--x: 50mm; --y: 39mm" />
+        </svg>
 
         <div class="top">
             <div class="logo svg-fit">{{logo}}</div>
@@ -388,8 +398,10 @@
         <div class="pattern" data-pattern data-grid="15 10" data-size="2.4" data-inset="1.1" data-fade="0 0 85 55"></div>
         <div class="mark svg-fit">{{sygnet}}</div>
 
-        <span class="hairline" style="--y: 15mm"></span>
-        <span class="hairline" style="--y: 43mm"></span>
+        <svg class="rules">
+            <rect class="hairline" style="--y: 15mm" />
+            <rect class="hairline" style="--y: 43mm" />
+        </svg>
 
         <div class="back-logo svg-fit">{{logo}}</div>
 

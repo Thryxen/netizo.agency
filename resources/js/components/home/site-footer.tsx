@@ -1,5 +1,5 @@
 import { ExternalLink } from '@/components/home/external-link';
-import { LogoMark } from '@/components/home/logo';
+import { Logo } from '@/components/home/logo';
 import { Container, Rivet } from '@/components/home/section';
 import { clientPanelUrl, contact, infoLinks } from '@/lib/site';
 import { cn } from '@/lib/utils';
@@ -19,10 +19,10 @@ export function SiteFooter() {
                 <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
                     <div className="sm:col-span-2 lg:col-span-6">
                         <a href="#" aria-label="Netizo – strona główna" className={cn(linkClass, '-ml-1 p-1 text-foreground')}>
-                            <LogoMark className="h-10" />
+                            <Logo className="h-10" />
                         </a>
-                        <p className="mt-4 max-w-sm leading-relaxed text-pretty text-muted-foreground">
-                            Strony WWW, aplikacje i systemy dla firm. Leszno, Wielkopolska – działamy w całej Polsce.
+                        <p className="mt-4 max-w-md leading-relaxed text-pretty text-muted-foreground">
+                            Tworzymy strony WWW dla ambitnych. Opieka techniczna, SEO i optymalizacja kosztów utrzymania. Zbudujmy to razem, od pomysłu do wdrożenia.
                         </p>
                     </div>
 
