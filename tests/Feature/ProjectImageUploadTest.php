@@ -1,68 +1,53 @@
 <?php
 
-use App\Filament\Resources\ProjectResource\Pages\CreateProject;
-use App\Models\Project;
-use App\Models\User;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Livewire\Livewire;
 
-it('converts uploaded project images to webp', function () {
+beforeEach(function () {
     Storage::fake('public');
-
-    $this->actingAs(User::factory()->create());
-
-    Livewire::test(CreateProject::class)
-        ->fillForm([
-            'title' => 'Netizo Case Study',
-            'slug' => 'netizo-case-study',
-            'url' => 'netizo.pl',
-            'category' => 'Web app',
-            'description' => 'Krótki opis projektu.',
-            'full_description' => 'Pełny opis projektu.',
-            'thumbnail_image' => UploadedFile::fake()->image('thumbnail.jpg', 800, 450)->size(20000),
-            'full_image' => UploadedFile::fake()->image('full.png', 1600, 900)->size(20000),
-            'tech_stack' => ['Laravel', 'Livewire'],
-            'metrics' => [
-                ['value' => '+40%', 'label' => 'Konwersja'],
-            ],
-            'challenges' => [
-                ['challenge' => 'Integracja z systemem klienta'],
-            ],
-            'solutions' => [
-                ['solution' => 'Dedykowane API'],
-            ],
-            'sort_order' => 1,
-            'is_active' => true,
-        ])
-        ->call('create')
-        ->assertHasNoFormErrors();
-
-    $project = Project::query()->where('slug', 'netizo-case-study')->firstOrFail();
-
-    expect($project->thumbnail_image)
-        ->toStartWith('projects/thumbnails/')
-        ->toEndWith('.webp')
-        ->and($project->full_image)
-        ->toStartWith('projects/full/')
-        ->toEndWith('.webp');
-
-    Storage::disk('public')->assertExists($project->thumbnail_image);
-    Storage::disk('public')->assertExists($project->full_image);
-
-    expect(Storage::disk('public')->mimeType($project->thumbnail_image))->toBe('image/webp')
-        ->and(Storage::disk('public')->mimeType($project->full_image))->toBe('image/webp');
 });
 
-it('converts tall project screenshots without exhausting php memory', function () {
+it('converts an uploaded image to webp under the given directory', function () {
+    $path = app(ImageOptimizer::class)->store(
+        UploadedFile::fake()->image('thumbnail.jpg', 800, 450)->size(20000),
+        'projects/thumbnails',
+        1600,
+    );
+
+    expect($path)->toStartWith('projects/thumbnails/')->toEndWith('.webp');
+
+    Storage::disk('public')->assertExists($path);
+
+    expect(Storage::disk('public')->mimeType($path))->toBe('image/webp');
+});
+
+it('never enlarges an image that is narrower than the limit', function () {
+    $path = app(ImageOptimizer::class)->store(
+        UploadedFile::fake()->image('small.png', 800, 450),
+        'projects/full',
+        1920,
+    );
+
+    expect(getimagesize(Storage::disk('public')->path($path))[0])->toBe(800);
+});
+
+it('names every stored file with a fresh ulid', function () {
+    $optimizer = app(ImageOptimizer::class);
+    $file = UploadedFile::fake()->image('a.jpg', 100, 100);
+
+    $first = $optimizer->store($file, 'projects/full', 1920);
+    $second = $optimizer->store($file, 'projects/full', 1920);
+
+    expect($first)->not->toBe($second)
+        ->and(Str::isUlid(pathinfo($first, PATHINFO_FILENAME)))->toBeTrue();
+});
+
+it('shrinks tall screenshots to the width limit without exhausting php memory', function () {
     if (! extension_loaded('imagick')) {
         $this->markTestSkipped('Imagick is required to process very large screenshots safely.');
     }
-
-    Storage::fake('public');
-
-    $this->actingAs(User::factory()->create());
 
     $sourcePath = sys_get_temp_dir().'/project-screenshot-'.Str::uuid().'.png';
 
@@ -74,43 +59,25 @@ it('converts tall project screenshots without exhausting php memory', function (
 
     $content = file_get_contents($sourcePath);
 
-    try {
-        Livewire::test(CreateProject::class)
-            ->fillForm([
-                'title' => 'Tall Screenshot Case Study',
-                'slug' => 'tall-screenshot-case-study',
-                'url' => 'treepro.pl',
-                'category' => 'Website',
-                'description' => 'Krótki opis projektu.',
-                'full_description' => 'Pełny opis projektu.',
-                'thumbnail_image' => UploadedFile::fake()->createWithContent('thumbnail.png', $content),
-                'full_image' => UploadedFile::fake()->createWithContent('full.png', $content),
-                'tech_stack' => ['Laravel', 'Livewire'],
-                'metrics' => [
-                    ['value' => '+40%', 'label' => 'Konwersja'],
-                ],
-                'challenges' => [
-                    ['challenge' => 'Długi screenshot strony'],
-                ],
-                'solutions' => [
-                    ['solution' => 'Konwersja przez Imagick'],
-                ],
-                'sort_order' => 1,
-                'is_active' => true,
-            ])
-            ->call('create')
-            ->assertHasNoFormErrors();
-    } finally {
-        @unlink($sourcePath);
-    }
+    @unlink($sourcePath);
 
-    $project = Project::query()->where('slug', 'tall-screenshot-case-study')->firstOrFail();
+    $optimizer = app(ImageOptimizer::class);
 
-    $thumbnailSize = getimagesize(Storage::disk('public')->path($project->thumbnail_image));
-    $fullSize = getimagesize(Storage::disk('public')->path($project->full_image));
+    $thumbnail = $optimizer->store(UploadedFile::fake()->createWithContent('thumbnail.png', $content), 'projects/thumbnails', 1600);
+    $full = $optimizer->store(UploadedFile::fake()->createWithContent('full.png', $content), 'projects/full', 1920);
 
-    expect($project->thumbnail_image)->toEndWith('.webp')
-        ->and($project->full_image)->toEndWith('.webp')
-        ->and($thumbnailSize[0])->toBe(1600)
-        ->and($fullSize[0])->toBe(1920);
+    expect(getimagesize(Storage::disk('public')->path($thumbnail))[0])->toBe(1600)
+        ->and(getimagesize(Storage::disk('public')->path($full))[0])->toBe(1920);
+});
+
+it('deletes a stored image and ignores empty or missing paths', function () {
+    $optimizer = app(ImageOptimizer::class);
+    $path = $optimizer->store(UploadedFile::fake()->image('a.jpg', 100, 100), 'projects/full', 1920);
+
+    $optimizer->delete($path);
+    $optimizer->delete(null);
+    $optimizer->delete('');
+    $optimizer->delete('projects/full/does-not-exist.webp');
+
+    Storage::disk('public')->assertMissing($path);
 });
