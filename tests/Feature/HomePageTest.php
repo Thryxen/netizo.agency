@@ -158,7 +158,7 @@ it('renders the organization JSON-LD built in the controller', function () {
         ->and($organization['name'])->toBe('Netizo')
         ->and($organization)->not->toHaveKey('sameAs')
         ->and($organization['address'])->toBe(['@type' => 'PostalAddress', 'addressLocality' => 'Leszno', 'addressRegion' => 'wielkopolskie', 'addressCountry' => 'PL'])
-        ->and($organization['image'])->toBe(asset('assets/images/og-image.jpg'))
+        ->and($organization['image'])->toBe(asset('assets/images/og-netizo.png'))
         ->and($organization['areaServed'])->toBe(['@type' => 'Country', 'name' => 'Polska'])
         ->and($organization['priceRange'])->toBe('$$')
         ->and($schemas->firstWhere('@type', 'WebPage'))->toBeNull();
@@ -166,8 +166,8 @@ it('renders the organization JSON-LD built in the controller', function () {
 
 it('points the share image tags at a 1200x630 file under the size link previews accept', function () {
     $response = $this->get('/')->assertOk();
-    $imageUrl = asset('assets/images/og-image.jpg');
-    $imagePath = public_path('assets/images/og-image.jpg');
+    $imageUrl = asset('assets/images/og-netizo.png');
+    $imagePath = public_path('assets/images/og-netizo.png');
 
     $response
         ->assertSee('<meta property="og:image" content="'.$imageUrl.'">', false)
@@ -177,7 +177,9 @@ it('points the share image tags at a 1200x630 file under the size link previews 
 
     expect($imagePath)->toBeFile()
         ->and(array_slice(getimagesize($imagePath), 0, 2))->toBe([1200, 630])
-        ->and(filesize($imagePath))->toBeLessThan(300 * 1024);
+        ->and(getimagesize($imagePath)['mime'])->toBe('image/png')
+        ->and(filesize($imagePath))->toBeLessThan(300 * 1024)
+        ->and(public_path('assets/images/og-image.jpg'))->not->toBeFile();
 });
 
 it('sets the dark class on the root element from the appearance cookie', function () {

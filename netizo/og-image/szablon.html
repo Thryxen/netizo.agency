@@ -1,0 +1,157 @@
+<!doctype html>
+<!--
+    Obraz do podglądów linków (Open Graph, X/Twitter, WhatsApp, Slack, Discord): 1200 × 630 px, jasny motyw netizo.pl.
+    Jak karta z wizytówek (netizo/wizytowki): pełne logo, nagłówek z hero, wielki sygnet N ton w ton przycięty krawędzią
+    obrazu, poziome linie na całą szerokość i pionowa szyna z nitami na skrzyżowaniach.
+    Znaczniki w podwójnych klamrach (logo i sygnet) wypełnia generuj.cjs; nie wpisuj ich w komentarzach, bo wstawione SVG
+    zawierają własne komentarze i przedwcześnie zamknęłyby ten.
+-->
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <title>OG image netizo</title>
+    <style>
+        @font-face {
+            font-family: 'Geist';
+            font-weight: 600;
+            src: url('fonts/geist-600.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Geist Mono';
+            font-weight: 400;
+            src: url('fonts/geist-mono-400.ttf') format('truetype');
+        }
+
+        :root {
+            /* Tokeny strony netizo.pl (jasny motyw), jak na przodzie wizytówki. */
+            --ink: #0a0a0a;
+            --paper: #ffffff;
+            --muted: #6e6e6e;
+            --line: #d6d6d6;
+            --rivet: #b3b3b3;
+            --mark: #f0f0f0;
+
+            --rail-x: 64px;
+            --content-x: 104px;
+            --line-top: 140px;
+            --line-bottom: 500px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        html,
+        body {
+            width: 1200px;
+            height: 630px;
+            background: var(--paper);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .canvas {
+            position: relative;
+            width: 1200px;
+            height: 630px;
+            overflow: hidden;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'Geist', sans-serif;
+        }
+
+        /* Wstawione SVG skalują się do wysokości kontenera; overflow: visible chroni zaokrąglone końce N. */
+        .svg-fit svg {
+            display: block;
+            width: auto;
+            height: 100%;
+            overflow: visible;
+        }
+
+        /* Wielki sygnet ton w ton, przycięty prawą krawędzią; linie biegną po nim. */
+        .mark {
+            position: absolute;
+            left: 640px;
+            top: -5px;
+            height: 640px;
+            color: var(--mark);
+        }
+
+        .hairline {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--line);
+        }
+
+        .rail {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: calc(var(--rail-x) - 1px);
+            width: 2px;
+            background: var(--line);
+        }
+
+        .rivet {
+            position: absolute;
+            left: calc(var(--rail-x) - 5px);
+            width: 10px;
+            height: 10px;
+            background: var(--rivet);
+        }
+
+        .logo {
+            position: absolute;
+            left: var(--content-x);
+            top: 34px;
+            height: 72px;
+            color: var(--ink);
+        }
+
+        .headline {
+            position: absolute;
+            left: var(--content-x);
+            top: var(--line-top);
+            height: calc(var(--line-bottom) - var(--line-top));
+            display: flex;
+            align-items: center;
+            font-size: 84px;
+            font-weight: 600;
+            line-height: 1.04;
+            letter-spacing: -0.035em;
+        }
+
+        .url {
+            position: absolute;
+            left: var(--content-x);
+            top: var(--line-bottom);
+            height: calc(630px - var(--line-bottom));
+            display: flex;
+            align-items: center;
+            font-family: 'Geist Mono', monospace;
+            font-size: 34px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas">
+        <div class="mark svg-fit">{{sygnet}}</div>
+
+        <span class="hairline" style="top: calc(var(--line-top) - 1px)"></span>
+        <span class="hairline" style="top: calc(var(--line-bottom) - 1px)"></span>
+        <span class="rail"></span>
+        <span class="rivet" style="top: calc(var(--line-top) - 5px)"></span>
+        <span class="rivet" style="top: calc(var(--line-bottom) - 5px)"></span>
+
+        <div class="logo svg-fit">{{logo}}</div>
+
+        <p class="headline">Tworzymy<br>strony WWW<br>dla ambitnych<br>firm.</p>
+
+        <p class="url">netizo.pl</p>
+    </div>
+</body>
+</html>

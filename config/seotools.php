@@ -69,7 +69,7 @@ return [
             'url' => null,
             'type' => 'website',
             'site_name' => 'Netizo',
-            'images' => [env('APP_URL').'/assets/images/og-image.jpg'],
+            'images' => [env('APP_URL').'/assets/images/og-netizo.png'],
         ],
     ],
     'twitter' => [
@@ -78,7 +78,7 @@ return [
          */
         'defaults' => [
             'card' => 'summary_large_image',
-            'image' => env('APP_URL').'/assets/images/og-image.jpg',
+            'image' => env('APP_URL').'/assets/images/og-netizo.png',
         ],
     ],
     'json-ld' => [
@@ -90,7 +90,7 @@ return [
             'description' => 'Netizo - Software House tworzący nowoczesne aplikacje webowe, mobilne i systemy enterprise. Od pomysłu do wdrożenia.',
             'url' => 'full',
             'type' => 'WebPage',
-            'images' => [env('APP_URL').'/assets/images/og-image.jpg'],
+            'images' => [env('APP_URL').'/assets/images/og-netizo.png'],
         ],
     ],
 ];

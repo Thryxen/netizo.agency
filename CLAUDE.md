@@ -118,6 +118,8 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 
 **public/assets/images/illustrations/** - Light/dark WebP project placeholder (shown when a project has no screenshot)
 
+**public/assets/images/og-netizo.png** - 1200×630 share image (`og:image`, `twitter:image`, JSON-LD), generated from `netizo/og-image/szablon.html` by `netizo/og-image/generuj.cjs` (`npx -y -p playwright@1.58.0 node netizo/og-image/generuj.cjs`; logo, sygnet and fonts are shared with `netizo/wizytowki/`). Keep it under 300 KB (WhatsApp). When the design changes, use a new file name (it busts the Facebook/Discord/Cloudflare preview caches) and update `HomeController`, `config/seotools.php` and `HomePageTest`.
+
 ### Frontend Patterns
 - Monochrome shadcn neutral look with no accent colour (no yellow anywhere, error pages included); colour comes only from photos and project screenshots.
 - Rails and rivets mark the structure; grids use shared borders, not floating shadowed cards. No pixel/"bit" motifs (the old Voxbit brand): no square markers, no pixel font, photos are plain images.
