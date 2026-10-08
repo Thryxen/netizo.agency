@@ -28,9 +28,9 @@ export default function BriefShow({ brief }: { brief: AdminBrief }) {
                 </Button>
             }
         >
-            <div className="grid max-w-4xl gap-6">
+            <div className="grid max-w-4xl grid-cols-[minmax(0,1fr)] gap-6">
                 <Tabs defaultValue="contact">
-                    <TabsList className="h-auto flex-wrap justify-start">
+                    <TabsList className="max-w-full justify-start overflow-x-auto">
                         <TabsTrigger value="contact">Dane kontaktowe</TabsTrigger>
                         <TabsTrigger value="project">Projekt</TabsTrigger>
                         <TabsTrigger value="tech">Technologia</TabsTrigger>

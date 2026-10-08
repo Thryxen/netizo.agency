@@ -139,9 +139,9 @@ export function ProjectForm({ project, nextSortOrder = 1 }: ProjectFormProps) {
     };
 
     return (
-        <form onSubmit={submit} className="grid max-w-4xl gap-6" noValidate>
+        <form onSubmit={submit} className="grid max-w-4xl grid-cols-[minmax(0,1fr)] gap-6" noValidate>
             <Tabs value={tab} onValueChange={(value) => setTab(value as TabKey)}>
-                <TabsList className="h-auto flex-wrap justify-start">
+                <TabsList className="max-w-full justify-start overflow-x-auto">
                     {TABS.map((candidate) => (
                         <TabsTrigger key={candidate.key} value={candidate.key} className="gap-2">
                             {candidate.label}
