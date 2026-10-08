@@ -20,20 +20,17 @@ type ChoiceBaseProps = {
 };
 
 /**
- * The square marker, outlined when off. Checked: a checkbox fills the whole square; a radio (one of
- * many) lights only a centred inner bit, so single- and multi-select groups read differently.
+ * The square marker, outlined when off and filled when checked, the same for checkboxes and radios.
  * In forced-colors mode backgrounds are reset, so the marker opts out and paints the selection in Highlight.
  */
-function BitMarker({ type, className }: { type: ChoiceBaseProps['type']; className?: string }) {
+function BitMarker({ className }: { className?: string }) {
     return (
         <span
             aria-hidden="true"
             className={cn(
-                'relative block size-2.5 shrink-0 border border-foreground/60 transition-colors group-data-[state=checked]/choice:border-foreground',
+                'block size-2.5 shrink-0 border border-foreground/60 transition-colors group-data-[state=checked]/choice:border-foreground',
                 'forced-colors:border-[CanvasText] forced-colors:forced-color-adjust-none forced-colors:group-data-[state=checked]/choice:border-[Highlight]',
-                type === 'checkbox'
-                    ? 'group-data-[state=checked]/choice:bg-foreground forced-colors:group-data-[state=checked]/choice:bg-[Highlight]'
-                    : 'after:absolute after:inset-0 after:m-auto after:size-1 after:bg-transparent after:transition-colors group-data-[state=checked]/choice:after:bg-foreground forced-colors:group-data-[state=checked]/choice:after:bg-[Highlight]',
+                'group-data-[state=checked]/choice:bg-foreground forced-colors:group-data-[state=checked]/choice:bg-[Highlight]',
                 className,
             )}
         />
@@ -81,7 +78,7 @@ export function ChoiceCard({ label, description, icon: Icon, ...input }: ChoiceC
             )}
         >
             <HiddenInput {...input} />
-            <BitMarker type={input.type} className="absolute top-4 right-4" />
+            <BitMarker className="absolute top-4 right-4" />
             {Icon && <Icon aria-hidden="true" className="mb-2 size-5 text-foreground" strokeWidth={1.75} />}
             <span className="text-sm leading-snug font-medium">{label}</span>
             {description && <span className="text-sm leading-snug text-muted-foreground">{description}</span>}
@@ -110,7 +107,7 @@ export function ChoiceChip({ label, ...input }: ChoiceChipProps) {
             )}
         >
             <HiddenInput {...input} />
-            <BitMarker type={input.type} className="size-2" />
+            <BitMarker className="size-2" />
             <span>{label}</span>
         </label>
     );

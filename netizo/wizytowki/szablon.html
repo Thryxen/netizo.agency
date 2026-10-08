@@ -1,0 +1,340 @@
+<!doctype html>
+<!--
+    Wizytówka netizo, 85 × 55 mm + 3 mm spadu (strona 91 × 61 mm): strona 1 przód (osoba), strona 2 tył (marka).
+    Karta jak wycinek netizo.pl. Przód: pełne logo, linie od spadu do spadu z nitami, imię i nazwisko, kod QR
+    z kontaktem, e-mail i telefon jak pasek statystyk w hero. Tył: ciemny motyw, pełne logo i nagłówek z hero na wielkim
+    sygnecie N przyciętym krawędzią karty.
+    Położenia liczymy od linii cięcia: calc(var(--b) + …); treść trzyma się ≥ 4 mm od cięcia.
+    Znaczniki w podwójnych klamrach wypełnia generuj.cjs danymi z osoby.json.
+-->
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <title>Wizytówka netizo</title>
+    <style>
+        /* Statyczne kroje Geist (TTF): w PDF trafiają jako zwykłe osadzone fonty TrueType, nie Type 3. */
+        @font-face {
+            font-family: 'Geist';
+            font-weight: 400;
+            src: url('fonts/geist-400.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Geist';
+            font-weight: 600;
+            src: url('fonts/geist-600.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Geist Mono';
+            font-weight: 400;
+            src: url('fonts/geist-mono-400.ttf') format('truetype');
+        }
+
+        @page {
+            size: 91mm 61mm;
+            margin: 0;
+        }
+
+        :root {
+            --b: 3mm;
+            --hair: 0.15mm;
+            --rivet: 1mm;
+
+            /* Tokeny strony netizo.pl (jasny motyw). */
+            --ink: #0a0a0a;
+            --paper: #ffffff;
+            --muted: #6e6e6e;
+            --line: #d6d6d6;
+            --rivet-color: #b3b3b3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        html,
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body {
+            font-family: 'Geist', sans-serif;
+            font-kerning: normal;
+            text-rendering: geometricPrecision;
+            color: var(--ink);
+        }
+
+        .card {
+            position: relative;
+            width: 91mm;
+            height: 61mm;
+            overflow: hidden;
+            break-after: page;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        .card:last-child {
+            break-after: auto;
+        }
+
+        /* Tył: ciemny motyw strony. */
+        .card.dark {
+            --ink: #fafafa;
+            --paper: #0a0a0a;
+            --muted: #a1a1a1;
+            --line: #2b2b2b;
+            --rivet-color: #4a4a4a;
+        }
+
+        .mono {
+            font-family: 'Geist Mono', monospace;
+        }
+
+        /* Linia od spadu do spadu, przegroda od --y w dół do spadu i nit na skrzyżowaniu, jak w sekcjach strony. */
+        .hairline {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(var(--b) + var(--y) - var(--hair) / 2);
+            height: var(--hair);
+            background: var(--line);
+        }
+
+        .divider {
+            position: absolute;
+            top: calc(var(--b) + var(--y));
+            bottom: 0;
+            left: calc(var(--b) + var(--x) - var(--hair) / 2);
+            width: var(--hair);
+            background: var(--line);
+        }
+
+        .rivet {
+            position: absolute;
+            left: calc(var(--b) + var(--x) - var(--rivet) / 2);
+            top: calc(var(--b) + var(--y) - var(--rivet) / 2);
+            width: var(--rivet);
+            height: var(--rivet);
+            background: var(--rivet-color);
+        }
+
+        /*
+         * Wstawione SVG (logo, sygnet, QR) skalują się do wysokości kontenera. overflow: visible, bo Chromium zaokrągla pole
+         * SVG do pikseli i bez tego potrafi uciąć zaokrąglone końce sygnetu N.
+         */
+        .svg-fit svg {
+            display: block;
+            width: auto;
+            height: 100%;
+            overflow: visible;
+        }
+
+        /*
+         * Tekst, który musi się zmieścić w swoim pudełku (generator zmniejsza go po załadowaniu fontów): e-mail i telefon
+         * w jednej linii, data-fit="wrap" (imię i nazwisko) w najwyżej dwóch. text-wrap-style, nie skrót text-wrap, który
+         * nadpisałby white-space: nowrap.
+         */
+        [data-fit] {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-wrap-style: balance;
+        }
+
+        .top {
+            position: absolute;
+            left: calc(var(--b) + 6mm);
+            right: calc(var(--b) + 6mm);
+            top: var(--b);
+            height: 15mm;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Pełne logo ze sloganem: 9 mm wysokości, żeby „software solutions” miało czytelne ~4,5 pt. */
+        .logo {
+            height: 9mm;
+        }
+
+        .url {
+            font-size: 6.3pt;
+            line-height: 1;
+            color: var(--muted);
+        }
+
+        .person {
+            position: absolute;
+            left: calc(var(--b) + 6mm);
+            width: 41mm;
+            top: calc(var(--b) + 15mm);
+            height: 24mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1.5mm;
+        }
+
+        .name {
+            font-size: 15pt;
+            font-weight: 600;
+            line-height: 1.1;
+            letter-spacing: -0.035em;
+        }
+
+        .role {
+            font-size: 7.5pt;
+            line-height: 1.3;
+            color: var(--muted);
+        }
+
+        .qr {
+            position: absolute;
+            left: calc(var(--b) + 50mm);
+            right: var(--b);
+            top: calc(var(--b) + 15mm);
+            height: 24mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.1mm;
+        }
+
+        .qr .svg-fit {
+            height: 16.5mm;
+        }
+
+        .qr__caption {
+            font-size: 5.6pt;
+            line-height: 1;
+            color: var(--muted);
+        }
+
+        /* Dolne komórki jak pasek statystyk w hero: wartość, pod nią szary podpis. */
+        .stat {
+            position: absolute;
+            top: calc(var(--b) + 39mm);
+            height: 16mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1mm;
+        }
+
+        .stat--email {
+            left: calc(var(--b) + 6mm);
+            width: 41mm;
+        }
+
+        .stat--phone {
+            left: calc(var(--b) + 53mm);
+            width: 26mm;
+        }
+
+        .stat__value {
+            font-size: 7.8pt;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+        }
+
+        .stat__label {
+            font-size: 5.8pt;
+            line-height: 1.2;
+            color: var(--muted);
+        }
+
+        /* Tył: wielki sygnet ton w ton, przycięty krawędzią karty; linie biegną po nim. */
+        .mark {
+            position: absolute;
+            left: calc(var(--b) + 41mm);
+            top: calc(var(--b) + 5mm);
+            height: 53mm;
+            color: #242424;
+        }
+
+        .back-logo {
+            position: absolute;
+            left: calc(var(--b) + 6mm);
+            top: calc(var(--b) + 3mm);
+            height: 9mm;
+        }
+
+        .headline {
+            position: absolute;
+            left: calc(var(--b) + 6mm);
+            width: 38mm;
+            top: calc(var(--b) + 15mm);
+            height: 28mm;
+            display: flex;
+            align-items: center;
+            font-size: 13.5pt;
+            font-weight: 600;
+            line-height: 1.04;
+            letter-spacing: -0.035em;
+        }
+
+        .back-url {
+            position: absolute;
+            left: calc(var(--b) + 6mm);
+            top: calc(var(--b) + 43mm);
+            height: 12mm;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <section class="card">
+        <span class="hairline" style="--y: 15mm"></span>
+        <span class="hairline" style="--y: 39mm"></span>
+        <span class="divider" style="--x: 50mm; --y: 15mm"></span>
+        <span class="rivet" style="--x: 50mm; --y: 15mm"></span>
+        <span class="rivet" style="--x: 50mm; --y: 39mm"></span>
+
+        <div class="top">
+            <div class="logo svg-fit">{{logo}}</div>
+            <span class="url mono">netizo.pl</span>
+        </div>
+
+        <div class="person">
+            <p class="name" data-fit="wrap">{{name}}</p>
+            <p class="role">{{role}}</p>
+        </div>
+
+        <div class="qr">
+            <div class="svg-fit">{{qr}}</div>
+            <span class="qr__caption">Zapisz kontakt</span>
+        </div>
+
+        <div class="stat stat--email">
+            <span class="stat__value" data-fit>{{email}}</span>
+            <span class="stat__label">e-mail</span>
+        </div>
+
+        <div class="stat stat--phone">
+            <span class="stat__value" data-fit>{{phone}}</span>
+            <span class="stat__label">telefon</span>
+        </div>
+    </section>
+
+    <section class="card dark">
+        <div class="mark svg-fit">{{sygnet}}</div>
+
+        <span class="hairline" style="--y: 15mm"></span>
+        <span class="hairline" style="--y: 43mm"></span>
+
+        <div class="back-logo svg-fit">{{logo}}</div>
+
+        <p class="headline">Tworzymy<br>strony WWW<br>dla ambitnych<br>firm.</p>
+
+        <div class="back-url">
+            <span class="url mono">netizo.pl</span>
+        </div>
+    </section>
+</body>
+</html>

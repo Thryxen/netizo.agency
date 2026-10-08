@@ -61,7 +61,7 @@ function BrandSvg({ title, viewBox, className, children, ...props }: LogoProps &
             role={title ? 'img' : undefined}
             aria-hidden={title ? undefined : true}
             focusable="false"
-            className={cn('w-auto shrink-0', className)}
+            className={cn('w-auto shrink-0 overflow-visible', className)}
             {...props}
         >
             {title && <title>{title}</title>}
