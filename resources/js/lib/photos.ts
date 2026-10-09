@@ -9,6 +9,8 @@
  * `newsletter-reading`: the Newsletter photo (4:5).
  * `partner-referral` (3:2): a business card handed across a café table, under the partner programme's hero scene;
  * the right half is a calm sage wall for the floating chips.
+ * `partner-question` (3:2): a partner at home reading his phone, under the partner FAQ's chat; the lower part is a calm
+ * desk for the bubbles.
  */
 const PHOTOS = {
     'bento-mobile': { width: 1024, height: 1536 },
@@ -24,6 +26,7 @@ const PHOTOS = {
     'world-wool': { width: 1536, height: 1024 },
     'newsletter-reading': { width: 1024, height: 1280 },
     'partner-referral': { width: 1536, height: 1024 },
+    'partner-question': { width: 1536, height: 1024 },
 } as const satisfies Record<string, { width: number; height: number }>;
 
 export type PhotoName = keyof typeof PHOTOS;

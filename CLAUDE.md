@@ -118,7 +118,7 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 - `vendor/cookie-consent/` - Cookie banner, styled with the site tokens
 - `errors/` - Custom error pages (403, 404, 419, 429, 500, 503), self-contained
 
-**public/assets/images/photos/** - Generated photo series (WebP, `{name}.webp` at native width + `{name}-768.webp`): `hero-studio`, `bento-mobile`, `bento-ecommerce`, `mission-workshop`, `process-{discovery,design,development,launch}`, `contact-desk`, `partner-referral` (partner page hero). Reference them through `photo()` in `lib/photos.ts`.
+**public/assets/images/photos/** - Generated photo series (WebP, `{name}.webp` at native width + `{name}-768.webp`): `hero-studio`, `bento-mobile`, `bento-ecommerce`, `mission-workshop`, `process-{discovery,design,development,launch}`, `contact-desk`, `partner-referral` (partner page hero), `partner-question` (partner FAQ chat scene, the home `FaqScene` with its own photo and lines). Reference them through `photo()` in `lib/photos.ts`.
 
 **public/assets/images/illustrations/** - Light/dark WebP project placeholder (shown when a project has no screenshot)
 
