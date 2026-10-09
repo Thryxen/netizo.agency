@@ -33,4 +33,9 @@ export const adminRoutes = {
         index: `${base}/callbacks`,
         destroy: (id: number): string => `${base}/callbacks/${id}`,
     },
+    partners: {
+        index: `${base}/partners`,
+        show: (id: number): string => `${base}/partners/${id}`,
+        destroy: (id: number): string => `${base}/partners/${id}`,
+    },
 } as const;

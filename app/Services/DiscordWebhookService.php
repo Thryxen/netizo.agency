@@ -13,6 +13,8 @@ class DiscordWebhookService
 
     protected ?string $webhookCallback;
 
+    protected ?string $webhookPartner;
+
     protected ?string $roleId;
 
     public function __construct()
@@ -20,6 +22,7 @@ class DiscordWebhookService
         $this->webhookContact = config('services.discord.webhook_contact');
         $this->webhookBrief = config('services.discord.webhook_brief');
         $this->webhookCallback = config('services.discord.webhook_callback');
+        $this->webhookPartner = config('services.discord.webhook_partner');
         $this->roleId = config('services.discord.role_id');
     }
 
@@ -259,5 +262,27 @@ class DiscordWebhookService
         ];
 
         return $this->send($this->webhookCallback, 'Prośba o telefon', $fields, 0xF59E0B);
+    }
+
+    public function sendPartnerApplication(array $data): bool
+    {
+        $typeLabels = [
+            'accounting' => 'Biuro rachunkowe',
+            'marketing' => 'Agencja marketingowa',
+            'creative' => 'Grafik, fotograf, copywriter',
+            'consultant' => 'Doradca, konsultant',
+            'client' => 'Klient Netizo',
+            'other' => 'Inne',
+        ];
+
+        $fields = [
+            ['name' => 'Imię i nazwisko', 'value' => $data['name'], 'inline' => true],
+            ['name' => 'Email', 'value' => $data['email'], 'inline' => true],
+            ['name' => 'Telefon', 'value' => ($data['phone'] ?? null) ?: '-', 'inline' => true],
+            ['name' => 'Kim jest', 'value' => $typeLabels[$data['partner_type']] ?? $data['partner_type'], 'inline' => true],
+            ['name' => 'Kogo chce polecać', 'value' => ($data['message'] ?? null) ?: '-', 'inline' => false],
+        ];
+
+        return $this->send($this->webhookPartner ?? '', 'Nowe zgłoszenie do programu partnerskiego', $fields, 0x8B5CF6);
     }
 }

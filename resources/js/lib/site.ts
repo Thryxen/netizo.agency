@@ -13,6 +13,7 @@ export const contact = {
 export const clientPanelUrl = 'https://panel-klienta.netizo.pl';
 
 export const infoLinks = [
+    { href: '/partnerzy', label: 'Program partnerski' },
     { href: '/utrzymanie', label: 'Utrzymanie' },
     { href: '/regulamin', label: 'Regulamin' },
     { href: '/polityka-prywatnosci', label: 'Polityka prywatności' },

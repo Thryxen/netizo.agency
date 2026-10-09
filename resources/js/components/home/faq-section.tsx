@@ -57,7 +57,7 @@ export function FaqSection({ faq }: { faq: FaqItem[] }) {
  * accessibility tree). The transition lives on an inner element because Radix briefly zeroes
  * transition-duration on the Content node itself while it measures.
  */
-function FaqAnswer({ children }: { children: string }) {
+export function FaqAnswer({ children }: { children: string }) {
     return (
         <AccordionPrimitive.Content forceMount data-slot="accordion-content" className="group/answer">
             <div className="invisible grid grid-rows-[0fr] transition-[grid-template-rows,visibility] duration-200 ease-out group-data-[state=open]/answer:visible group-data-[state=open]/answer:grid-rows-[1fr]">

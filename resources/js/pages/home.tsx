@@ -8,6 +8,7 @@ import { HomeUiProvider } from '@/components/home/home-ui-context';
 import { MissionSection } from '@/components/home/mission-section';
 import { NewsletterSection } from '@/components/home/newsletter-section';
 import { PanelSection } from '@/components/home/panel-section';
+import { PartnerCtaSection } from '@/components/home/partner-cta-section';
 import { ProcessSection } from '@/components/home/process-section';
 import { ProjectsSection } from '@/components/home/projects-section';
 import { ServicesSection } from '@/components/home/services-section';
@@ -39,6 +40,7 @@ export default function Home({ projects, clients, faq }: HomePageProps) {
                     <ProcessSection />
                     <PanelSection />
                     <FaqSection faq={faq} />
+                    <PartnerCtaSection />
                     <NewsletterSection />
                     <ContactSection />
                 </main>

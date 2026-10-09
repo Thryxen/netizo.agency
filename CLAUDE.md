@@ -55,13 +55,15 @@ php artisan migrate   # Run migrations (uses SQLite in database/database.sqlite)
 - **Testing**: Pest 4
 
 ### Request flow
-- `GET /` → `HomeController@index` sets the SEOTools meta and returns `Inertia::render('home', ['projects', 'clients', 'faq'])`. FAQ items have one source (`HomeController::faq()`) used for both the prop and the FAQ JSON-LD passed to the root view as `faqSchema`.
+- `GET /` → `HomeController@index` sets the SEOTools meta and returns `Inertia::render('home', ['projects', 'clients', 'faq'])`. FAQ items have one source (`HomeController::faq()`) used for both the prop and the FAQ JSON-LD passed to the root view as `faqSchema` (built by `Controller::faqSchema()`).
+- `GET /partnerzy` → `PartnerProgramController@index` (route `partners`): the partner programme page (15% net of every paid invoice of a referred client for 12 months, payout within 14 days), `Inertia::render('partners', ['faq'])` with its own SEO meta, WebPage JSON-LD and FAQ JSON-LD (`PartnerProgramController::faq()`). A separate page with its own header (`PartnerHeader`); linked from the home page's "Poleć nas i zyskaj 15%" band (`components/home/partner-cta-section.tsx`, between FAQ and Newsletter), the footer and the mobile menu (`infoLinks` in `lib/site.ts`).
 - Root view `resources/views/app.blade.php`: Trusted Types default policy, gtag, theme-before-paint script, `SEO::generate()`, FAQ JSON-LD, favicons, `@vite`, `@inertiaHead`, `@cookieconsentscripts`; body has the GTM noscript, `@inertia`, then `@cookieconsentview` and Microsoft Clarity outside the Inertia root.
 - Middleware (`bootstrap/app.php`, web group): `HandleAppearance` (reads the `appearance` cookie: light/dark/system; the cookie is not encrypted), `HandleInertiaRequests`, `AddLinkHeadersForPreloadedAssets`, `SecurityHeaders` (CSP with Trusted Types; adds the Vite dev origin only while `public/hot` exists). `HandleInertiaRequests` also picks the root view (`admin` for `/admin*`, `app` otherwise), skips SSR for `/admin*` (`$withoutSsr`) and shares `auth`, `sidebarOpen` (cookie `sidebar_state`, not encrypted) and `flash.success` on admin requests only.
 
 ### Admin panel (`/admin`)
 - Routes in `routes/admin.php` (loaded by `bootstrap/app.php` through `then:`), names `admin.*`; `/admin` redirects to the project list. Guests go to `admin.login`; every user in the `users` table may log in (create one with `php artisan admin:create`). Login is limited to 5 failed attempts per email + IP.
 - Root view `resources/views/admin.blade.php`: theme-before-paint script, Trusted Types policy, `noindex`, no GTM/Clarity/cookie banner.
+- Partner applications (`/admin/partners`, `Admin\PartnerApplicationController`): list, details and delete like the other leads.
 - Projects and clients: whole list loaded, client-side search and status filter, drag-and-drop order saved through `POST /admin/{projects,clients}/reorder` (`ReordersRecords` trait), bulk delete through `DELETE /admin/{resource}` with `ids[]`. Messages, briefs and callback requests: server-side lists (25 per page) filtered through the query string (`LeadIndexRequest` / `BriefIndexRequest` ignore anything outside the allowed sort columns and dates).
 - Project images go through `App\Services\ImageOptimizer` (WebP, 1600 px thumbnail / 1920 px full image, ULID names on the `public` disk); replacing or removing an image deletes the old file. `challenges` / `solutions` are stored as `[['challenge' => …]]` / `[['solution' => …]]` and read back from plain strings too.
 - Brief labels in the panel come from `resources/js/components/home/brief/brief-options.ts` (`components/admin/brief-labels.ts`).
@@ -75,24 +77,25 @@ All in `routes/web.php` inside a `throttle:forms` group (10 req/min per IP, defi
 | POST /brief | project-briefs.store | ProjectBriefController | StoreProjectBriefRequest | ProjectBrief | sendBrief |
 | POST /oddzwonimy | callback-requests.store | CallbackRequestController | StoreCallbackRequestRequest | CallbackRequest | sendCallbackRequest |
 | POST /newsletter | newsletter-subscriptions.store | NewsletterSubscriptionController | StoreNewsletterSubscriptionRequest | NewsletterSubscriber | none |
+| POST /partnerzy | partner-applications.store | PartnerApplicationController | StorePartnerApplicationRequest | PartnerApplication | sendPartnerApplication |
 
-Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreContactMessageRequest::SUBJECTS`); `resources/js/components/home/brief/brief-options.ts` must use the same values. The frontend URLs are in `resources/js/lib/endpoints.ts` and forms post with Inertia `useForm`.
+Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreContactMessageRequest::SUBJECTS`); `resources/js/components/home/brief/brief-options.ts` must use the same values. Partner types: `StorePartnerApplicationRequest::PARTNER_TYPES` = `components/partners/partner-options.ts` (a test checks they match). The partner webhook is `DISCORD_WEBHOOK_PARTNER`, falling back to `DISCORD_WEBHOOK_CONTACT`. The frontend URLs are in `resources/js/lib/endpoints.ts` and forms post with Inertia `useForm`.
 
 ### Directory Structure
 
 **app/Http/Controllers/Admin/** and **app/Http/Requests/Admin/** - Admin panel backend:
 - `ProjectController`, `ClientController` - CRUD, reorder, bulk delete (`SaveProjectRequest`, `SaveClientRequest`, `ReorderRequest`, `DestroyManyRequest`)
-- `ContactMessageController`, `ProjectBriefController`, `CallbackRequestController` - Lead lists, details, delete (`LeadIndexRequest`, `BriefIndexRequest`)
+- `ContactMessageController`, `ProjectBriefController`, `CallbackRequestController`, `PartnerApplicationController` - Lead lists, details, delete (`LeadIndexRequest`, `BriefIndexRequest`)
 - `Auth/LoginController` + `LoginRequest` - Panel login
 
 **app/Http/** - Homepage backend:
-- `Controllers/HomeController.php` - Page props, SEO, FAQ
-- `Controllers/{ContactMessage,ProjectBrief,CallbackRequest,NewsletterSubscription}Controller.php` + `Requests/Store*Request.php` - Form endpoints
+- `Controllers/HomeController.php` - Page props, SEO, FAQ; `Controllers/PartnerProgramController.php` - partner programme page
+- `Controllers/{ContactMessage,ProjectBrief,CallbackRequest,NewsletterSubscription,PartnerApplication}Controller.php` + `Requests/Store*Request.php` - Form endpoints
 - `Middleware/HandleInertiaRequests.php`, `HandleAppearance.php`, `SecurityHeaders.php`
 
 **app/Models/** - Eloquent models:
 - `Project`, `Client` - Content entities
-- `ContactMessage`, `CallbackRequest`, `ProjectBrief`, `NewsletterSubscriber` - Lead capture
+- `ContactMessage`, `CallbackRequest`, `ProjectBrief`, `NewsletterSubscriber`, `PartnerApplication` - Lead capture
 
 **app/Services/** - `DiscordWebhookService.php` (Discord notifications for new leads), `ImageOptimizer.php` (WebP conversion of uploaded images)
 
@@ -102,6 +105,7 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 - `components/home/` - Homepage sections and shared primitives: `section.tsx` (`Section`, `SectionHeading` (heading reveal built in), `Container`, `Rivet`, gutter/bleed class helpers), `photo.tsx` (`Photo`: a photo in a clipping frame, lazy `<img>`), `logo.tsx` (netizo `Logo`/`LogoMark`), `theme-toggle.tsx`, `tech-tag.tsx`, `external-link.tsx`, `home-ui-context.tsx` (`useHomeUi()`: callback dialog state, contact tab, `openContact()`), one file per section, `bento/` (services bento: one file per live tile, `bento-tile.tsx` shell, scoped `bento-styles.tsx`), `brief/` (6-step brief wizard, options, form field helpers)
 - `components/motion/` - Motion primitives, import from `@/components/motion`: `Reveal`, `SplitLines` (hero H1), `CountUp`, `Marquee`, `Spotlight`/`useSpotlight`, `useLiveLoop`/`useInViewLoop` (in-view gated loops), `useMotionStyle` (bind `useScroll`/`useTransform` values to a plain element), `MotionRoot` (wraps the page). Don't use `motion.*`/`m.*`/`animate()` (they pull in the animation engine, ~+27 KB gz); gate scroll-linked styles with `useReducedMotionPreference()`.
 - `components/ui/` - shadcn components (add new ones with `npx shadcn add`, answer "no" to overwriting existing ones, then check the generated `cn` import points at `@/lib/utils`, not the `cn` npm package, and that sidebar tokens stay monochrome)
+- `pages/partners.tsx` + `components/partners/` - Partner programme page: `partner-data.ts` (terms, steps, calculator presets, copy), `partner-header`, `partner-hero` + `referral-scene` (live loop over the `partner-referral` photo: order with the partner's code → its 15% slice fills → payout notification), `steps-section` (scroll-drawn rail: `useScroll` → `--rail`), `commission-calculator` (firms as columns with a 15% cap, tweened total), `audience-section`, `rules-section`, `partner-faq-section`, `join-section` (partner card mirroring the typed name) + `partner-application-form`, `partner-options.ts`, `commission-bar` (the 85/15 split bar, shared with the home page band)
 - `pages/admin/` + `components/admin/` - Admin panel: `AdminLayout` (sidebar, breadcrumb, flash notice), forms (`project-form`, `client-form`, `image-field`, `tags-input`, `repeater-list`), lists (`list-toolbar`, `sort-header`, `pagination`, `bulk-bar`, `sortable`, `record-toolbar`), `detail`, `brief-labels`; hooks `use-selection`, `use-record-list`, `use-list-filters`; URLs in `lib/admin-routes.ts`; types in `types/admin.ts`
 - `hooks/use-appearance.tsx` - Light/dark/system theme (cookie + localStorage)
 - `lib/` - `utils.ts` (`cn`), `endpoints.ts`, `pages.ts`, `photos.ts` (`photo(name)` → `src`/`srcSet`/size for the photo series), `site.ts`, `in-page-navigation.ts`
@@ -114,7 +118,7 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 - `vendor/cookie-consent/` - Cookie banner, styled with the site tokens
 - `errors/` - Custom error pages (403, 404, 419, 429, 500, 503), self-contained
 
-**public/assets/images/photos/** - Generated photo series (WebP, `{name}.webp` at native width + `{name}-768.webp`): `hero-studio`, `bento-mobile`, `bento-ecommerce`, `mission-workshop`, `process-{discovery,design,development,launch}`, `contact-desk`. Reference them through `photo()` in `lib/photos.ts`.
+**public/assets/images/photos/** - Generated photo series (WebP, `{name}.webp` at native width + `{name}-768.webp`): `hero-studio`, `bento-mobile`, `bento-ecommerce`, `mission-workshop`, `process-{discovery,design,development,launch}`, `contact-desk`, `partner-referral` (partner page hero). Reference them through `photo()` in `lib/photos.ts`.
 
 **public/assets/images/illustrations/** - Light/dark WebP project placeholder (shown when a project has no screenshot)
 

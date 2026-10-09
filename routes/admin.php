@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\CallbackRequestController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContactMessageController;
+use App\Http\Controllers\Admin\PartnerApplicationController;
 use App\Http\Controllers\Admin\ProjectBriefController;
 use App\Http\Controllers\Admin\ProjectController;
 use Illuminate\Support\Facades\Route;
@@ -34,5 +35,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::delete('callbacks', [CallbackRequestController::class, 'destroyMany'])->name('callbacks.destroy-many');
         Route::resource('callbacks', CallbackRequestController::class)->only(['index', 'destroy']);
+
+        Route::delete('partners', [PartnerApplicationController::class, 'destroyMany'])->name('partners.destroy-many');
+        Route::resource('partners', PartnerApplicationController::class)->only(['index', 'show', 'destroy']);
     });
 });

@@ -156,28 +156,6 @@ class HomeController extends Controller
     }
 
     /**
-     * Build the FAQPage JSON-LD document from the FAQ items.
-     *
-     * @param  list<array{question: string, answer: string}>  $faq
-     * @return array<string, mixed>
-     */
-    private function faqSchema(array $faq): array
-    {
-        return [
-            '@context' => 'https://schema.org',
-            '@type' => 'FAQPage',
-            'mainEntity' => array_map(fn (array $item): array => [
-                '@type' => 'Question',
-                'name' => $item['question'],
-                'acceptedAnswer' => [
-                    '@type' => 'Answer',
-                    'text' => $item['answer'],
-                ],
-            ], $faq),
-        ];
-    }
-
-    /**
      * @return array{id: int, slug: string, title: string, url: string, liveUrl: string, category: string, description: string, fullDescription: string, thumbnailUrl: string|null, fullImageUrl: string|null, techStack: list<string>, metrics: list<array{value: string, label: string}>, challenges: list<string>, solutions: list<string>}
      */
     private function projectProps(Project $project): array

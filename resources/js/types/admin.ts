@@ -99,4 +99,15 @@ export type AdminBrief = AdminBriefRow & {
 
 export type AdminCallbackRow = { id: number; phone: string; createdAt: string };
 
+export type AdminPartnerRow = {
+    id: number;
+    name: string;
+    email: string;
+    phone: string | null;
+    partnerType: string;
+    createdAt: string;
+};
+
+export type AdminPartner = AdminPartnerRow & { message: string | null };
+
 export type BriefFilters = LeadFilters & { budget: string; timeline: string };

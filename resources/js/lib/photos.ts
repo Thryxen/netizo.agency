@@ -7,6 +7,8 @@
  * the knitwear workshop behind the hero's LiveBuild, the office corner behind the client panel.
  * `world-wool` (3:2): the knitwear shop's wool, under the FAQ chat.
  * `newsletter-reading`: the Newsletter photo (4:5).
+ * `partner-referral` (3:2): a business card handed across a café table, under the partner programme's hero scene;
+ * the right half is a calm sage wall for the floating chips.
  */
 const PHOTOS = {
     'bento-mobile': { width: 1024, height: 1536 },
@@ -21,6 +23,7 @@ const PHOTOS = {
     'backdrop-office': { width: 1536, height: 1024 },
     'world-wool': { width: 1536, height: 1024 },
     'newsletter-reading': { width: 1024, height: 1280 },
+    'partner-referral': { width: 1536, height: 1024 },
 } as const satisfies Record<string, { width: number; height: number }>;
 
 export type PhotoName = keyof typeof PHOTOS;

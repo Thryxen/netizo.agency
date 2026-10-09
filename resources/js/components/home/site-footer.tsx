@@ -10,7 +10,12 @@ const linkClass = cn(
     'outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
 );
 
-export function SiteFooter() {
+type SiteFooterProps = {
+    /** Where the logo leads: the top of the page on the home page (default), the home page elsewhere. */
+    homeHref?: string;
+};
+
+export function SiteFooter({ homeHref = '#' }: SiteFooterProps) {
     return (
         <footer className="border-t border-border">
             <Container className="py-14 md:py-16">
@@ -18,7 +23,7 @@ export function SiteFooter() {
                 <Rivet side="right" />
                 <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
                     <div className="sm:col-span-2 lg:col-span-6">
-                        <a href="#" aria-label="Netizo – strona główna" className={cn(linkClass, '-ml-1 p-1 text-foreground')}>
+                        <a href={homeHref} aria-label="Netizo – strona główna" className={cn(linkClass, '-ml-1 p-1 text-foreground')}>
                             <Logo className="h-10" />
                         </a>
                         <p className="mt-4 max-w-md leading-relaxed text-pretty text-muted-foreground">

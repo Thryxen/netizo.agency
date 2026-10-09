@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BriefcaseIcon, Building2Icon, FileTextIcon, MailIcon, PhoneIcon, type LucideIcon } from 'lucide-react';
+import { BriefcaseIcon, Building2Icon, FileTextIcon, HandshakeIcon, MailIcon, PhoneIcon, type LucideIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 
 import { NavUser } from '@/components/admin/nav-user';
@@ -35,6 +35,7 @@ const groups: { label: string; items: NavItem[] }[] = [
             { title: 'Wiadomości', href: adminRoutes.messages.index, icon: MailIcon },
             { title: 'Briefy', href: adminRoutes.briefs.index, icon: FileTextIcon },
             { title: 'Prośby o kontakt', href: adminRoutes.callbacks.index, icon: PhoneIcon },
+            { title: 'Partnerzy', href: adminRoutes.partners.index, icon: HandshakeIcon },
         ],
     },
 ];

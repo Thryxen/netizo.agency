@@ -39,6 +39,7 @@ return [
         'webhook_contact' => env('DISCORD_WEBHOOK_CONTACT'),
         'webhook_brief' => env('DISCORD_WEBHOOK_BRIEF'),
         'webhook_callback' => env('DISCORD_WEBHOOK_CALLBACK'),
+        'webhook_partner' => env('DISCORD_WEBHOOK_PARTNER', env('DISCORD_WEBHOOK_CONTACT')),
         'role_id' => env('DISCORD_ROLE_ID'),
     ],
 
