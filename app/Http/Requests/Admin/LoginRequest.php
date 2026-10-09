@@ -2,11 +2,15 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Rules\TurnstileToken;
+use App\Services\Turnstile;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ConditionalRules;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
@@ -19,14 +23,17 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * The Turnstile token is checked only while Turnstile is configured.
+     *
+     * @return array<string, array<int, string|TurnstileToken>|ConditionalRules>
      */
-    public function rules(): array
+    public function rules(Turnstile $turnstile): array
     {
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
             'remember' => ['sometimes', 'boolean'],
+            'turnstile_token' => Rule::when($turnstile->isEnabled(), ['required', 'string', new TurnstileToken($this->ip())]),
         ];
     }
 
@@ -39,6 +46,7 @@ class LoginRequest extends FormRequest
             'email.required' => 'Podaj adres e-mail.',
             'email.email' => 'Podaj poprawny adres e-mail.',
             'password.required' => 'Podaj hasło.',
+            'turnstile_token.required' => 'Potwierdź, że nie jesteś robotem.',
         ];
     }
 

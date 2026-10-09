@@ -51,4 +51,12 @@ return [
         'translation_model' => env('OPENROUTER_TRANSLATION_MODEL', 'anthropic/claude-haiku-5.5'),
     ],
 
+    /*
+     * Cloudflare Turnstile on the admin login (App\Services\Turnstile); off until both keys are set.
+     */
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
 ];

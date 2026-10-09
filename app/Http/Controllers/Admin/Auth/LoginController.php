@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\LoginRequest;
+use App\Services\Turnstile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,9 +13,11 @@ use Inertia\Response;
 
 class LoginController extends Controller
 {
-    public function create(): Response
+    public function create(Turnstile $turnstile): Response
     {
-        return Inertia::render('admin/login');
+        return Inertia::render('admin/login', [
+            'turnstileSiteKey' => $turnstile->siteKey(),
+        ]);
     }
 
     public function store(LoginRequest $request): RedirectResponse

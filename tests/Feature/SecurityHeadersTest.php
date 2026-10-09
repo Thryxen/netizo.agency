@@ -47,6 +47,12 @@ it('sends the security headers with a strict content security policy', function 
         ->toContain("require-trusted-types-for 'script'");
 });
 
+it('lets the Cloudflare Turnstile script and its iframe load', function () {
+    expect(contentSecurityPolicy())
+        ->toMatch("#script-src [^;]*https://challenges\.cloudflare\.com#")
+        ->toMatch("#frame-src [^;]*https://challenges\.cloudflare\.com#");
+});
+
 it('allows no Vite dev server sources when Vite is not running hot', function () {
     expect(contentSecurityPolicy())
         ->not->toContain(':5173')

@@ -1,7 +1,8 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import type { FormEvent } from 'react';
+import { useRef, type FormEvent } from 'react';
 
 import { FormField } from '@/components/admin/form-field';
+import { TurnstileWidget, type TurnstileWidgetHandle } from '@/components/admin/turnstile-widget';
 import { Logo } from '@/components/home/logo';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -11,17 +12,25 @@ import { Label } from '@/components/ui/label';
 import { adminRoutes } from '@/lib/admin-routes';
 
 export default function Login() {
-    const { errors: pageErrors } = usePage<{ errors: Record<string, string> }>().props;
+    const { errors: pageErrors, turnstileSiteKey } = usePage<{ errors: Record<string, string>; turnstileSiteKey: string | null }>().props;
+    const turnstile = useRef<TurnstileWidgetHandle>(null);
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
         remember: false,
+        turnstile_token: '',
     });
+    const awaitingTurnstile = turnstileSiteKey !== null && data.turnstile_token === '';
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
 
-        post(adminRoutes.login, { onFinish: () => reset('password') });
+        post(adminRoutes.login, {
+            onFinish: () => {
+                reset('password');
+                turnstile.current?.reset();
+            },
+        });
     };
 
     return (
@@ -73,7 +82,23 @@ export default function Login() {
                     </Label>
                 </div>
 
-                <Button type="submit" disabled={processing}>
+                {turnstileSiteKey ? (
+                    <div className="grid gap-2">
+                        <TurnstileWidget
+                            ref={turnstile}
+                            siteKey={turnstileSiteKey}
+                            action="admin_login"
+                            onTokenChange={(token) => setData('turnstile_token', token)}
+                        />
+                        {errors.turnstile_token ? (
+                            <p className="text-sm text-destructive" role="alert">
+                                {errors.turnstile_token}
+                            </p>
+                        ) : null}
+                    </div>
+                ) : null}
+
+                <Button type="submit" disabled={processing || awaitingTurnstile}>
                     Zaloguj się
                 </Button>
             </form>

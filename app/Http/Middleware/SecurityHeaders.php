@@ -44,7 +44,7 @@ class SecurityHeaders
             "default-src 'self'",
 
             // Scripts - allow trusted sources
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms https://*.clarity.ms https://fonts.googleapis.com".$devServer['http'],
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms https://*.clarity.ms https://fonts.googleapis.com https://challenges.cloudflare.com".$devServer['http'],
 
             // Styles - allow inline for Tailwind and Google Fonts
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com".$devServer['http'],
@@ -58,8 +58,8 @@ class SecurityHeaders
             // Connect (XHR, fetch, WebSocket)
             "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://www.clarity.ms https://*.clarity.ms https://region1.google-analytics.com".$devServer['http'].$devServer['ws'],
 
-            // Frames
-            "frame-src 'self' https://www.googletagmanager.com",
+            // Frames (Cloudflare Turnstile on the admin login)
+            "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
 
             // Child/worker
             "child-src 'self' blob:",
