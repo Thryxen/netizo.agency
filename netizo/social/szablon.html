@@ -1,0 +1,815 @@
+<!doctype html>
+<!--
+    Posty netizo: Facebook 1080 × 1080 px i Instagram 1080 × 1350 px, jasny motyw netizo.pl (generuj.cjs zapisuje każdą
+    sekcję [data-export] jako PNG).
+    Każdy post to wycinek strony ułożony jak hero na telefonie: u góry pasek z logo i adresem, pod nim nagłówek i lead na
+    białym, a od linii z nitami w dół scena na zdjęciu z serii strony, z warstwami interfejsu z hero (okno strony klienta,
+    kroki budowy, karta wydajności, powiadomienia). Warstwy zaczynają się na linii treści, a powiadomienia kończą na linii
+    prawej szyny; na kwadracie okno sklepu wychodzi poza dolną krawędź.
+    Rama (<template id="frame">) jest wspólna, a posty (<template id="tworzenie-stron">, <template id="koszty-i-seo">)
+    wstawia generator do sekcji z ich nazwą w data-post. Instagram ma ten sam pasek i nagłówek co Facebook, a dodatkowe
+    270 px dostaje scena. Siatka profilu na Instagramie przycina post do 3:4, czyli po 34 px z boków: szyny i treść
+    stoją dalej od krawędzi.
+    Post 2 trafia do firm, które przepłacają za hosting, domenę i pocztę u dużych dostawców. Nie podajemy ich nazw ani
+    nie nawiązujemy do ich wyglądu: przypomnienie o odnowieniu jest od „obecnego hostingu”, monochromatyczne i bez kwot
+    (kwoty tylko prawdziwe, od netizo). Poza tym teksty mówią tylko to, co jest na stronie albo co podało netizo: termin
+    strony firmowej (1–2 tygodnie), bezpłatna wycena, hosting, domena i poczta, przygotowanie pod wyszukiwarkę. Sklep ze
+    swetrami to przykładowy klient z hero (shop-data.ts).
+    Znaczniki w podwójnych klamrach wypełnia generuj.cjs; nie wpisuj ich w komentarzach, bo wstawione SVG zawierają
+    własne komentarze i przedwcześnie zamknęłyby ten.
+-->
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <title>Posty netizo</title>
+    <style>
+        @font-face {
+            font-family: 'Geist';
+            font-weight: 400;
+            src: url('fonts/geist-400.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Geist';
+            font-weight: 600;
+            src: url('fonts/geist-600.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Geist Mono';
+            font-weight: 400;
+            src: url('fonts/geist-mono-400.ttf') format('truetype');
+        }
+
+        :root {
+            /* Rama jak na grafikach OG i okładce (netizo/og-image, netizo/facebook). */
+            --ink: #0a0a0a;
+            --paper: #ffffff;
+            --muted: #6e6e6e;
+            --line: #d6d6d6;
+            --rivet: #b3b3b3;
+            /* Interfejs na scenie: tokeny strony (border, muted, muted-foreground). */
+            --ui-border: #e5e5e5;
+            --ui-bar: #f9f9f9;
+            --ui-muted: #737373;
+            --ui-dot: rgb(10 10 10 / 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            background: var(--paper);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /*
+         * Grafika. Linie mają 2 px i nity 14 px, bo serwisy pokazują post w mniej więcej 40% rozmiaru: na ekranie to linia
+         * 1 px i nit jak na stronie. Treść stoi 48 px za lewą szyną.
+         */
+        .canvas {
+            --rail-left: 64px;
+            --rail-right: 1016px;
+            --content-x: 112px;
+            --header: 128px;
+            --stage-top: 600px;
+
+            position: relative;
+            width: 1080px;
+            overflow: hidden;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'Geist', sans-serif;
+        }
+
+        .canvas--fb {
+            height: 1080px;
+        }
+
+        .canvas--ig {
+            height: 1350px;
+        }
+
+        /* Wstawione SVG skalują się do wysokości kontenera; overflow: visible chroni zaokrąglone końce N. */
+        .svg-fit svg {
+            display: block;
+            width: auto;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .hairline {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--line);
+        }
+
+        /* Szyny biegną od górnej krawędzi do sceny; zdjęcie pod nimi jest już od krawędzi do krawędzi. */
+        .rail {
+            position: absolute;
+            top: 0;
+            height: var(--stage-top);
+            width: 2px;
+            background: var(--line);
+        }
+
+        .rivet {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: var(--rivet);
+        }
+
+        .logo {
+            position: absolute;
+            left: var(--content-x);
+            top: calc((var(--header) - 56px) / 2);
+            height: 56px;
+            color: var(--ink);
+        }
+
+        .url {
+            position: absolute;
+            right: var(--content-x);
+            top: 0;
+            height: var(--header);
+            display: flex;
+            align-items: center;
+            font-family: 'Geist Mono', monospace;
+            font-size: 28px;
+            color: var(--muted);
+        }
+
+        /* Nagłówek i lead, wyśrodkowane w pionie między liniami jak na grafikach OG. */
+        .copy {
+            position: absolute;
+            left: var(--content-x);
+            right: var(--content-x);
+            top: var(--header);
+            height: calc(var(--stage-top) - var(--header));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .headline {
+            font-size: 80px;
+            font-weight: 600;
+            line-height: 1.04;
+            letter-spacing: -0.04em;
+        }
+
+        .lead {
+            max-width: 800px;
+            margin-top: 32px;
+            font-size: 32px;
+            line-height: 1.4;
+            color: var(--muted);
+            text-wrap: pretty;
+        }
+
+        .lead--balanced {
+            text-wrap: balance;
+        }
+
+        /*
+         * Scena: zdjęcie od krawędzi do krawędzi i warstwy interfejsu w em (jak LiveBuild na stronie), mniej więcej
+         * dwa razy większe niż w hero, żeby było je widać w feedzie.
+         */
+        .stage {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: var(--stage-top);
+            bottom: 0;
+            overflow: hidden;
+            background: var(--ui-bar);
+        }
+
+        /* Okno sklepu w skali, w której jego nagłówek nie konkuruje z hasłem posta; przypomnienie większe, bo czyta się je. */
+        .stage--build {
+            font-size: 13px;
+        }
+
+        .stage--hosting {
+            font-size: 17px;
+        }
+
+        .stage__photo {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .stage > :not(.stage__photo) {
+            position: absolute;
+        }
+
+        .icon {
+            display: block;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Okno przeglądarki na zdjęciu (WINDOW_SHADOW i ShopWindow na stronie). */
+        .window {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 0.1em solid var(--ui-border);
+            border-radius: 0.9em;
+            background: var(--paper);
+            box-shadow: 0 0.2em 0.5em rgb(0 0 0 / 0.05), 0 2.4em 4.8em -1.6em rgb(0 0 0 / 0.28);
+        }
+
+        .window__bar {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            gap: 1.4em;
+            height: 3.4em;
+            padding: 0 1.3em;
+            border-bottom: 0.1em solid var(--ui-border);
+            background: var(--ui-bar);
+        }
+
+        .window__dots {
+            display: flex;
+            gap: 0.5em;
+        }
+
+        .window__dots i {
+            width: 0.7em;
+            height: 0.7em;
+            border-radius: 50%;
+            background: var(--ui-dot);
+        }
+
+        .window__address {
+            display: flex;
+            align-items: center;
+            gap: 0.6em;
+            width: 24em;
+            height: 2.2em;
+            padding: 0 0.8em;
+            border: 0.1em solid var(--ui-border);
+            border-radius: 0.45em;
+            background: var(--paper);
+        }
+
+        .window__address .icon {
+            width: 1em;
+            height: 1em;
+            color: var(--ui-muted);
+        }
+
+        .window__address span {
+            font-family: 'Geist Mono', monospace;
+            font-size: 1.1em;
+        }
+
+        /* Sklep przykładowego klienta, jak w hero (shop-window.tsx). */
+        .shop-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 4.4em;
+            padding: 0 2.4em;
+            border-bottom: 0.1em solid var(--ui-border);
+        }
+
+        .shop-nav__brand {
+            display: flex;
+            align-items: center;
+            gap: 0.7em;
+        }
+
+        .shop-nav__brand i {
+            width: 1.2em;
+            height: 1.2em;
+            background: var(--ink);
+        }
+
+        .shop-nav__brand span {
+            font-size: 1.3em;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .shop-nav__links {
+            display: flex;
+            gap: 1.6em;
+            font-size: 1.1em;
+            color: var(--ui-muted);
+        }
+
+        .shop-nav__cart {
+            position: relative;
+        }
+
+        .shop-nav__cart .icon {
+            width: 1.6em;
+            height: 1.6em;
+            stroke-width: 1.6;
+        }
+
+        .shop-nav__cart b {
+            position: absolute;
+            top: -0.47em;
+            right: -0.6em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.47em;
+            height: 1.47em;
+            background: var(--ink);
+            color: var(--paper);
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .shop-hero {
+            display: grid;
+            grid-template-columns: 1fr 24em;
+            gap: 2.4em;
+            padding: 2.2em 2.4em 0;
+        }
+
+        .shop-hero__copy {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .shop-hero__headline {
+            font-size: 2.55em;
+            font-weight: 600;
+            line-height: 1.06;
+            letter-spacing: -0.035em;
+        }
+
+        .shop-hero__lead {
+            margin-top: 0.96em;
+            font-size: 1.15em;
+            line-height: 1.45;
+            color: var(--ui-muted);
+        }
+
+        .shop-hero__cta {
+            display: flex;
+            align-items: center;
+            height: 2.64em;
+            margin-top: 1.55em;
+            padding: 0 1.27em;
+            border-radius: 0.41em;
+            background: var(--ink);
+            color: var(--paper);
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .shop-hero__photo {
+            width: 100%;
+            height: 14.6em;
+            border-radius: 0.5em;
+            object-fit: cover;
+            object-position: 68% 50%;
+        }
+
+        .shop-products {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.4em;
+            padding: 2.3em 2.4em 1.7em;
+        }
+
+        .shop-products img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            border-radius: 0.5em;
+            object-fit: cover;
+        }
+
+        .shop-products figcaption {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-top: 0.7em;
+            font-size: 1.15em;
+            line-height: 1.45;
+        }
+
+        .shop-products figcaption span:first-child {
+            font-weight: 600;
+        }
+
+        .shop-products figcaption span:last-child {
+            color: var(--ui-muted);
+        }
+
+        /*
+         * Pływające warstwy (FLOAT_SURFACE i StepIndicator na stronie): większe od okna, bo leżą bliżej patrzącego, i żeby
+         * ich podpisy dało się przeczytać na telefonie.
+         */
+        .steps,
+        .chip {
+            font-size: 20px;
+        }
+
+        .steps {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            height: 3.4em;
+            padding: 0 1.2em;
+            border: 0.1em solid var(--ui-border);
+            border-radius: 0.7em;
+            background: var(--paper);
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.6em;
+        }
+
+        .step i {
+            width: 0.75em;
+            height: 0.75em;
+            background: var(--ink);
+        }
+
+        .step span {
+            font-size: 1.15em;
+            font-weight: 600;
+            white-space: nowrap;
+            color: var(--ui-muted);
+        }
+
+        .step--active span {
+            color: var(--ink);
+        }
+
+        /* Łączniki między krokami: wypełnione, bo budowa jest skończona. */
+        .steps b {
+            width: 2.2em;
+            height: 0.1em;
+            background: var(--ink);
+        }
+
+        .chip {
+            display: flex;
+            align-items: center;
+            gap: 0.8em;
+            padding: 0.8em 1.3em 0.8em 0.8em;
+            border: 0.1em solid var(--ui-border);
+            border-radius: 0.8em;
+            background: var(--paper);
+            box-shadow: 0 0.1em 0.25em rgb(0 0 0 / 0.04), 0 1.4em 2.6em -1em rgb(0 0 0 / 0.18);
+        }
+
+        .chip__icon {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            width: 2.4em;
+            height: 2.4em;
+            border-radius: 0.45em;
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .chip__icon .icon {
+            width: 1.25em;
+            height: 1.25em;
+            stroke-width: 1.75;
+        }
+
+        .chip__text {
+            font-size: 1.1em;
+            line-height: 1.35;
+            white-space: nowrap;
+        }
+
+        .chip__text b,
+        .chip__text span {
+            display: block;
+        }
+
+        .chip__text b {
+            font-weight: 600;
+        }
+
+        .chip__text span {
+            color: var(--ui-muted);
+        }
+
+        /* Karta wydajności: pierścień 24 kresek (rysuje je generator) i wynik 100, jak ScoreCard w hero. */
+        .score {
+            gap: 1em;
+            padding: 0.9em 1.6em 0.9em 0.9em;
+        }
+
+        .score__ring {
+            position: relative;
+            flex-shrink: 0;
+            width: 5.4em;
+            height: 5.4em;
+        }
+
+        .score__ring svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            fill: var(--ink);
+        }
+
+        .score__ring span {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.45em;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        /* Przypomnienie o odnowieniu od obecnego hostingu: zwykły e-mail z listą usług, bez nazwy i wyglądu żadnej firmy. */
+        .renewal {
+            width: 40em;
+        }
+
+        .renewal__body {
+            padding: 1.3em 1.7em 1.1em;
+        }
+
+        .renewal__head {
+            display: flex;
+            align-items: center;
+            gap: 0.8em;
+        }
+
+        .renewal__sender {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.4em;
+            height: 2.4em;
+            border: 0.1em solid var(--ui-border);
+            border-radius: 0.45em;
+            color: var(--ui-muted);
+        }
+
+        .renewal__sender .icon {
+            width: 1.2em;
+            height: 1.2em;
+            stroke-width: 1.75;
+        }
+
+        .renewal__from {
+            font-size: 1.05em;
+            font-weight: 600;
+        }
+
+        .renewal__title {
+            margin-top: 0.6em;
+            font-size: 1.6em;
+            font-weight: 600;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+        }
+
+        .renewal__items {
+            margin-top: 0.8em;
+            padding: 0;
+            list-style: none;
+        }
+
+        .renewal__items li {
+            display: flex;
+            justify-content: space-between;
+            gap: 1em;
+            padding: 0.5em 0;
+            border-top: 0.1em solid var(--ui-border);
+            font-size: 1.1em;
+            line-height: 1.4;
+        }
+
+        .renewal__items li span:last-child {
+            color: var(--ui-muted);
+        }
+
+        /*
+         * Post 1: tworzenie stron. Kroki nad oknem, oba od linii treści; powiadomienie na prawym dolnym rogu zdjęcia
+         * w sklepie, w połowie na oknie, w połowie na zdjęciu pracowni. Prawe krawędzie powiadomień w obu postach stoją
+         * na linii prawej szyny.
+         */
+        .build__steps {
+            left: var(--content-x);
+            top: 36px;
+        }
+
+        .build__window {
+            left: var(--content-x);
+            top: 128px;
+            width: 58em;
+        }
+
+        .build__published {
+            right: calc(1080px - var(--rail-right));
+            top: 340px;
+        }
+
+        .canvas--ig .build__steps {
+            top: 48px;
+        }
+
+        .canvas--ig .build__window {
+            top: 140px;
+        }
+
+        .canvas--ig .build__published {
+            top: 352px;
+        }
+
+        /*
+         * Post 2: koszty i SEO. Przypomnienie o odnowieniu od linii treści, na jego prawym górnym rogu karta wydajności, a na
+         * dolnym karta z panelu netizo; obie kończą się na linii prawej szyny. Na Instagramie ta sama grupa, wyśrodkowana
+         * na zdjęciu.
+         */
+        .hosting__group {
+            left: var(--content-x);
+            right: calc(1080px - var(--rail-right));
+            top: 56px;
+        }
+
+        .hosting__group > .chip {
+            position: absolute;
+            right: 0;
+        }
+
+        .hosting__score {
+            top: -32px;
+        }
+
+        .hosting__moved {
+            top: calc(100% - 26px);
+        }
+
+        .canvas--ig .hosting__group {
+            top: 200px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Rama wspólna dla wszystkich grafik: linie, szyny z nitami, logo i adres. Leży nad sceną. -->
+    <template id="frame">
+        <span class="hairline" style="top: calc(var(--header) - 1px)"></span>
+        <span class="hairline" style="top: calc(var(--stage-top) - 1px)"></span>
+        <span class="rail" style="left: calc(var(--rail-left) - 1px)"></span>
+        <span class="rail" style="left: calc(var(--rail-right) - 1px)"></span>
+        <span class="rivet" style="left: calc(var(--rail-left) - 7px); top: calc(var(--header) - 7px)"></span>
+        <span class="rivet" style="left: calc(var(--rail-right) - 7px); top: calc(var(--header) - 7px)"></span>
+        <span class="rivet" style="left: calc(var(--rail-left) - 7px); top: calc(var(--stage-top) - 7px)"></span>
+        <span class="rivet" style="left: calc(var(--rail-right) - 7px); top: calc(var(--stage-top) - 7px)"></span>
+
+        <div class="logo svg-fit">{{logo}}</div>
+        <p class="url">netizo.pl</p>
+    </template>
+
+    <!-- Post 1: tworzenie stron. Sklep z hero, skończony i opublikowany. -->
+    <template id="tworzenie-stron">
+        <div class="copy">
+            <h1 class="headline">Zaprojektujemy<br>i zbudujemy<br>Twoją stronę.</h1>
+            <p class="lead">Strona firmowa powstaje zwykle w&nbsp;1–&#8288;2&nbsp;tygodnie, a&nbsp;wycenę dostajesz bezpłatnie.</p>
+        </div>
+
+        <div class="stage stage--build">
+            <img class="stage__photo" src="photos/backdrop-workshop.webp" alt="" style="object-position: 50% 58%">
+
+            <div class="window build__window">
+                <div class="window__bar">
+                    <span class="window__dots"><i></i><i></i><i></i></span>
+                    <span class="window__address">
+                        <svg class="icon" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span>twojafirma.pl</span>
+                    </span>
+                </div>
+                <div class="shop-nav">
+                    <span class="shop-nav__brand"><i></i><span>Twoja marka</span></span>
+                    <span class="shop-nav__links"><span>Sklep</span><span>O nas</span><span>Kontakt</span></span>
+                    <span class="shop-nav__cart">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M16 10a4 4 0 0 1-8 0"/><path d="M3.103 6.034h17.794"/><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"/></svg>
+                        <b>2</b>
+                    </span>
+                </div>
+                <div class="shop-hero">
+                    <div class="shop-hero__copy">
+                        <p class="shop-hero__headline">Swetry z polskiej<br>wełny, robione<br>ręcznie</p>
+                        <p class="shop-hero__lead">Małe serie z naturalnej wełny.</p>
+                        <span class="shop-hero__cta">Zobacz kolekcję</span>
+                    </div>
+                    <img class="shop-hero__photo" src="photos/shop-hero.webp" alt="">
+                </div>
+                <div class="shop-products">
+                    <figure>
+                        <img src="photos/shop-sweater.webp" alt="" style="object-position: 50% 58%">
+                        <figcaption><span>Sweter Bałtyk</span><span>349&nbsp;zł</span></figcaption>
+                    </figure>
+                    <figure>
+                        <img src="photos/shop-scarf.webp" alt="" style="object-position: 58% 42%">
+                        <figcaption><span>Szal Mgła</span><span>189&nbsp;zł</span></figcaption>
+                    </figure>
+                    <figure>
+                        <img src="photos/shop-hat.webp" alt="" style="object-position: 34% 62%">
+                        <figcaption><span>Czapka Las</span><span>129&nbsp;zł</span></figcaption>
+                    </figure>
+                </div>
+            </div>
+
+            <div class="steps build__steps">
+                <span class="step"><i></i><span>Projekt</span></span><b></b>
+                <span class="step"><i></i><span>Design</span></span><b></b>
+                <span class="step"><i></i><span>Kod</span></span><b></b>
+                <span class="step step--active"><i></i><span>Wdrożenie</span></span>
+            </div>
+
+            <div class="chip build__published">
+                <span class="chip__icon">
+                    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                </span>
+                <span class="chip__text"><b>Opublikowano</b><span>twojafirma.pl</span></span>
+            </div>
+        </div>
+    </template>
+
+    <!--
+        Post 2: koszty hostingu i SEO, dla firm, które przepłacają u dużych dostawców. Ten sam przykładowy klient: drogie
+        odnowienie u obecnego hostingu, przeniesienie, szybka strona.
+    -->
+    <template id="koszty-i-seo">
+        <div class="copy">
+            <h1 class="headline">Płacisz za hosting<br>więcej, niż jest wart?</h1>
+            <p class="lead lead--balanced">Przeniesiemy stronę, domenę i&nbsp;pocztę tam, gdzie zapłacisz mniej, a&nbsp;przy&nbsp;okazji przygotujemy stronę pod Google.</p>
+        </div>
+
+        <div class="stage stage--hosting">
+            <img class="stage__photo" src="photos/backdrop-office.webp" alt="" style="object-position: 50% 60%">
+
+            <div class="hosting__group">
+                <div class="window renewal">
+                    <div class="renewal__body">
+                        <div class="renewal__head">
+                            <span class="renewal__sender">
+                                <svg class="icon" viewBox="0 0 24 24"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+                            </span>
+                            <span class="renewal__from">Twój obecny hosting</span>
+                        </div>
+                        <p class="renewal__title">Usługi wygasają za 7&nbsp;dni</p>
+                        <ul class="renewal__items">
+                            <li><span>Pakiet hostingowy</span><span>12&nbsp;mies.</span></li>
+                            <li><span>Certyfikat SSL</span><span>12&nbsp;mies.</span></li>
+                            <li><span>Poczta firmowa</span><span>12&nbsp;mies.</span></li>
+                            <li><span>Domena twojafirma.pl</span><span>12&nbsp;mies.</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="chip score hosting__score">
+                    <span class="score__ring"><svg viewBox="0 0 56 56" data-ticks></svg><span>100</span></span>
+                    <span class="chip__text"><b>Wydajność</b><span>LCP 0,8&nbsp;s, CLS 0</span></span>
+                </div>
+
+                <div class="chip hosting__moved">
+                    <span class="chip__icon">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+                    </span>
+                    <span class="chip__text"><b>Przeniesienie zakończone</b><span>twojafirma.pl</span></span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <section class="canvas canvas--fb" data-export="fb-tworzenie-stron" data-post="tworzenie-stron"></section>
+    <section class="canvas canvas--ig" data-export="ig-tworzenie-stron" data-post="tworzenie-stron"></section>
+    <section class="canvas canvas--fb" data-export="fb-koszty-i-seo" data-post="koszty-i-seo"></section>
+    <section class="canvas canvas--ig" data-export="ig-koszty-i-seo" data-post="koszty-i-seo"></section>
+</body>
+</html>
