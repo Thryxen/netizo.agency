@@ -98,60 +98,12 @@ class StoreProjectBriefRequest extends FormRequest
     }
 
     /**
-     * Get the custom validation messages.
+     * Get the custom validation messages, in the language of the page the form was sent from (lang/{pl,en}/forms.php).
      *
      * @return array<string, string>
      */
     public function messages(): array
     {
-        return [
-            'types.required' => 'Wybierz przynajmniej jeden typ projektu.',
-            'types.array' => 'Wybierz przynajmniej jeden typ projektu.',
-            'types.in' => 'Wybierz typ projektu z listy.',
-            'features.array' => 'Wybierz funkcjonalności z listy.',
-            'features.in' => 'Wybierz funkcjonalności z listy.',
-            'industry.string' => 'Wybierz branżę z listy.',
-            'industry.in' => 'Wybierz branżę z listy.',
-            'audience.string' => 'Wybierz grupę docelową z listy.',
-            'audience.in' => 'Wybierz grupę docelową z listy.',
-            'design.string' => 'Wybierz jedną z dostępnych opcji projektu graficznego.',
-            'design.in' => 'Wybierz jedną z dostępnych opcji projektu graficznego.',
-            'timeline.string' => 'Wybierz termin z listy.',
-            'timeline.in' => 'Wybierz termin z listy.',
-            'tech.array' => 'Wybierz technologie z listy.',
-            'tech.in' => 'Wybierz technologie z listy.',
-            'security.string' => 'Wybierz poziom bezpieczeństwa z listy.',
-            'security.in' => 'Wybierz poziom bezpieczeństwa z listy.',
-            'hosting.string' => 'Wybierz opcję hostingu z listy.',
-            'hosting.in' => 'Wybierz opcję hostingu z listy.',
-            'integrations.string' => 'Opis integracji musi być tekstem.',
-            'integrations.max' => 'Opis integracji może mieć maksymalnie 5000 znaków.',
-            'budget.string' => 'Wybierz budżet z listy.',
-            'budget.in' => 'Wybierz budżet z listy.',
-            'cooperation_model.string' => 'Wybierz model współpracy z listy.',
-            'cooperation_model.in' => 'Wybierz model współpracy z listy.',
-            'notes.string' => 'Dodatkowe informacje muszą być tekstem.',
-            'notes.max' => 'Dodatkowe informacje mogą mieć maksymalnie 5000 znaków.',
-            'name.required' => 'Imię i nazwisko jest wymagane.',
-            'name.string' => 'Podaj poprawne imię i nazwisko.',
-            'name.min' => 'Imię i nazwisko musi mieć co najmniej 2 znaki.',
-            'name.max' => 'Imię i nazwisko może mieć maksymalnie 255 znaków.',
-            'email.required' => 'Adres e-mail jest wymagany.',
-            'email.email' => 'Podaj poprawny adres e-mail.',
-            'email.max' => 'Adres e-mail może mieć maksymalnie 255 znaków.',
-            'phone.string' => 'Podaj poprawny numer telefonu.',
-            'phone.max' => 'Numer telefonu może mieć maksymalnie 255 znaków.',
-            'company.string' => 'Podaj poprawną nazwę firmy.',
-            'company.max' => 'Nazwa firmy może mieć maksymalnie 255 znaków.',
-            'position.string' => 'Podaj poprawne stanowisko.',
-            'position.max' => 'Stanowisko może mieć maksymalnie 255 znaków.',
-            'website.string' => 'Podaj poprawny adres strony WWW.',
-            'website.max' => 'Adres strony WWW może mieć maksymalnie 255 znaków.',
-            'source.string' => 'Wybierz źródło z listy.',
-            'source.in' => 'Wybierz źródło z listy.',
-            'contact_pref.array' => 'Wybierz preferowaną formę kontaktu z listy.',
-            'contact_pref.in' => 'Wybierz preferowaną formę kontaktu z listy.',
-            'privacy.accepted' => 'Musisz zaakceptować politykę prywatności.',
-        ];
+        return __('forms.brief');
     }
 }

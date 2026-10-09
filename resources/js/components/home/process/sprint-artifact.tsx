@@ -1,15 +1,35 @@
 import { MonitorSmartphone } from 'lucide-react';
+import { localized, useCopy } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { ArtifactFrame, chipClassName, Tick, type TickStatus } from './artifact-parts';
 import { ARTIFACT_MS, type StepState } from './process-data';
 import { useStepClock } from './use-process-relay';
 
-/** What the sprint delivered, in the client's words, oldest first, with the day each one landed (from 14rem). */
-const CHANGES = [
-    { message: 'Koszyk gotowy', day: 'pon.' },
-    { message: 'Poprawiona stopka', day: 'śr.' },
-    { message: 'Płatności online', day: 'dziś' },
-] as const;
+const COPY = localized({
+    pl: {
+        title: 'Wersja testowa',
+        /** What the sprint delivered, in the client's words, oldest first, with the day each one landed (from 14rem). */
+        changes: [
+            { message: 'Koszyk gotowy', day: 'pon.' },
+            { message: 'Poprawiona stopka', day: 'śr.' },
+            { message: 'Płatności online', day: 'dziś' },
+        ],
+        stagingHost: 'staging.twojafirma.pl',
+        demo: 'Demo co 2 tygodnie',
+    },
+    en: {
+        title: 'Staging version',
+        changes: [
+            { message: 'Cart ready', day: 'Mon' },
+            { message: 'Footer fixed', day: 'Wed' },
+            { message: 'Online payments', day: 'today' },
+        ],
+        stagingHost: 'staging.yourcompany.com',
+        demo: 'Demo every 2\u00A0weeks',
+    },
+});
+
+const CHANGE_COUNT = COPY.pl.changes.length;
 
 /** Clock: nothing yet (0), changes 1–3 land one by one, each checked (1–3), all ticked (4), test version updated (5). */
 const STAGING = 5;
@@ -21,8 +41,9 @@ const STAGING = 5;
  */
 export function SprintArtifact({ state }: { state: StepState }) {
     const step = useStepClock(ARTIFACT_MS.sprint, state);
-    const landed = Math.min(step, CHANGES.length);
-    const checking = step >= 1 && step <= CHANGES.length ? step - 1 : -1;
+    const copy = useCopy(COPY);
+    const landed = Math.min(step, CHANGE_COUNT);
+    const checking = step >= 1 && step <= CHANGE_COUNT ? step - 1 : -1;
     const updated = step >= STAGING;
 
     const changeStatus = (index: number): TickStatus => {
@@ -34,13 +55,10 @@ export function SprintArtifact({ state }: { state: StepState }) {
     };
 
     return (
-        <ArtifactFrame
-            icon={MonitorSmartphone}
-            title="Wersja testowa"
-        >
+        <ArtifactFrame icon={MonitorSmartphone} title={copy.title}>
             <div className="flex h-full flex-col">
                 <ul className="flex flex-1 flex-col justify-center gap-0.5 px-3">
-                    {CHANGES.map(({ message, day }, index) => {
+                    {copy.changes.map(({ message, day }, index) => {
                         const status = changeStatus(index);
                         const shown = index < landed;
 
@@ -80,14 +98,14 @@ export function SprintArtifact({ state }: { state: StepState }) {
                             data-on={updated}
                             className="truncate font-mono text-[11px] leading-5 transition-colors duration-300 data-[on=false]:text-muted-foreground"
                         >
-                            staging.twojafirma.pl
+                            {copy.stagingHost}
                         </span>
                     </span>
                     <span
                         data-on={updated}
                         className={cn(chipClassName, 'h-5 px-1.5 transition-colors duration-300 data-[on=false]:font-normal data-[on=false]:text-muted-foreground data-[on=true]:border-foreground/40')}
                     >
-                        Demo co 2 tygodnie
+                        {copy.demo}
                     </span>
                 </div>
             </div>

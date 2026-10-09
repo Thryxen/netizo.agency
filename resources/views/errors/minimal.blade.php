@@ -8,6 +8,9 @@
     &nbsp;), actions (replaces the two default buttons), visual (shown under the status code, usually the
     errors::partials.window browser) and maintenance (any value: leaves the header with just the logo, since the
     section links would only lead back to the maintenance page).
+
+    Copy comes from lang/{pl,en}/errors.php in the language of the requested address: SetLocale is global, so an error
+    under /en (a missing page, an expired English form) is shown in English with links to the English home page.
 --}}
 @php
     $isDark = rescue(fn (): bool => request()->cookie('appearance') === 'dark', false, false);
@@ -34,11 +37,12 @@
     $description = match (true) {
         $__env->hasSection('description') => trim($__env->yieldContent('description')),
         $message !== '' && Str::lower($message) !== Str::lower($rawTitle) => $message,
-        default => 'Nie udało się wyświetlić tej strony.',
+        default => e(__('errors.fallback_description')),
     };
+    $homeUrl = __('errors.home_url');
 @endphp
 <!DOCTYPE html>
-<html lang="pl"{!! $isDark ? ' class="dark"' : '' !!}>
+<html lang="{{ app()->getLocale() }}"{!! $isDark ? ' class="dark"' : '' !!}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -872,11 +876,11 @@
     </style>
 </head>
 <body>
-    <a class="skip-link" href="#main">Przejdź do treści</a>
+    <a class="skip-link" href="#main">{{ __('errors.skip_link') }}</a>
 
     <header class="site-header">
         <div class="container site-header__row">
-            <a class="logo-link" href="/" aria-label="Netizo – strona główna">
+            <a class="logo-link" href="{{ $homeUrl }}" aria-label="{{ __('errors.logo_label') }}">
                 <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1892.46 453.47" width="150" height="36" fill="currentColor" aria-hidden="true" focusable="false">
                     <path d="m405.89,129.19v202.7c0,5.33-59.53-26.42-132.99-67.63C158.33,199.99,9.87,112.72.47,107.19c-.31-.19-.47-.28-.47-.28l62.21-43.07c17.24-11.93,39.82-12.82,57.93-2.28l175.48,102.06c9.82,5.71,22.13-1.37,22.13-12.73V55.88l59.61,28.24c17.42,8.25,28.53,25.8,28.53,45.07Z" />
                     <path d="m441.89,400.79l-62.22,43.07c-17.23,11.93-39.81,12.82-57.93,2.28l-175.48-102.06c-9.81-5.71-22.13,1.37-22.13,12.73v95.01l-59.61-28.24c-17.42-8.25-28.52-25.8-28.52-45.07v-202.7c0-5.33,59.52,26.42,132.98,67.63,114.57,64.26,263.04,151.54,272.44,157.07.31.19.47.28.47.28Z" />
@@ -910,16 +914,14 @@
                 </svg>
             </a>
             @unless ($isMaintenance)
-                <nav class="site-nav" aria-label="Sekcje strony">
+                <nav class="site-nav" aria-label="{{ __('errors.nav_label') }}">
                     <ul>
-                        <li><a href="/#uslugi">Usługi</a></li>
-                        <li><a href="/#projekty">Projekty</a></li>
-                        <li><a href="/#proces">Proces</a></li>
-                        <li><a href="/#faq">FAQ</a></li>
-                        <li><a href="/#kontakt">Kontakt</a></li>
+                        @foreach (__('errors.nav') as $link)
+                            <li><a href="{{ $link['href'] }}">{{ $link['label'] }}</a></li>
+                        @endforeach
                     </ul>
                 </nav>
-                <a class="button button--ghost site-header__panel" href="https://panel-klienta.netizo.pl" target="_blank" rel="noopener">Panel klienta<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
+                <a class="button button--ghost site-header__panel" href="https://panel-klienta.netizo.pl" target="_blank" rel="noopener">{{ __('errors.client_panel') }}<span class="sr-only">{{ __('errors.new_tab') }}</span></a>
             @endunless
         </div>
     </header>
@@ -928,19 +930,21 @@
         <div class="container">
             <div class="error">
                 <div class="error__copy">
-                    <h1 class="error__title"><span class="sr-only">Błąd {!! $code !!}. </span>{!! $title !!}</h1>
+                    <h1 class="error__title"><span class="sr-only">{{ __('errors.error_code', ['code' => $code]) }}</span>{!! $title !!}</h1>
                     <p class="error__lead">{!! $description !!}</p>
                     <div class="error__actions">
                         @hasSection('actions')
                             @yield('actions')
                         @else
-                            <a class="button button--primary" href="/">Strona główna</a>
-                            <a class="button button--outline" href="/#kontakt">Napisz do nas</a>
+                            <a class="button button--primary" href="{{ $homeUrl }}">{{ __('errors.home') }}</a>
+                            <a class="button button--outline" href="{{ __('errors.contact_url') }}">{{ __('errors.contact') }}</a>
                         @endif
                     </div>
                     <p class="error__contact">
-                        Możesz też napisać na <a href="mailto:kontakt@netizo.pl">kontakt@netizo.pl</a>
-                        lub zadzwonić pod numer <a class="nowrap" href="tel:+48884343924">+48 884 343 924</a>.
+                        {!! __('errors.contact_line', [
+                            'email' => '<a href="mailto:kontakt@netizo.pl">kontakt@netizo.pl</a>',
+                            'phone' => '<a class="nowrap" href="tel:+48884343924">+48 884 343 924</a>',
+                        ]) !!}
                     </p>
                 </div>
 
@@ -958,7 +962,7 @@
         <div class="container site-footer__row">
             <span class="rivet rivet--left rivet--top" aria-hidden="true"></span>
             <span class="rivet rivet--right rivet--top" aria-hidden="true"></span>
-            <p>© {{ date('Y') }} Netizo. Wszelkie prawa zastrzeżone.</p>
+            <p>© {{ date('Y') }} Netizo. {{ __('errors.rights') }}</p>
         </div>
     </footer>
 </body>

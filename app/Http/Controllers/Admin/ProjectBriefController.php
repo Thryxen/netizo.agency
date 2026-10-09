@@ -71,12 +71,13 @@ class ProjectBriefController extends Controller
     }
 
     /**
-     * @return array{id: int, name: string, email: string, company: string|null, types: list<string>, budget: string|null, timeline: string|null, createdAt: string}
+     * @return array{id: int, locale: string, name: string, email: string, company: string|null, types: list<string>, budget: string|null, timeline: string|null, createdAt: string}
      */
     private function rowProps(ProjectBrief $brief): array
     {
         return [
             'id' => $brief->id,
+            'locale' => $brief->locale,
             'name' => $brief->name,
             'email' => $brief->email,
             'company' => $brief->company,

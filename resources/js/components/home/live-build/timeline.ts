@@ -1,6 +1,7 @@
 import { cubicBezier } from 'motion/react';
 import { motionTokens } from '@/components/motion/motion-env';
-import { BUILD_STEPS, SHOP_CODE, SHOP_URL } from './shop-data';
+import type { Localized } from '@/lib/i18n';
+import { BUILD_STEP_COUNT, CODE_LINE_HERO, CODE_LINE_PRODUCTS, type CodeToken, SHOP } from './shop-data';
 
 /**
  * The LiveBuild timeline, in seconds: one loop builds the shop site in four acts, holds the finished page, then wipes
@@ -161,14 +162,15 @@ export const PHOTO_REVEALS: Record<string, { at: number; duration: number }> = {
 };
 
 /** URL typed into the address bar at the start, erased again during the wipe. */
-export const URL_TYPING = { from: 0.15, to: 0.7, eraseFrom: 11.45, eraseTo: 11.75, length: SHOP_URL.length } as const;
+export const URL_TYPING = { from: 0.15, to: 0.7, eraseFrom: 11.45, eraseTo: 11.75 } as const;
 
-export function urlCharacters(t: number): number {
+/** Characters of the URL (`length` long, in the page's language) visible at `t`. */
+export function urlCharacters(t: number, length: number): number {
     if (t >= URL_TYPING.eraseFrom) {
-        return Math.round(URL_TYPING.length * (1 - progress(t, URL_TYPING.eraseFrom, URL_TYPING.eraseTo - URL_TYPING.eraseFrom)));
+        return Math.round(length * (1 - progress(t, URL_TYPING.eraseFrom, URL_TYPING.eraseTo - URL_TYPING.eraseFrom)));
     }
 
-    return Math.floor(URL_TYPING.length * progress(t, URL_TYPING.from, URL_TYPING.to - URL_TYPING.from) + 0.0001);
+    return Math.floor(length * progress(t, URL_TYPING.from, URL_TYPING.to - URL_TYPING.from) + 0.0001);
 }
 
 /**
@@ -181,10 +183,10 @@ const CODE_LINE_PAUSE = 0.05;
 
 export type CodeLineSchedule = { from: number; to: number; indent: number; length: number };
 
-export const CODE_SCHEDULE: CodeLineSchedule[] = (() => {
+function codeSchedule(code: CodeToken[][]): CodeLineSchedule[] {
     let cursor = CODE_START;
 
-    return SHOP_CODE.map((tokens) => {
+    return code.map((tokens) => {
         const text = tokens.map(([part]) => part).join('');
         const indent = text.length - text.trimStart().length;
         const typed = text.length - indent;
@@ -194,7 +196,10 @@ export const CODE_SCHEDULE: CodeLineSchedule[] = (() => {
 
         return line;
     });
-})();
+}
+
+/** The editor's typing schedule in each language (the code's text differs, so does its length). */
+export const CODE_SCHEDULE: Localized<CodeLineSchedule[]> = { pl: codeSchedule(SHOP.pl.code), en: codeSchedule(SHOP.en.code) };
 
 /** Characters of a code line visible at `t` (-1 = the line has not started: no caret either). */
 export function codeCharacters(t: number, line: CodeLineSchedule): number {
@@ -244,7 +249,7 @@ export type StepState = 'pending' | 'live' | 'active' | 'done';
 export function stepState(t: number, index: number): StepState {
     // The finished page keeps its steps until the wipe has swept half of it away.
     if (t >= BUILT_AT && t < STEPS_RESET_AT) {
-        return index === BUILD_STEPS.length - 1 ? 'active' : 'done';
+        return index === BUILD_STEP_COUNT - 1 ? 'active' : 'done';
     }
 
     if (t >= STEPS_RESET_AT) {
@@ -281,7 +286,7 @@ const WF_NAV_OUT = 2.05;
 const HEAD_RISE = [2.14, 2.22, 2.3] as const;
 
 /** The simple tracks, by `data-lb` key. Elements with special behaviour (typing, photos, cursor) are driven elsewhere. */
-export const TRACKS: Record<string, Track> = {
+const TRACKS: Record<string, Track> = {
     // Act 1: wireframe.
     'wf-logo': wireframe(0.12, { out: WF_NAV_OUT }),
     'wf-links': wireframe(0.2, { out: WF_NAV_OUT, grow: true }),
@@ -314,8 +319,6 @@ export const TRACKS: Record<string, Track> = {
 
     // Act 3: code.
     editor: float(4.5, { duration: 0.75, distance: 2 }),
-    'hl-hero': highlight(CODE_SCHEDULE[3].from - 0.05, CODE_SCHEDULE[3].to + 0.45),
-    'hl-products': highlight(CODE_SCHEDULE[4].from - 0.05, CODE_SCHEDULE[4].to + 0.45),
 
     // The phone is on stage from the start (the right side never sits empty): its wireframe draws with the desktop's,
     // the design lands with the desktop's, the order arrives in act 4.
@@ -346,4 +349,16 @@ export const TRACKS: Record<string, Track> = {
     },
     // Its leading edge fades as it reaches the window's border (no doubled line).
     'wipe-edge': (t) => ({ opacity: round(1 - progress(t, WIPE_AT + WIPE_DURATION - 0.12, 0.1)) }),
+};
+
+/** Act 3: while the editor types a component's line, its section of the page is outlined (timed per language). */
+const codeHighlights = (schedule: CodeLineSchedule[]): Record<string, Track> => ({
+    'hl-hero': highlight(schedule[CODE_LINE_HERO].from - 0.05, schedule[CODE_LINE_HERO].to + 0.45),
+    'hl-products': highlight(schedule[CODE_LINE_PRODUCTS].from - 0.05, schedule[CODE_LINE_PRODUCTS].to + 0.45),
+});
+
+/** The simple tracks of each language: the shared ones plus that language's code highlights. */
+export const LOCALIZED_TRACKS: Localized<Record<string, Track>> = {
+    pl: { ...TRACKS, ...codeHighlights(CODE_SCHEDULE.pl) },
+    en: { ...TRACKS, ...codeHighlights(CODE_SCHEDULE.en) },
 };

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\Project;
+use App\Services\LocalizedRoutes;
 use Artesaos\SEOTools\Facades\JsonLdMulti;
 use Artesaos\SEOTools\Facades\OpenGraph;
 use Artesaos\SEOTools\Facades\SEOMeta;
@@ -18,62 +19,32 @@ class HomeController extends Controller
     {
         $projects = Project::active()->ordered()->get();
         $clients = Client::active()->ordered()->get();
-        $imageUrl = asset('assets/images/og-netizo-2.png');
+        $imageUrl = asset(__('home.seo.image'));
+        $title = __('home.seo.title');
+        $shareDescription = __('home.seo.share_description');
 
-        // Meta tags
-        SEOMeta::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Netizo');
-        SEOMeta::setDescription('Profesjonalne tworzenie stron internetowych i aplikacji webowych dla firm. Nowoczesny design, szybkość i SEO w standardzie. React, Next.js, Laravel. 150+ projektów, 8 lat doświadczenia. Bezpłatna wycena!');
-        SEOMeta::setCanonical(url('/'));
-        SEOMeta::addKeyword([
-            // Główne frazy
-            'tworzenie stron internetowych', 'strony WWW dla firm', 'profesjonalne strony internetowe',
-            'projektowanie stron WWW', 'responsywne strony internetowe', 'nowoczesne strony WWW',
-            'agencja interaktywna', 'software house', 'aplikacje webowe', 'sklepy internetowe',
-            // Technologie
-            'React', 'Next.js', 'Node.js', 'Laravel', 'web development', 'Polska', 'netizo', 'Wielkopolska',
-            // Leszno
-            'Leszno', 'programista Leszno', 'tworzenie stron Leszno', 'strony internetowe Leszno', 'software house Leszno',
-            // Duże miasta
-            'Poznań', 'programista Poznań', 'tworzenie stron Poznań', 'strony internetowe Poznań',
-            'Wrocław', 'programista Wrocław', 'tworzenie stron Wrocław', 'strony internetowe Wrocław',
-            'Kalisz', 'programista Kalisz', 'tworzenie stron Kalisz', 'strony internetowe Kalisz',
-            'Głogów', 'programista Głogów', 'tworzenie stron Głogów', 'strony internetowe Głogów',
-            // Średnie miasta
-            'Rawicz', 'programista Rawicz', 'tworzenie stron Rawicz',
-            'Kościan', 'programista Kościan', 'tworzenie stron Kościan',
-            'Gostyń', 'programista Gostyń', 'tworzenie stron Gostyń',
-            'Śrem', 'programista Śrem', 'tworzenie stron Śrem',
-            'Góra', 'programista Góra', 'tworzenie stron Góra',
-            'Wschowa', 'programista Wschowa', 'tworzenie stron Wschowa',
-            // Mniejsze miejscowości
-            'Rydzyna', 'programista Rydzyna', 'tworzenie stron Rydzyna',
-            'Osieczna', 'programista Osieczna', 'tworzenie stron Osieczna',
-            'Bojanowo', 'programista Bojanowo', 'tworzenie stron Bojanowo',
-            'Poniec', 'programista Poniec', 'tworzenie stron Poniec',
-            'Krobia', 'programista Krobia', 'tworzenie stron Krobia',
-            'Jutrosin', 'programista Jutrosin', 'tworzenie stron Jutrosin',
-            'Miejska Górka', 'programista Miejska Górka', 'tworzenie stron Miejska Górka',
-        ]);
+        SEOMeta::setTitle($title);
+        SEOMeta::setDescription(__('home.seo.description'));
+        SEOMeta::addKeyword(__('home.seo.keywords'));
 
-        // Open Graph
-        OpenGraph::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Netizo')
-            ->setDescription('Profesjonalne strony internetowe i aplikacje webowe. Nowoczesny design, szybkość, SEO. 150+ projektów. Bezpłatna wycena!')
+        OpenGraph::setTitle($title)
+            ->setDescription($shareDescription)
             ->setType('website')
             ->setSiteName('Netizo')
-            ->setUrl(url('/'))
             ->addImage($imageUrl, ['width' => 1200, 'height' => 630]);
 
-        // Twitter Card
-        TwitterCard::setTitle('Tworzymy Strony WWW dla Ambitnych Firm | Netizo')
-            ->setDescription('Profesjonalne strony internetowe i aplikacje webowe. Nowoczesny design, szybkość, SEO. 150+ projektów. Bezpłatna wycena!')
+        TwitterCard::setTitle($title)
+            ->setDescription($shareDescription)
             ->setType('summary_large_image')
             ->setImage($imageUrl);
 
+        $this->localizedSeo('home');
+
         // JSON-LD Structured Data - Organization (SEO::generate() renders the JsonLdMulti instance, not JsonLd)
         JsonLdMulti::setTitle('Netizo')
-            ->setDescription('Profesjonalne tworzenie stron internetowych i aplikacji webowych dla firm. Nowoczesny design, szybkość i SEO w standardzie. 150+ projektów, 8 lat doświadczenia.')
+            ->setDescription(__('home.seo.organization_description'))
             ->setType('ProfessionalService')
-            ->setUrl(url('/'))
+            ->setUrl(LocalizedRoutes::url('home'))
             ->setImage($imageUrl)
             ->addValue('address', [
                 '@type' => 'PostalAddress',
@@ -83,9 +54,9 @@ class HomeController extends Controller
             ])
             ->addValue('areaServed', [
                 '@type' => 'Country',
-                'name' => 'Polska',
+                'name' => __('home.seo.country'),
             ])
-            ->addValue('knowsLanguage', ['pl', 'en'])
+            ->addValue('knowsLanguage', LocalizedRoutes::LOCALES)
             ->addValue('priceRange', '$$');
 
         $faq = $this->faq();
@@ -100,59 +71,14 @@ class HomeController extends Controller
     }
 
     /**
-     * Frequently asked questions — the single source for the FAQ section and its JSON-LD.
-     * Ranges keep together: a word joiner (U+2060) after the dash, a no-break space (U+00A0) before the unit.
+     * Frequently asked questions in the current language (lang/{pl,en}/home.php) — the single source for the FAQ
+     * section and its JSON-LD.
      *
      * @return list<array{question: string, answer: string}>
      */
     private function faq(): array
     {
-        return [
-            [
-                'question' => 'Ile kosztuje strona internetowa lub aplikacja?',
-                'answer' => "Prosta strona kosztuje zwykle 1–\u{2060}5\u{00A0}tys.\u{00A0}zł, rozbudowana strona lub mały sklep 5–\u{2060}15\u{00A0}tys.\u{00A0}zł, aplikacja webowa 15–\u{2060}50\u{00A0}tys.\u{00A0}zł, a duże systemy od 50\u{00A0}tys.\u{00A0}zł. Ostateczna cena zależy od zakresu, a dokładną wycenę dostajesz bezpłatnie po briefie.",
-            ],
-            [
-                'question' => 'Ile trwa stworzenie strony lub aplikacji?',
-                'answer' => "Landing page powstaje zwykle w 2–\u{2060}3\u{00A0}tygodnie, strona firmowa w 4–\u{2060}6\u{00A0}tygodni, a aplikacja webowa w 2–\u{2060}4\u{00A0}miesiące. Dokładny termin ustalamy po briefie, gdy znamy zakres prac.",
-            ],
-            [
-                'question' => 'Czy strona będzie widoczna w Google?',
-                'answer' => 'Tak. Każdą stronę budujemy z myślą o wyszukiwarce: szybkie ładowanie, poprawna struktura nagłówków, tytuły i opisy do wyników wyszukiwania, dane strukturalne i mapa witryny. Konkretnej pozycji nikt uczciwie nie zagwarantuje, bo zależy ona też od konkurencji i treści, ale dostajesz solidne podstawy do pozycjonowania, także lokalnego.',
-            ],
-            [
-                'question' => 'Czy mogę samodzielnie zmieniać treści na stronie?',
-                'answer' => 'Tak. Jeśli chcesz to robić we własnym zakresie, dodajemy prosty system do zarządzania treścią (CMS): zmienisz w nim teksty, zdjęcia i wpisy, a my pokażemy, jak z niego korzystać. Większe zmiany zgłaszasz nam jako zadanie w panelu klienta.',
-            ],
-            [
-                'question' => 'Czy zaprojektujecie wygląd strony, jeśli nie mam projektu?',
-                'answer' => 'Tak. Mamy w zespole projektantów UI/UX: zaprojektujemy wygląd od zera albo oprzemy się na Twoich szkicach, logo i identyfikacji wizualnej. Zanim zaczniemy programować, dostajesz projekt i klikalny prototyp w Figmie do przejrzenia i akceptacji.',
-            ],
-            [
-                'question' => 'Czy możecie odświeżyć moją obecną stronę, zamiast budować nową?',
-                'answer' => 'Tak. Zaczynamy od przeglądu obecnej strony: co działa, co ją spowalnia i co zniechęca klientów. Potem proponujemy odświeżenie wyglądu i treści albo przebudowę, jeśli stara technologia ogranicza rozwój. Przy przebudowie przekierowujemy stare adresy na nowe, żeby ograniczyć ryzyko spadków w Google.',
-            ],
-            [
-                'question' => 'Czy zajmiecie się domeną, hostingiem i pocztą firmową?',
-                'answer' => 'Tak. Pomagamy wybrać i skonfigurować domenę, hosting i firmową pocztę albo pracujemy na tym, co już masz. Dostępy trzymasz w zaszyfrowanym sejfie w panelu klienta, a zanim minie termin odnowienia domeny lub hostingu, dostajesz tam przypomnienie.',
-            ],
-            [
-                'question' => 'Czy zapewniacie opiekę nad stroną po wdrożeniu?',
-                'answer' => 'Tak. Po publikacji zostajemy z Tobą: dbamy o hosting, aktualizacje bezpieczeństwa, kopie zapasowe, monitoring i dalszy rozwój strony. Poprawki zgłaszasz jako zadania w panelu klienta, a przy stałej współpracy co miesiąc dostajesz rozliczenie z rozpisanymi godzinami.',
-            ],
-            [
-                'question' => 'Czy mogę zobaczyć postępy w trakcie pracy?',
-                'answer' => 'Tak. Od początku współpracy masz dostęp do panelu klienta: widzisz zadania i etap każdego z nich, czas pracy i dokumenty, a z zespołem piszesz na czacie. Co dwa tygodnie pokazujemy postępy na wersji testowej.',
-            ],
-            [
-                'question' => 'Czy pracujecie tylko z firmami z Leszna?',
-                'answer' => 'Nie. Jesteśmy z Leszna w Wielkopolsce, ale realizujemy projekty dla firm z całej Polski. Większość spraw załatwiamy online: na rozmowach wideo i w panelu klienta. Z firmami z Leszna i okolic chętnie spotkamy się na miejscu.',
-            ],
-            [
-                'question' => 'Jakie technologie wykorzystujecie?',
-                'answer' => 'Technologie dobieramy do potrzeb projektu. Najczęściej pracujemy na takim zestawie: interfejs – React, Next.js, Vue.js i Tailwind CSS; serwer – Node.js, Go, Laravel i Python; bazy danych – PostgreSQL, MongoDB i Redis; chmura – AWS, GCP i Vercel.',
-            ],
-        ];
+        return __('home.faq');
     }
 
     /**
@@ -161,6 +87,7 @@ class HomeController extends Controller
     private function projectProps(Project $project): array
     {
         $url = (string) $project->url;
+        $metrics = $this->metricList($this->translated($project, 'metrics'));
 
         return [
             'id' => $project->id,
@@ -168,23 +95,47 @@ class HomeController extends Controller
             'title' => $project->title,
             'url' => $url,
             'liveUrl' => $this->absoluteUrl($url) ?? '',
-            'category' => (string) $project->category,
-            'description' => (string) $project->description,
-            'fullDescription' => (string) $project->full_description,
+            'category' => (string) $this->translated($project, 'category'),
+            'description' => (string) $this->translated($project, 'description'),
+            'fullDescription' => (string) $this->translated($project, 'full_description'),
             'thumbnailUrl' => $project->thumbnail_image ? asset('storage/'.$project->thumbnail_image) : null,
             'fullImageUrl' => $project->full_image ? asset('storage/'.$project->full_image) : null,
             'techStack' => $this->stringList($project->tech_stack),
-            'metrics' => collect(is_array($project->metrics) ? $project->metrics : [])
-                ->filter(fn (mixed $metric): bool => is_array($metric))
-                ->map(fn (array $metric): array => [
-                    'value' => (string) ($metric['value'] ?? ''),
-                    'label' => (string) ($metric['label'] ?? ''),
-                ])
-                ->values()
-                ->all(),
-            'challenges' => $this->stringList($project->challenges),
-            'solutions' => $this->stringList($project->solutions),
+            'metrics' => $metrics,
+            'challenges' => $this->stringList($this->translated($project, 'challenges')),
+            'solutions' => $this->stringList($this->translated($project, 'solutions')),
         ];
+    }
+
+    /**
+     * A project column in the current language: on the English site its `_en` twin, unless that one is empty (the
+     * Polish copy is shown until the English one is filled in the panel).
+     */
+    private function translated(Project $project, string $column): mixed
+    {
+        if (app()->getLocale() === 'pl') {
+            return $project->{$column};
+        }
+
+        $value = $project->{"{$column}_en"};
+        $isEmpty = is_array($value) ? $this->stringList($value) === [] && $this->metricList($value) === [] : trim((string) $value) === '';
+
+        return $isEmpty ? $project->{$column} : $value;
+    }
+
+    /**
+     * @return list<array{value: string, label: string}>
+     */
+    private function metricList(mixed $value): array
+    {
+        return collect(is_array($value) ? $value : [])
+            ->filter(fn (mixed $metric): bool => is_array($metric) && (filled($metric['value'] ?? null) || filled($metric['label'] ?? null)))
+            ->map(fn (array $metric): array => [
+                'value' => (string) ($metric['value'] ?? ''),
+                'label' => (string) ($metric['label'] ?? ''),
+            ])
+            ->values()
+            ->all();
     }
 
     /**

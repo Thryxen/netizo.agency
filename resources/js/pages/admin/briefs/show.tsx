@@ -6,6 +6,7 @@ import { AdminLayout } from '@/components/admin/admin-layout';
 import { briefLabel, briefLabels } from '@/components/admin/brief-labels';
 import { ConfirmDeleteDialog } from '@/components/admin/confirm-delete-dialog';
 import { CopyButton, DetailItem, DetailList } from '@/components/admin/detail';
+import { leadLocaleLabel } from '@/components/admin/lead-locale';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { adminRoutes } from '@/lib/admin-routes';
@@ -70,6 +71,7 @@ export default function BriefShow({ brief }: { brief: AdminBrief }) {
                             <DetailItem label="Skąd o nas">{briefLabel('source', brief.source)}</DetailItem>
                             <DetailItem label="Preferowany kontakt">{briefLabels('contact_pref', brief.contactPref)}</DetailItem>
                             <DetailItem label="Data wysłania">{brief.createdAt}</DetailItem>
+                            <DetailItem label="Język">{leadLocaleLabel(brief.locale)}</DetailItem>
                         </DetailList>
                     </TabsContent>
 

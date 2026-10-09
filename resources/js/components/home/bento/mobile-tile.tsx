@@ -2,6 +2,7 @@ import { CalendarCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Photo } from '@/components/home/photo';
 import { useLiveLoop } from '@/components/motion/use-in-view-loop';
+import { localized, useCopy } from '@/lib/i18n';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
 import { Appear, BentoTile, type BentoRivet, BentoTileText, type BentoService, liveVisualProps, tileGutterBottom, tileGutterX } from './bento-tile';
@@ -11,11 +12,27 @@ const PHASE_MS = [3200, 500, 600] as const;
 const SHOWN = 0;
 const GONE = 2;
 
-const BOOKINGS = [
-    { time: '14:30', detail: 'Szczepienie, gabinet 2' },
-    { time: '15:15', detail: 'Wizyta kontrolna, gabinet 1' },
-    { time: '16:40', detail: 'Pielęgnacja, gabinet 3' },
-] as const;
+const COPY = localized({
+    pl: {
+        title: (time: string): string => `Nowa rezerwacja, ${time}`,
+        bookings: [
+            { time: '14:30', detail: 'Szczepienie, gabinet 2' },
+            { time: '15:15', detail: 'Wizyta kontrolna, gabinet 1' },
+            { time: '16:40', detail: 'Pielęgnacja, gabinet 3' },
+        ],
+    },
+    en: {
+        title: (time: string): string => `New booking, ${time}`,
+        bookings: [
+            { time: '2:30\u00a0PM', detail: 'Vaccination, room 2' },
+            { time: '3:15\u00a0PM', detail: 'Check-up, room 1' },
+            { time: '4:40\u00a0PM', detail: 'Grooming, room 3' },
+        ],
+    },
+});
+
+/** Bookings the notification cycles through (the same number in both languages). */
+const BOOKING_COUNT = COPY.pl.bookings.length;
 
 /**
  * Aplikacje mobilne: the bento-mobile photo fills the tile and booking notifications
@@ -24,14 +41,15 @@ const BOOKINGS = [
 export function MobileTile({ service, rivets }: { service: BentoService; rivets?: BentoRivet[] }) {
     const { ref, step, active } = useLiveLoop<HTMLDivElement>(PHASE_MS, { staticStep: SHOWN });
     const [booking, setBooking] = useState(0);
+    const copy = useCopy(COPY);
 
     useEffect(() => {
         if (step === GONE) {
-            setBooking((current) => (current + 1) % BOOKINGS.length);
+            setBooking((current) => (current + 1) % BOOKING_COUNT);
         }
     }, [step]);
 
-    const { time, detail } = BOOKINGS[booking];
+    const { time, detail } = copy.bookings[booking];
 
     return (
         <BentoTile className="min-h-[32rem] sm:min-h-[36rem] md:min-h-[27rem] lg:row-span-2 lg:min-h-0" rivets={rivets}>
@@ -55,7 +73,7 @@ export function MobileTile({ service, rivets }: { service: BentoService; rivets?
                         <CalendarCheck className="size-4" strokeWidth={1.75} />
                     </span>
                     <span className="min-w-0 text-xs leading-snug">
-                        <span className="block truncate font-medium">Nowa rezerwacja, {time}</span>
+                        <span className="block truncate font-medium">{copy.title(time)}</span>
                         <span className="block truncate text-muted-foreground">{detail}</span>
                     </span>
                 </Appear>

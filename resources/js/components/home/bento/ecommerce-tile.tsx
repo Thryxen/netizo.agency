@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Photo } from '@/components/home/photo';
 import { useInViewLoop } from '@/components/motion/use-in-view-loop';
+import { localized, useCopy, useLocale } from '@/lib/i18n';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
 import { formatZloty, tween } from './bento-motion';
@@ -16,6 +17,11 @@ const VISIBLE_ROWS = 3;
 const FIRST_ARRIVAL_MS = 300;
 const ARRIVAL_MS = 3600;
 
+const COPY = localized({
+    pl: { salesToday: 'Sprzedaż dziś', order: 'Zamówienie ' },
+    en: { salesToday: 'Sales today', order: 'Order ' },
+});
+
 function amountOf(order: number): number {
     const index = (((order - FIRST_LIVE_ORDER) % AMOUNTS.length) + AMOUNTS.length) % AMOUNTS.length;
 
@@ -28,6 +34,8 @@ function amountOf(order: number): number {
  */
 export function EcommerceTile({ service, rivets }: { service: BentoService; rivets?: BentoRivet[] }) {
     const { ref, active } = useInViewLoop<HTMLDivElement>();
+    const copy = useCopy(COPY);
+    const locale = useLocale();
     const [orders, setOrders] = useState<number[]>(INITIAL_ORDERS);
     const revenueRef = useRef<HTMLSpanElement>(null);
     const revenue = useRef(INITIAL_REVENUE);
@@ -50,7 +58,7 @@ export function EcommerceTile({ service, rivets }: { service: BentoService; rive
                 revenue.current = to;
                 cancelCount.current();
                 cancelCount.current = element
-                    ? tween({ from, to, duration: 900, delay: 200, onUpdate: (value) => (element.textContent = formatZloty(value)) })
+                    ? tween({ from, to, duration: 900, delay: 200, onUpdate: (value) => (element.textContent = formatZloty(value, locale)) })
                     : () => {};
                 setOrders((current) => [order, ...current].slice(0, VISIBLE_ROWS + 1));
             },
@@ -58,7 +66,7 @@ export function EcommerceTile({ service, rivets }: { service: BentoService; rive
         );
 
         return () => window.clearTimeout(timer);
-    }, [active, latest, hasLiveOrder]);
+    }, [active, latest, hasLiveOrder, locale]);
 
     useEffect(() => () => cancelCount.current(), []);
 
@@ -71,14 +79,14 @@ export function EcommerceTile({ service, rivets }: { service: BentoService; rive
                     <div ref={ref} {...liveVisualProps(active)} className={cn('@container mt-auto pt-7', tileGutterX, tileGutterBottom)}>
                         <div className="flex items-end justify-between gap-3 border-b pb-3">
                             <span className="min-w-0">
-                                <span className="block text-[11px] text-muted-foreground">Sprzedaż dziś</span>
+                                <span className="block text-[11px] text-muted-foreground">{copy.salesToday}</span>
                                 <span ref={revenueRef} className="mt-1 block text-xl leading-none font-semibold tracking-tight tabular-nums">
-                                    {formatZloty(INITIAL_REVENUE)}
+                                    {formatZloty(INITIAL_REVENUE, locale)}
                                 </span>
                             </span>
                             {hasLiveOrder && (
                                 <span key={latest} className="nz-bento-flash shrink-0 text-[11px] text-muted-foreground tabular-nums">
-                                    +{formatZloty(amountOf(latest))}
+                                    +{formatZloty(amountOf(latest), locale)}
                                 </span>
                             )}
                         </div>
@@ -97,10 +105,10 @@ export function EcommerceTile({ service, rivets }: { service: BentoService; rive
                                                 className="size-1.5 shrink-0 bg-foreground transition-opacity duration-500 data-[on=false]:opacity-25"
                                             />
                                             <span className="truncate">
-                                                <span className="hidden @[13.5rem]:inline">Zamówienie </span>#{order}
+                                                <span className="hidden @[13.5rem]:inline">{copy.order}</span>#{order}
                                             </span>
                                         </span>
-                                        <span className="shrink-0 font-medium tabular-nums">{formatZloty(amountOf(order))}</span>
+                                        <span className="shrink-0 font-medium tabular-nums">{formatZloty(amountOf(order), locale)}</span>
                                     </div>
                                 </li>
                             ))}

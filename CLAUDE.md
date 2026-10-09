@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Netizo (netizo.pl) is a Polish web agency website built with Laravel 12. The public homepage is a single-page Inertia v3 + React 19 + TypeScript app (shadcn/ui, server-side rendered). The admin panel at `/admin` is an Inertia + React + shadcn app (client-rendered, behind a login) for managing projects, clients and the leads collected by the homepage forms.
+Netizo (netizo.pl) is a Polish web agency website built with Laravel 12. The public homepage is a single-page Inertia v3 + React 19 + TypeScript app (shadcn/ui, server-side rendered). The public site is bilingual: Polish without a URL prefix (`/`, `/partnerzy`), English under `/en` (`/en`, `/en/partners`); the admin panel is Polish only. The admin panel at `/admin` is an Inertia + React + shadcn app (client-rendered, behind a login) for managing projects, clients and the leads collected by the homepage forms.
 
 ## Commands
 
@@ -49,16 +49,28 @@ php artisan migrate   # Run migrations (uses SQLite in database/database.sqlite)
 - **UI**: shadcn/ui (new-york, neutral, CSS variables) on Radix (`radix-ui`), `lucide-react` icons, Tailwind CSS 4, `tw-animate-css`
 - **Fonts**: self-hosted Geist / Geist Mono (`@fontsource-variable/*`); no Google Fonts on the homepage
 - **Motion**: `motion` (motion.dev), used only for `MotionConfig` and scroll-linked values (`useScroll` + `useTransform`); entrances are CSS/canvas primitives in `components/motion/`
-- **Admin Panel**: Inertia + React + shadcn `Sidebar` layout at `/admin` (no Filament, no Livewire); drag-and-drop ordering with `@dnd-kit/*`; images converted to WebP by `intervention/image` 2.7
+- **Admin Panel**: Inertia + React + shadcn `Sidebar` layout at `/admin` (no Filament, no Livewire); AI translation of project copy through `laravel/ai` + OpenRouter; drag-and-drop ordering with `@dnd-kit/*`; images converted to WebP by `intervention/image` 2.7
 - **Build**: Vite 7 (`vite.config.ts`, `laravel-vite-plugin`, `@inertiajs/vite`, `@vitejs/plugin-react`)
 - **Database**: SQLite (development)
 - **Testing**: Pest 4
 
+### Languages
+- Every English route is named like its Polish twin with an `en.` prefix (`home` ↔ `en.home`, `partners` ↔ `en.partners`, `contact-messages.store` ↔ `en.contact-messages.store`); `App\Services\LocalizedRoutes` maps between them (`alternates()`, `url()`, `name()`).
+- The language comes from the path only (`/en`, `/en/*` → `en`, everything else → `pl`): the global `SetLocale` middleware (prepended, so 404/405/419 and the `forms` limiter speak the page's language) and `AppServiceProvider::setLocaleFromPath()` (at boot, because the cookie banner translates its categories when they are registered). No redirects by browser language.
+- Server-side copy lives in `lang/{pl,en}/{home,partners,forms,errors}.php` (same keys; `TranslationParityTest` checks it): page meta and FAQ, form validation messages and form-level errors, error pages. The cookie banner uses `lang/vendor/cookieConsent/{pl,en}`.
+- SEO: `Controller::localizedSeo($name)` sets the canonical, hreflang alternates for `pl`, `en` and `x-default` (Polish), `og:url`, `og:locale` and `og:locale:alternate`; `<html lang>` follows the locale; `public/sitemap.xml` lists both languages with hreflang links.
+- `HandleInertiaRequests` shares `locale` and `alternates` (the current page in each language) on public pages.
+- Frontend copy sits next to the component that shows it: `const COPY = localized({ pl: {...}, en: {...} })` + `useCopy(COPY)` (`lib/i18n.ts`); TypeScript checks the English entry against the Polish one's shape. Data modules export `localized(...)` objects read with `useCopy()` / `X[locale]`. Section anchors per language in `lib/sections.ts` (`useHomeSections()`, `usePartnerSections()`), form endpoints in `lib/endpoints.ts` (`useEndpoints()`), page URLs and footer links in `lib/site.ts` (`usePageUrls()`, `useInfoLinks()`; pages that exist in Polish only get `hrefLang="pl"` and a "PL" marker). Money: `formatPln()` / `formatInteger()` in `lib/i18n.ts` ("18 000 zł" / "PLN 18,000"), `formatZloty()` in `bento/bento-motion.ts`.
+- English copy: American spelling, sentence case, same claims and figures as the Polish copy.
+- Language switcher (`components/home/language-switcher.tsx`): a globe and the other language named in that language ("English" / "Polski"), shortened to its code ("EN") where the header is tight (phones, lg–xl); a plain link to `alternates[other]` (full page load). In both headers and the footer. On phones it stays in the header and the theme toggle moves into the menu (home) or shows from `sm` (partner page).
+- Leads store the language of the site they came from (`locale` column on the five lead tables); the admin lists show an "EN" badge, details a "Język" row, Discord notifications a "Język" field.
+- Projects have optional English columns (`category_en`, `description_en`, `full_description_en`, `metrics_en`, `challenges_en`, `solutions_en`), edited in the "Wersja angielska" tab of the project form; on `/en` each empty one falls back to the Polish column (`HomeController::translated()`).
+
 ### Request flow
-- `GET /` → `HomeController@index` sets the SEOTools meta and returns `Inertia::render('home', ['projects', 'clients', 'faq'])`. FAQ items have one source (`HomeController::faq()`) used for both the prop and the FAQ JSON-LD passed to the root view as `faqSchema` (built by `Controller::faqSchema()`).
-- `GET /partnerzy` → `PartnerProgramController@index` (route `partners`): the partner programme page (15% net of every paid invoice of a referred client for 12 months, payout within 14 days), `Inertia::render('partners', ['faq'])` with its own SEO meta, WebPage JSON-LD and FAQ JSON-LD (`PartnerProgramController::faq()`). A separate page with its own header (`PartnerHeader`); linked from the home page's "Poleć nas i zyskaj 15%" band (`components/home/partner-cta-section.tsx`, between FAQ and Newsletter), the footer and the mobile menu (`infoLinks` in `lib/site.ts`).
+- `GET /` and `GET /en` → `HomeController@index` sets the SEOTools meta and returns `Inertia::render('home', ['projects', 'clients', 'faq'])`. FAQ items have one source (`lang/{pl,en}/home.php`, read by `HomeController::faq()`) used for both the prop and the FAQ JSON-LD passed to the root view as `faqSchema` (built by `Controller::faqSchema()`).
+- `GET /partnerzy` and `GET /en/partners` → `PartnerProgramController@index` (routes `partners`, `en.partners`): the partner programme page (15% net of every paid invoice of a referred client for 12 months, payout within 14 days), `Inertia::render('partners', ['faq'])` with its own SEO meta, WebPage JSON-LD and FAQ JSON-LD (`lang/{pl,en}/partners.php`, read by `PartnerProgramController::faq()`). A separate page with its own header (`PartnerHeader`); linked from the home page's "Poleć nas i zyskaj 15%" band (`components/home/partner-cta-section.tsx`, between FAQ and Newsletter), the footer and the mobile menu (`infoLinks` in `lib/site.ts`).
 - Root view `resources/views/app.blade.php`: Trusted Types default policy, gtag, theme-before-paint script, `SEO::generate()`, FAQ JSON-LD, favicons, `@vite`, `@inertiaHead`, `@cookieconsentscripts`; body has the GTM noscript, `@inertia`, then `@cookieconsentview` and Microsoft Clarity outside the Inertia root.
-- Middleware (`bootstrap/app.php`, web group): `HandleAppearance` (reads the `appearance` cookie: light/dark/system; the cookie is not encrypted), `HandleInertiaRequests`, `AddLinkHeadersForPreloadedAssets`, `SecurityHeaders` (CSP with Trusted Types; adds the Vite dev origin only while `public/hot` exists). `HandleInertiaRequests` also picks the root view (`admin` for `/admin*`, `app` otherwise), skips SSR for `/admin*` (`$withoutSsr`) and shares `auth`, `sidebarOpen` (cookie `sidebar_state`, not encrypted) and `flash.success` on admin requests only.
+- Middleware (`bootstrap/app.php`): global `SetLocale` (first) and `SecurityHeaders`; web group: `HandleAppearance` (reads the `appearance` cookie: light/dark/system; the cookie is not encrypted), `HandleInertiaRequests`, `AddLinkHeadersForPreloadedAssets`. `SecurityHeaders`: CSP with Trusted Types; adds the Vite dev origin only while `public/hot` exists. `HandleInertiaRequests` also picks the root view (`admin` for `/admin*`, `app` otherwise), skips SSR for `/admin*` (`$withoutSsr`) and shares `auth`, `sidebarOpen` (cookie `sidebar_state`, not encrypted) and `flash.success` on admin requests only.
 
 ### Admin panel (`/admin`)
 - Routes in `routes/admin.php` (loaded by `bootstrap/app.php` through `then:`), names `admin.*`; `/admin` redirects to the project list. Guests go to `admin.login`; every user in the `users` table may log in (create one with `php artisan admin:create`). Login is limited to 5 failed attempts per email + IP.
@@ -66,20 +78,21 @@ php artisan migrate   # Run migrations (uses SQLite in database/database.sqlite)
 - Partner applications (`/admin/partners`, `Admin\PartnerApplicationController`): list, details and delete like the other leads.
 - Projects and clients: whole list loaded, client-side search and status filter, drag-and-drop order saved through `POST /admin/{projects,clients}/reorder` (`ReordersRecords` trait), bulk delete through `DELETE /admin/{resource}` with `ids[]`. Messages, briefs and callback requests: server-side lists (25 per page) filtered through the query string (`LeadIndexRequest` / `BriefIndexRequest` ignore anything outside the allowed sort columns and dates).
 - Project images go through `App\Services\ImageOptimizer` (WebP, 1600 px thumbnail / 1920 px full image, ULID names on the `public` disk); replacing or removing an image deletes the old file. `challenges` / `solutions` are stored as `[['challenge' => …]]` / `[['solution' => …]]` and read back from plain strings too.
+- "Wersja angielska" tab of the project form: "Przetłumacz z polskiego" (`components/admin/project-translation.tsx`, Inertia `useHttp`) posts the Polish copy from the form, saved or not, to `POST /admin/projects/translate` (`Admin\ProjectTranslationController`, `TranslateProjectRequest`, 20 req/min) and fills the English fields with the result; nothing is saved until the project is. The translation comes from `App\Ai\Agents\ProjectTranslator` (laravel/ai, structured output) on OpenRouter: key `OPENROUTER_API_KEY`, model `services.openrouter.translation_model` (`OPENROUTER_TRANSLATION_MODEL`, default `anthropic/claude-haiku-5.5`). Provider failures return 502 with a Polish message; tests use `ProjectTranslator::fake()`.
 - Brief labels in the panel come from `resources/js/components/home/brief/brief-options.ts` (`components/admin/brief-labels.ts`).
 
 ### Form endpoints
-All in `routes/web.php` inside a `throttle:forms` group (10 req/min per IP, defined in `AppServiceProvider`; when exceeded it redirects back with an `errors.form` message instead of a 429 page). Each controller validates with a Form Request, saves the model, calls `DiscordWebhookService` where noted, and returns `back()`.
+All in `routes/web.php` inside `throttle:forms` groups (10 req/min per IP, defined in `AppServiceProvider`; when exceeded it redirects back with an `errors.form` message instead of a 429 page). Each form has a Polish and an English endpoint (English URI in brackets; route name prefixed with `en.`), so validation messages come back in the page's language. Each controller validates with a Form Request (messages in `lang/{pl,en}/forms.php`), saves the model with the `locale`, calls `DiscordWebhookService` where noted, and returns `back()`.
 
 | Method/URI | Route name | Controller | Form Request | Model | Webhook |
 |---|---|---|---|---|---|
-| POST /kontakt | contact-messages.store | ContactMessageController | StoreContactMessageRequest | ContactMessage | sendContactMessage |
-| POST /brief | project-briefs.store | ProjectBriefController | StoreProjectBriefRequest | ProjectBrief | sendBrief |
-| POST /oddzwonimy | callback-requests.store | CallbackRequestController | StoreCallbackRequestRequest | CallbackRequest | sendCallbackRequest |
-| POST /newsletter | newsletter-subscriptions.store | NewsletterSubscriptionController | StoreNewsletterSubscriptionRequest | NewsletterSubscriber | none |
-| POST /partnerzy | partner-applications.store | PartnerApplicationController | StorePartnerApplicationRequest | PartnerApplication | sendPartnerApplication |
+| POST /kontakt (/en/contact) | contact-messages.store | ContactMessageController | StoreContactMessageRequest | ContactMessage | sendContactMessage |
+| POST /brief (/en/brief) | project-briefs.store | ProjectBriefController | StoreProjectBriefRequest | ProjectBrief | sendBrief |
+| POST /oddzwonimy (/en/callback) | callback-requests.store | CallbackRequestController | StoreCallbackRequestRequest | CallbackRequest | sendCallbackRequest |
+| POST /newsletter (/en/newsletter) | newsletter-subscriptions.store | NewsletterSubscriptionController | StoreNewsletterSubscriptionRequest | NewsletterSubscriber | none |
+| POST /partnerzy (/en/partners) | partner-applications.store | PartnerApplicationController | StorePartnerApplicationRequest | PartnerApplication | sendPartnerApplication |
 
-Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreContactMessageRequest::SUBJECTS`); `resources/js/components/home/brief/brief-options.ts` must use the same values. Partner types: `StorePartnerApplicationRequest::PARTNER_TYPES` = `components/partners/partner-options.ts` (a test checks they match). The partner webhook is `DISCORD_WEBHOOK_PARTNER`, falling back to `DISCORD_WEBHOOK_CONTACT`. The frontend URLs are in `resources/js/lib/endpoints.ts` and forms post with Inertia `useForm`.
+Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreContactMessageRequest::SUBJECTS`); `resources/js/components/home/brief/brief-options.ts` must use the same values (labels in both languages, values shared). Partner types: `StorePartnerApplicationRequest::PARTNER_TYPES` = `components/partners/partner-options.ts` (a test checks they match). The partner webhook is `DISCORD_WEBHOOK_PARTNER`, falling back to `DISCORD_WEBHOOK_CONTACT`. The frontend URLs are in `resources/js/lib/endpoints.ts` and forms post with Inertia `useForm`.
 
 ### Directory Structure
 
@@ -102,13 +115,13 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 **resources/js/** - Inertia React app:
 - `app.tsx` (client entry), `ssr.tsx` (SSR entry); both resolve pages through `lib/pages.ts`
 - `pages/home.tsx` - Page assembly (`HomeUiProvider`, header, sections, footer, callback FAB and dialog, skip link)
-- `components/home/` - Homepage sections and shared primitives: `section.tsx` (`Section`, `SectionHeading` (heading reveal built in), `Container`, `Rivet`, gutter/bleed class helpers), `photo.tsx` (`Photo`: a photo in a clipping frame, lazy `<img>`), `logo.tsx` (netizo `Logo`/`LogoMark`), `theme-toggle.tsx`, `tech-tag.tsx`, `external-link.tsx`, `home-ui-context.tsx` (`useHomeUi()`: callback dialog state, contact tab, `openContact()`), one file per section, `bento/` (services bento: one file per live tile, `bento-tile.tsx` shell, scoped `bento-styles.tsx`), `brief/` (6-step brief wizard, options, form field helpers)
+- `components/home/` - Homepage sections and shared primitives: `language-switcher.tsx`, `skip-link.tsx`, `info-link-label.tsx`, `section.tsx` (`Section`, `SectionHeading` (heading reveal built in), `Container`, `Rivet`, gutter/bleed class helpers), `photo.tsx` (`Photo`: a photo in a clipping frame, lazy `<img>`), `logo.tsx` (netizo `Logo`/`LogoMark`), `theme-toggle.tsx`, `tech-tag.tsx`, `external-link.tsx`, `home-ui-context.tsx` (`useHomeUi()`: callback dialog state, contact tab, `openContact()`), one file per section, `bento/` (services bento: one file per live tile, `bento-tile.tsx` shell, scoped `bento-styles.tsx`), `brief/` (6-step brief wizard, options, form field helpers)
 - `components/motion/` - Motion primitives, import from `@/components/motion`: `Reveal`, `SplitLines` (hero H1), `CountUp`, `Marquee`, `Spotlight`/`useSpotlight`, `useLiveLoop`/`useInViewLoop` (in-view gated loops), `useMotionStyle` (bind `useScroll`/`useTransform` values to a plain element), `MotionRoot` (wraps the page). Don't use `motion.*`/`m.*`/`animate()` (they pull in the animation engine, ~+27 KB gz); gate scroll-linked styles with `useReducedMotionPreference()`.
 - `components/ui/` - shadcn components (add new ones with `npx shadcn add`, answer "no" to overwriting existing ones, then check the generated `cn` import points at `@/lib/utils`, not the `cn` npm package, and that sidebar tokens stay monochrome)
 - `pages/partners.tsx` + `components/partners/` - Partner programme page: `partner-data.ts` (terms, steps, calculator presets, copy), `partner-header`, `partner-hero` + `referral-scene` (live loop over the `partner-referral` photo: order with the partner's code → its 15% slice fills → payout notification), `steps-section` (scroll-drawn rail: `useScroll` → `--rail`), `commission-calculator` (firms as columns with a 15% cap, tweened total), `audience-section`, `rules-section`, `partner-faq-section`, `join-section` (partner card mirroring the typed name) + `partner-application-form`, `partner-options.ts`, `commission-bar` (the 85/15 split bar, shared with the home page band)
 - `pages/admin/` + `components/admin/` - Admin panel: `AdminLayout` (sidebar, breadcrumb, flash notice), forms (`project-form`, `client-form`, `image-field`, `tags-input`, `repeater-list`), lists (`list-toolbar`, `sort-header`, `pagination`, `bulk-bar`, `sortable`, `record-toolbar`), `detail`, `brief-labels`; hooks `use-selection`, `use-record-list`, `use-list-filters`; URLs in `lib/admin-routes.ts`; types in `types/admin.ts`
 - `hooks/use-appearance.tsx` - Light/dark/system theme (cookie + localStorage)
-- `lib/` - `utils.ts` (`cn`), `endpoints.ts`, `pages.ts`, `photos.ts` (`photo(name)` → `src`/`srcSet`/size for the photo series), `site.ts`, `in-page-navigation.ts`
+- `lib/` - `utils.ts` (`cn`), `i18n.ts` (`localized`, `useCopy`, `useLocale`, `useAlternates`, money/number formatting), `sections.ts` (section anchors per language), `endpoints.ts`, `pages.ts`, `photos.ts` (`photo(name)` → `src`/`srcSet`/size for the photo series), `site.ts`, `in-page-navigation.ts`
 - `types/home.ts` - Page prop types (`Project`, `Client`, `FaqItem`, `HomePageProps`)
 
 **resources/css/app.css** - Tailwind 4 entry: shadcn tokens on `:root` / `.dark`, fonts, base styles, `ease-expo-out`, motion primitive states/keyframes (gated by `html.js`), `mask-fade-x`
@@ -116,26 +129,29 @@ Brief option values live as constants on `StoreProjectBriefRequest` (and `StoreC
 **resources/views/** - Blade templates:
 - `app.blade.php` - Inertia root view of the public site; `admin.blade.php` - root view of the admin panel
 - `vendor/cookie-consent/` - Cookie banner, styled with the site tokens
-- `errors/` - Custom error pages (403, 404, 419, 429, 500, 503), self-contained
+- `errors/` - Custom error pages (403, 404, 419, 429, 500, 503), self-contained; copy in `lang/{pl,en}/errors.php` (English under `/en/…`)
 
 **public/assets/images/photos/** - Generated photo series (WebP, `{name}.webp` at native width + `{name}-768.webp`): `hero-studio`, `bento-mobile`, `bento-ecommerce`, `mission-workshop`, `process-{discovery,design,development,launch}`, `contact-desk`, `partner-referral` (partner page hero), `partner-question` (partner FAQ chat scene, the home `FaqScene` with its own photo and lines). Reference them through `photo()` in `lib/photos.ts`.
 
 **public/assets/images/illustrations/** - Light/dark WebP project placeholder (shown when a project has no screenshot)
 
-**public/assets/images/og-netizo-2.png** - 1200×630 share image (`og:image`, `twitter:image`, JSON-LD), generated from `netizo/og-image/szablon.html` by `netizo/og-image/generuj.cjs` (`npx -y -p playwright@1.58.0 node netizo/og-image/generuj.cjs`; logo, sygnet and fonts are shared with `netizo/wizytowki/`). Keep it under 300 KB (WhatsApp). When the design changes, use a new file name (it busts the Facebook/Discord/Cloudflare preview caches) and update `HomeController`, `config/seotools.php` and `HomePageTest`.
+**public/assets/images/og-netizo-2.png** - 1200×630 share image (`og:image`, `twitter:image`, JSON-LD), generated from `netizo/og-image/szablon.html` by `netizo/og-image/generuj.cjs` (`npx -y -p playwright@1.58.0 node netizo/og-image/generuj.cjs`; logo, sygnet and fonts are shared with `netizo/wizytowki/`). Keep it under 300 KB (WhatsApp). When the design changes, use a new file name (it busts the Facebook/Discord/Cloudflare preview caches) and update `lang/pl/home.php` (`seo.image`), `config/seotools.php` and `HomePageTest`.
 
-**public/assets/images/og-netizo-partnerzy.png** - Share image of `/partnerzy`, generated by the same script from `netizo/og-image/szablon-partnerzy.html` (same frame, split like the partner hero: the hero headline on the left, the 18 000 zł → 2 700 zł worked example with the 85/15 bar on the right; figures must match `partner-data.ts`). Used by `PartnerProgramController`, checked in `PartnerProgramPageTest`.
+**public/assets/images/og-netizo-partnerzy.png** - Share image of `/partnerzy`, generated by the same script from `netizo/og-image/szablon-partnerzy.html` (same frame, split like the partner hero: the hero headline on the left, the 18 000 zł → 2 700 zł worked example with the 85/15 bar on the right; figures must match `partner-data.ts`). Set in `lang/pl/partners.php` (`seo.image`), checked in `PartnerProgramPageTest`.
+
+**public/assets/images/og-netizo-en.png**, **og-netizo-partners-en.png** - English share images of `/en` and `/en/partners`, generated by the same script from `netizo/og-image/szablon-en.html` and `szablon-partnerzy-en.html` (the script can render only the files named on the command line). Set in `lang/en/{home,partners}.php` (`seo.image`).
 
 ### Frontend Patterns
 - Monochrome shadcn neutral look with no accent colour (no yellow anywhere, error pages included); colour comes only from photos and project screenshots.
 - Rails and rivets mark the structure; grids use shared borders, not floating shadowed cards. No pixel/"bit" motifs (the old Voxbit brand): no square markers, no pixel font, photos are plain images.
-- Sentence case Polish copy; no eyebrow labels, no arrows appended to button text.
+- Sentence case copy in both languages; no eyebrow labels, no arrows appended to button text.
 - Motion: heading reveals (`SectionHeading` only, never on cards), hero load sequence, counters, client marquee, live bento tiles, scroll-linked parallax and process rail. Animate transform/opacity only. Every effect needs a complete static state: the inline head script adds `js` to `<html>` and hidden entrance states are styled only under `.js` + `prefers-reduced-motion: no-preference`, so SSR/no-JS and reduced motion show the finished page.
-- Section anchors: `#uslugi`, `#projekty`, `#misja`, `#klienci`, `#proces`, `#faq`, `#newsletter`, `#kontakt`.
+- Section anchors (`lib/sections.ts`): Polish `#uslugi`, `#projekty`, `#misja`, `#klienci`, `#proces`, `#panel`, `#faq`, `#newsletter`, `#kontakt`; English `#services`, `#projects`, `#mission`, `#clients`, `#process`, `#client-portal`, `#faq`, `#newsletter`, `#contact`. Partner page: `#jak-to-dziala`/`#how-it-works`, `#kalkulator`/`#calculator`, `#dla-kogo`/`#who-its-for`, `#zasady`/`#terms`, `#faq`, `#dolacz`/`#join`.
 - Components must stay SSR-safe: no `window`/`document` access during render.
 
 ### Key Integrations
 - **artesaos/seotools** - SEO meta tags management (config in `config/seotools.php`)
+- **laravel/ai** - AI SDK; agents in `app/Ai/Agents/` (`ProjectTranslator`), provider OpenRouter (config in the package's `config/ai.php`, not published)
 - **intervention/image** (2.7) - WebP conversion and resizing of uploaded project images (`ImageOptimizer`)
 - **@dnd-kit/core, sortable, utilities** - Drag-and-drop ordering in the admin panel
 - **whitecube/laravel-cookie-consent** - GDPR cookie consent

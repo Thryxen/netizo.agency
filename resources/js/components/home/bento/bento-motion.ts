@@ -1,5 +1,6 @@
 import { cubicBezier } from 'motion/react';
 import { motionTokens } from '@/components/motion/motion-env';
+import type { Locale } from '@/lib/i18n';
 
 const easeOutExpo = cubicBezier(...motionTokens.ease);
 
@@ -36,9 +37,16 @@ export function tween({ from, to, duration, delay = 0, onUpdate }: TweenOptions)
     return () => window.cancelAnimationFrame(frame);
 }
 
-/** "12480" → "12 480,00 zł" (no-break spaces). Hand-rolled so server and browser always agree (no ICU differences). */
-export function formatZloty(value: number): string {
+/**
+ * "12480" → "12 480,00 zł" in Polish, "PLN 12,480.00" in English (no-break spaces). Hand-rolled so server and browser
+ * always agree (no ICU differences).
+ */
+export function formatZloty(value: number, locale: Locale): string {
     const [integer, fraction] = value.toFixed(2).split('.');
+
+    if (locale === 'en') {
+        return `PLN\u00a0${integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}.${fraction}`;
+    }
 
     return `${integer.replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0')},${fraction}\u00a0zł`;
 }

@@ -1,8 +1,9 @@
 import { Check, ChevronDown, MessageSquare, Paperclip, Plus, X } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
+import { type Locale, useCopy, useLocale } from '@/lib/i18n';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
-import { BOARD_COLUMNS, BOARD_TASKS, type BoardTask, COLUMN_INDEX, type ColumnKey, NEW_TASK, type Priority, PRIORITY_LEVEL, TASK_PLACEHOLDER } from './panel-data';
+import { BOARD_COLUMNS, BOARD_TASKS, type BoardTask, COLUMN_INDEX, type ColumnKey, NEW_TASK, PANEL_TEXT, type Priority, PRIORITY_LEVEL } from './panel-data';
 import { PanelMark } from './panel-window';
 import { BOARD } from './panel-timeline';
 
@@ -60,6 +61,7 @@ function cursorAt(step: number): { at: Point; show: boolean; clicking: boolean }
  * back up), the "Dodaj task" dialog and the pointer. A pure function of the loop's phase.
  */
 export function BoardScene({ step }: { step: number }) {
+    const text = useCopy(PANEL_TEXT);
     const newColumn = newTaskColumn(step);
     const shown = newTaskShown(step);
     const dialogOpen = step >= BOARD.type && step <= BOARD.submit;
@@ -71,7 +73,7 @@ export function BoardScene({ step }: { step: number }) {
     return (
         <div className="flex h-full flex-col">
             <div className="flex h-[2.6em] items-center justify-between gap-[1em]">
-                <span className="text-[1.45em] leading-none font-semibold tracking-tight">Tablica</span>
+                <span className="text-[1.45em] leading-none font-semibold tracking-tight">{text.pages.project}</span>
                 <span
                     className={cn(
                         'flex h-[2.6em] shrink-0 items-center gap-[0.45em] rounded-[0.45em] bg-foreground px-[0.95em] text-background',
@@ -79,7 +81,7 @@ export function BoardScene({ step }: { step: number }) {
                     )}
                 >
                     <Plus aria-hidden="true" className="size-[1.1em]" strokeWidth={2.25} />
-                    <span className="text-[1.02em] font-medium whitespace-nowrap">Dodaj task</span>
+                    <span className="text-[1.02em] font-medium whitespace-nowrap">{text.addTask}</span>
                 </span>
             </div>
 
@@ -89,13 +91,13 @@ export function BoardScene({ step }: { step: number }) {
                         <div key={column.key} className={cn('min-w-0 flex-col', column.key === 'urgent' ? 'hidden @min-[32.5rem]/panel:flex' : 'flex')}>
                             <div className="flex h-[2.3em] items-center gap-[0.55em] px-[0.2em]">
                                 <span className={cn('size-[0.55em] shrink-0 rounded-[0.1em]', column.dot)} />
-                                <span className="truncate text-[1em] font-medium">{column.label}</span>
+                                <span className="truncate text-[1em] font-medium">{text.columns[column.key]}</span>
                                 <span className="ml-auto text-[0.92em] text-muted-foreground tabular-nums">{countIn(column.key)}</span>
                             </div>
                             <div className="flex-1 rounded-[0.6em] bg-muted/70 p-[0.4em] dark:bg-muted/45">
                                 {column.key === 'urgent' && (
                                     <span className="flex h-[4.4em] items-center justify-center rounded-[0.5em] border border-dashed border-foreground/15 text-[0.92em] text-muted-foreground">
-                                        Brak zadań
+                                        {text.noTasks}
                                     </span>
                                 )}
                             </div>
@@ -125,7 +127,7 @@ export function BoardScene({ step }: { step: number }) {
                         >
                             <TaskCard
                                 task={{ ...NEW_TASK, assigned: step >= BOARD.progress && step <= BOARD.hold }}
-                                file={NEW_TASK.file}
+                                file={text.newTaskFile}
                                 done={newColumn === 'done'}
                                 className={step === BOARD.landed ? 'nz-panel-land' : undefined}
                             />
@@ -185,6 +187,8 @@ type TaskCardProps = {
 };
 
 function TaskCard({ task, file, done = false, className }: TaskCardProps) {
+    const text = useCopy(PANEL_TEXT);
+
     return (
         <div
             className={cn(
@@ -204,7 +208,7 @@ function TaskCard({ task, file, done = false, className }: TaskCardProps) {
                 </span>
                 <PriorityBadge priority={task.priority} />
             </div>
-            <p className="mt-[0.3em] line-clamp-2 text-[1.04em] leading-[1.3] font-medium">{task.title}</p>
+            <p className="mt-[0.3em] line-clamp-2 text-[1.04em] leading-[1.3] font-medium">{text.tasks[task.id]}</p>
             <div className="mt-auto flex h-[1.8em] items-center justify-between gap-[0.5em]">
                 <span className="flex min-w-0 items-center gap-[0.75em] text-[0.88em] text-muted-foreground">
                     {file && (
@@ -237,14 +241,15 @@ function TaskCard({ task, file, done = false, className }: TaskCardProps) {
     );
 }
 
-/** Priority as filled bars (Pilny: an exclamation bit), monochrome; the label is the panel's own. */
+/** Priority as filled bars (urgent: an exclamation bit), monochrome; the label is the panel's own. */
 export function PriorityBadge({ priority, className }: { priority: Priority; className?: string }) {
     const level = PRIORITY_LEVEL[priority];
+    const text = useCopy(PANEL_TEXT);
 
     return (
         <span className={cn('flex h-[1.6em] shrink-0 items-center gap-[0.35em] rounded-[0.3em] border px-[0.4em] text-[0.86em] whitespace-nowrap text-foreground/80', className)}>
             <PriorityGlyph level={level} />
-            {priority}
+            {text.priorities[priority]}
         </span>
     );
 }
@@ -263,7 +268,11 @@ function PriorityGlyph({ level }: { level: number }) {
     );
 }
 
-const TITLE_CHARACTERS = [...NEW_TASK.title];
+/** The new task's title, character by character (typed in the dialog), in each language. */
+const TITLE_CHARACTERS: Record<Locale, string[]> = {
+    pl: [...PANEL_TEXT.pl.tasks[NEW_TASK.id]],
+    en: [...PANEL_TEXT.en.tasks[NEW_TASK.id]],
+};
 const SCREENSHOT = photo('shop-hero');
 
 /**
@@ -275,7 +284,9 @@ function AddTaskDialog({ step, open }: { step: number; open: boolean }) {
     const typing = step === BOARD.type;
     const typed = step >= BOARD.type && step <= BOARD.landed;
     const pasted = step >= BOARD.paste && step <= BOARD.landed;
-    const priority: Priority = step >= BOARD.priority && step <= BOARD.landed ? 'Wysoki' : 'Normalny';
+    const priority: Priority = step >= BOARD.priority && step <= BOARD.landed ? 'high' : 'normal';
+    const text = useCopy(PANEL_TEXT);
+    const titleCharacters = TITLE_CHARACTERS[useLocale()];
 
     return (
         <div
@@ -287,7 +298,7 @@ function AddTaskDialog({ step, open }: { step: number; open: boolean }) {
             )}
         >
             <div className="flex h-[1.8em] items-center justify-between">
-                <span className="text-[1.22em] font-semibold tracking-tight">Dodaj task</span>
+                <span className="text-[1.22em] font-semibold tracking-tight">{text.addTask}</span>
                 <X aria-hidden="true" className="size-[1.1em] text-muted-foreground" strokeWidth={1.75} />
             </div>
 
@@ -296,10 +307,10 @@ function AddTaskDialog({ step, open }: { step: number; open: boolean }) {
                     data-show={!typed}
                     className="absolute left-[0.75em] text-[1.06em] whitespace-nowrap text-muted-foreground transition-opacity duration-100 data-[show=false]:opacity-0 data-[show=false]:delay-[260ms]"
                 >
-                    {TASK_PLACEHOLDER}
+                    {text.taskPlaceholder}
                 </span>
                 <span key={typing ? 'typing' : 'still'} data-panel-typing={typing ? '' : undefined} data-show={typed} className="text-[1.06em] whitespace-nowrap data-[show=false]:opacity-0">
-                    {TITLE_CHARACTERS.map((character, index) => (
+                    {titleCharacters.map((character, index) => (
                         <span key={index} style={{ '--i': index } as CSSProperties}>
                             {character}
                         </span>
@@ -308,7 +319,7 @@ function AddTaskDialog({ step, open }: { step: number; open: boolean }) {
             </div>
 
             <div className="relative mt-[0.7em] h-[6.2em] rounded-[0.45em] border px-[0.8em] py-[0.65em]">
-                <span className="text-[0.98em] text-muted-foreground">Opis, zrzuty ekranu i załączniki</span>
+                <span className="text-[0.98em] text-muted-foreground">{text.descriptionPlaceholder}</span>
                 <span
                     data-show={step === BOARD.paste}
                     className="absolute top-[0.55em] right-[0.6em] flex items-center gap-[0.25em] text-[0.82em] text-muted-foreground transition-opacity duration-200 data-[show=false]:opacity-0"
@@ -333,8 +344,8 @@ function AddTaskDialog({ step, open }: { step: number; open: boolean }) {
                         className="h-[2.2em] w-[3.3em] rounded-[0.25em] object-cover object-[64%_50%]"
                     />
                     <span className="text-[0.92em] leading-[1.25]">
-                        <span className="block font-medium">{NEW_TASK.file}</span>
-                        <span className="block text-muted-foreground">Wklejono ze schowka</span>
+                        <span className="block font-medium">{text.newTaskFile}</span>
+                        <span className="block text-muted-foreground">{text.pasted}</span>
                     </span>
                 </span>
             </div>
@@ -346,16 +357,16 @@ function AddTaskDialog({ step, open }: { step: number; open: boolean }) {
                         step === BOARD.priority && 'nz-panel-press',
                     )}
                 >
-                    <span className="text-muted-foreground">Priorytet</span>
+                    <span className="text-muted-foreground">{text.priority}</span>
                     <span className="grid flex-1">
-                        {(['Normalny', 'Wysoki'] as const).map((value) => (
+                        {(['normal', 'high'] as const).map((value) => (
                             <span
                                 key={value}
                                 data-show={value === priority}
                                 className="col-start-1 row-start-1 flex items-center gap-[0.4em] font-medium transition-[opacity,translate] duration-200 data-[show=false]:-translate-y-[0.3em] data-[show=false]:opacity-0"
                             >
                                 <PriorityGlyph level={PRIORITY_LEVEL[value]} />
-                                {value}
+                                {text.priorities[value]}
                             </span>
                         ))}
                     </span>
@@ -367,7 +378,7 @@ function AddTaskDialog({ step, open }: { step: number; open: boolean }) {
                         step === BOARD.submit && 'nz-panel-press',
                     )}
                 >
-                    Dodaj task
+                    {text.addTask}
                 </span>
             </div>
         </div>

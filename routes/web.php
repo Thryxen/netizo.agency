@@ -9,7 +9,11 @@ use App\Http\Controllers\PartnerProgramController;
 use App\Http\Controllers\ProjectBriefController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [HomeController::class, 'index']);
+/*
+ * Polish site without a prefix, English site under /en (App\Services\LocalizedRoutes). An English route is named like
+ * its Polish twin with an `en.` prefix; the language itself comes from the path (App\Http\Middleware\SetLocale).
+ */
+Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/partnerzy', [PartnerProgramController::class, 'index'])->name('partners');
 
 Route::middleware('throttle:forms')->group(function () {
@@ -18,4 +22,17 @@ Route::middleware('throttle:forms')->group(function () {
     Route::post('/oddzwonimy', [CallbackRequestController::class, 'store'])->name('callback-requests.store');
     Route::post('/newsletter', [NewsletterSubscriptionController::class, 'store'])->name('newsletter-subscriptions.store');
     Route::post('/partnerzy', [PartnerApplicationController::class, 'store'])->name('partner-applications.store');
+});
+
+Route::prefix('en')->name('en.')->group(function () {
+    Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/partners', [PartnerProgramController::class, 'index'])->name('partners');
+
+    Route::middleware('throttle:forms')->group(function () {
+        Route::post('/contact', [ContactMessageController::class, 'store'])->name('contact-messages.store');
+        Route::post('/brief', [ProjectBriefController::class, 'store'])->name('project-briefs.store');
+        Route::post('/callback', [CallbackRequestController::class, 'store'])->name('callback-requests.store');
+        Route::post('/newsletter', [NewsletterSubscriptionController::class, 'store'])->name('newsletter-subscriptions.store');
+        Route::post('/partners', [PartnerApplicationController::class, 'store'])->name('partner-applications.store');
+    });
 });

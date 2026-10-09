@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import { BulkBar } from '@/components/admin/bulk-bar';
 import { ConfirmDeleteDialog } from '@/components/admin/confirm-delete-dialog';
+import { LeadLocaleBadge } from '@/components/admin/lead-locale';
 import { ListToolbar } from '@/components/admin/list-toolbar';
 import { Pagination } from '@/components/admin/pagination';
 import { SortHeader } from '@/components/admin/sort-header';
@@ -106,6 +107,7 @@ export default function PartnersIndex({ partners, filters }: Props) {
                                     <Link href={adminRoutes.partners.show(partner.id)} className="hover:underline">
                                         {partner.name}
                                     </Link>
+                                    <LeadLocaleBadge locale={partner.locale} />
                                 </TableCell>
                                 <TableCell>{partner.email}</TableCell>
                                 <TableCell className="whitespace-nowrap text-muted-foreground">{partner.phone ?? 'Nie podano'}</TableCell>

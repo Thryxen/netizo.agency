@@ -1,4 +1,5 @@
 import { SiteFooter } from '@/components/home/site-footer';
+import { SkipLink } from '@/components/home/skip-link';
 import { MotionRoot } from '@/components/motion/motion-root';
 import { AudienceSection } from '@/components/partners/audience-section';
 import { CommissionCalculator } from '@/components/partners/commission-calculator';
@@ -9,20 +10,17 @@ import { PartnerHero } from '@/components/partners/partner-hero';
 import { RulesSection } from '@/components/partners/rules-section';
 import { StepsSection } from '@/components/partners/steps-section';
 import { useInPageAnchors } from '@/hooks/use-in-page-anchors';
+import { usePageUrls } from '@/lib/site';
 import type { PartnersPageProps } from '@/types/partners';
 
-/** Program partnerski (/partnerzy): a page of its own, with its own header; the footer is the site's. */
+/** Program partnerski (/partnerzy, /en/partners): a page of its own, with its own header; the footer is the site's. */
 export default function Partners({ faq }: PartnersPageProps) {
+    const pageUrls = usePageUrls();
     useInPageAnchors();
 
     return (
         <MotionRoot>
-            <a
-                href="#main-content"
-                className="sr-only rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-            >
-                Przejdź do treści
-            </a>
+            <SkipLink />
             <PartnerHeader />
             <main id="main-content" tabIndex={-1} className="outline-none">
                 <PartnerHero />
@@ -33,7 +31,7 @@ export default function Partners({ faq }: PartnersPageProps) {
                 <PartnerFaqSection faq={faq} />
                 <JoinSection />
             </main>
-            <SiteFooter homeHref="/" />
+            <SiteFooter homeHref={pageUrls.home} />
         </MotionRoot>
     );
 }

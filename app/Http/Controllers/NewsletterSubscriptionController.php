@@ -14,6 +14,7 @@ class NewsletterSubscriptionController extends Controller
     public function store(StoreNewsletterSubscriptionRequest $request): RedirectResponse
     {
         NewsletterSubscriber::create([
+            'locale' => app()->getLocale(),
             'email' => $request->validated('email'),
         ]);
 

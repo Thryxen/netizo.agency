@@ -1,9 +1,11 @@
 @extends('errors::minimal')
 
-@section('title', 'Brak dostępu')
+@section('title', __('errors.pages.403.title'))
 @section('code', '403')
-@section('description', 'Nie masz uprawnień, żeby zobaczyć tę stronę.')
+@section('description')
+    {!! __('errors.pages.403.description') !!}
+@endsection
 
 @section('visual')
-    @include('errors::partials.window', ['scene' => 'locked', 'icon' => 'lock', 'chipTitle' => 'Dostęp zablokowany'])
+    @include('errors::partials.window', ['scene' => 'locked', 'icon' => 'lock', 'chipTitle' => __('errors.pages.403.chip')])
 @endsection

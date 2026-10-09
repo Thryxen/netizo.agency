@@ -7,16 +7,21 @@ type DisplayNumber = {
     prefix: string;
     target: number;
     decimals: number;
-    /** Thousands separator used by the original ("10 000"), or null. */
+    /** Thousands separator used by the original ("10 000", "10,000"), or null. */
     grouping: string | null;
+    /** Decimal separator used by the original: a comma in Polish ("99,9%"), a point in English ("99.9%"). */
+    decimalSeparator: string;
     suffix: string;
 };
 
 /** Same curve as motionTokens.ease; a plain rAF tween keeps motion's animation engine (~26 KB gz) out of the bundle. */
 const easeOutExpo = cubicBezier(...motionTokens.ease);
 
-/** First number in a Polish-formatted display value: digits with optional space grouping and a decimal comma. */
-const DISPLAY_NUMBER = /^(.*?)(\d{1,3}(?:([   ])\d{3})+|\d+)(?:,(\d+))?(.*)$/s;
+/**
+ * First number in a display value, Polish or English: digits with optional grouping (spaces in Polish, commas in
+ * English; always three digits per group) and an optional decimal comma or point.
+ */
+const DISPLAY_NUMBER = /^(.*?)(\d{1,3}(?:([ \u00A0\u202F,])\d{3})+|\d+)(?:([,.])(\d+))?(.*)$/s;
 
 /** "99,9%" → { prefix '', target 99.9, decimals 1, suffix '%' }; "8 lat" → 8 + " lat"; null when there is no number. */
 export function parseDisplayNumber(value: string): DisplayNumber | null {
@@ -26,28 +31,29 @@ export function parseDisplayNumber(value: string): DisplayNumber | null {
         return null;
     }
 
-    const [, prefix, integer, grouping, fraction = '', suffix] = match;
+    const [, prefix, integer, grouping, decimalSeparator = ',', fraction = '', suffix] = match;
 
     return {
         prefix,
         target: Number(`${integer.replace(/\D/g, '')}.${fraction || '0'}`),
         decimals: fraction.length,
         grouping: grouping ?? null,
+        decimalSeparator,
         suffix,
     };
 }
 
-/** Format `value` the way the original display value was written (decimal comma, grouping, prefix/suffix). */
-export function formatDisplayNumber({ prefix, decimals, grouping, suffix }: DisplayNumber, value: number): string {
+/** Format `value` the way the original display value was written (decimal separator, grouping, prefix/suffix). */
+export function formatDisplayNumber({ prefix, decimals, grouping, decimalSeparator, suffix }: DisplayNumber, value: number): string {
     const [integer, fraction] = value.toFixed(decimals).split('.');
     const grouped = grouping ? integer.replace(/\B(?=(\d{3})+(?!\d))/g, grouping) : integer;
 
-    return `${prefix}${grouped}${fraction ? `,${fraction}` : ''}${suffix}`;
+    return `${prefix}${grouped}${fraction ? `${decimalSeparator}${fraction}` : ''}${suffix}`;
 }
 
 export type CountUpProps = Omit<ComponentProps<'span'>, 'children'> &
     EntranceOptions & {
-        /** Final value exactly as displayed: "150+", "8 lat", "99,9%", "30M+", "250K+". Non-numeric values render as-is. */
+        /** Final value exactly as displayed: "150+", "8 lat", "99,9%", "99.9%", "30M+", "250K+". Non-numeric values render as-is. */
         value: string;
         /** Seconds (default 1.1). */
         duration?: number;

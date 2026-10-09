@@ -18,7 +18,16 @@ class CallbackRequestFactory extends Factory
     public function definition(): array
     {
         return [
+            'locale' => 'pl',
             'phone' => fake()->numerify('+48 ### ### ###'),
         ];
+    }
+
+    /**
+     * A lead sent from the English site (/en).
+     */
+    public function english(): static
+    {
+        return $this->state(fn (array $attributes): array => ['locale' => 'en']);
     }
 }

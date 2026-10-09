@@ -12,6 +12,7 @@ class ProjectBrief extends Model
     use HasFactory;
 
     protected $fillable = [
+        'locale',
         'types',
         'features',
         'industry',

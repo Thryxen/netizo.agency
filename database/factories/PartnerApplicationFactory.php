@@ -19,11 +19,20 @@ class PartnerApplicationFactory extends Factory
     public function definition(): array
     {
         return [
+            'locale' => 'pl',
             'name' => fake()->name(),
             'email' => fake()->safeEmail(),
             'phone' => fake()->optional()->numerify('+48 ### ### ###'),
             'partner_type' => fake()->randomElement(StorePartnerApplicationRequest::PARTNER_TYPES),
             'message' => fake()->optional()->paragraph(),
         ];
+    }
+
+    /**
+     * A lead sent from the English site (/en).
+     */
+    public function english(): static
+    {
+        return $this->state(fn (array $attributes): array => ['locale' => 'en']);
     }
 }

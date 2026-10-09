@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 
 import { FormField } from '@/components/admin/form-field';
 import { ImageField } from '@/components/admin/image-field';
+import { type EnglishProjectCopy, ProjectTranslation } from '@/components/admin/project-translation';
 import { RepeaterList } from '@/components/admin/repeater-list';
 import { TagsInput } from '@/components/admin/tags-input';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,7 @@ const TECH_SUGGESTIONS = [
     'REST API', 'WebSocket', 'Tailwind CSS', 'TypeScript', 'JavaScript',
 ];
 
-type TabKey = 'basic' | 'images' | 'tech' | 'metrics' | 'story';
+type TabKey = 'basic' | 'images' | 'tech' | 'metrics' | 'story' | 'english';
 
 const TABS: { key: TabKey; label: string; fields: string[] }[] = [
     { key: 'basic', label: 'Podstawowe', fields: ['title', 'slug', 'url', 'category', 'sort_order', 'is_active', 'description', 'full_description'] },
@@ -28,6 +29,11 @@ const TABS: { key: TabKey; label: string; fields: string[] }[] = [
     { key: 'tech', label: 'Technologie', fields: ['tech_stack'] },
     { key: 'metrics', label: 'Metryki', fields: ['metrics'] },
     { key: 'story', label: 'Wyzwania i rozwiązania', fields: ['challenges', 'solutions'] },
+    {
+        key: 'english',
+        label: 'Wersja angielska',
+        fields: ['category_en', 'description_en', 'full_description_en', 'metrics_en', 'challenges_en', 'solutions_en'],
+    },
 ];
 
 type Metric = { value: string; label: string };
@@ -49,6 +55,12 @@ type ProjectFormData = {
     metrics: Metric[];
     challenges: string[];
     solutions: string[];
+    category_en: string;
+    description_en: string;
+    full_description_en: string;
+    metrics_en: Metric[];
+    challenges_en: string[];
+    solutions_en: string[];
 };
 
 const blankMetrics = (count: number): Metric[] => Array.from({ length: count }, () => ({ value: '', label: '' }));
@@ -64,6 +76,12 @@ function slugify(text: string): string {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 }
+
+/** Whether any English field holds text (translating would replace it). */
+const hasEnglishCopy = (data: ProjectFormData): boolean =>
+    [data.category_en, data.description_en, data.full_description_en, ...data.challenges_en, ...data.solutions_en, ...data.metrics_en.flatMap((metric) => [metric.value, metric.label])].some(
+        (text) => text.trim() !== '',
+    );
 
 const hasError = (errors: Record<string, string>, fields: string[]): boolean =>
     Object.keys(errors).some((key) => fields.some((field) => key === field || key.startsWith(`${field}.`)));
@@ -100,6 +118,12 @@ export function ProjectForm({ project, nextSortOrder = 1 }: ProjectFormProps) {
         metrics: project?.metrics ?? blankMetrics(3),
         challenges: project?.challenges ?? blankTexts(4),
         solutions: project?.solutions ?? blankTexts(4),
+        category_en: project?.categoryEn ?? '',
+        description_en: project?.descriptionEn ?? '',
+        full_description_en: project?.fullDescriptionEn ?? '',
+        metrics_en: project?.metricsEn.length ? project.metricsEn : blankMetrics(3),
+        challenges_en: project?.challengesEn.length ? project.challengesEn : blankTexts(4),
+        solutions_en: project?.solutionsEn.length ? project.solutionsEn : blankTexts(4),
     });
 
     // Rows the user left blank are dropped, so the default empty rows do not block saving. An edit is sent as a
@@ -111,6 +135,9 @@ export function ProjectForm({ project, nextSortOrder = 1 }: ProjectFormProps) {
         metrics: form.metrics.filter((metric) => metric.value.trim() !== '' || metric.label.trim() !== ''),
         challenges: form.challenges.filter((text) => text.trim() !== ''),
         solutions: form.solutions.filter((text) => text.trim() !== ''),
+        metrics_en: form.metrics_en.filter((metric) => metric.value.trim() !== '' || metric.label.trim() !== ''),
+        challenges_en: form.challenges_en.filter((text) => text.trim() !== ''),
+        solutions_en: form.solutions_en.filter((text) => text.trim() !== ''),
     }));
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
@@ -128,6 +155,16 @@ export function ProjectForm({ project, nextSortOrder = 1 }: ProjectFormProps) {
         };
 
         post(project ? adminRoutes.projects.update(project.id) : adminRoutes.projects.index, options);
+    };
+
+    const applyTranslation = (copy: EnglishProjectCopy): void => {
+        setData((current) => ({
+            ...current,
+            ...copy,
+            metrics_en: copy.metrics_en.length ? copy.metrics_en : blankMetrics(3),
+            challenges_en: copy.challenges_en.length ? copy.challenges_en : blankTexts(4),
+            solutions_en: copy.solutions_en.length ? copy.solutions_en : blankTexts(4),
+        }));
     };
 
     const changeTitle = (title: string): void => {
@@ -292,6 +329,116 @@ export function ProjectForm({ project, nextSortOrder = 1 }: ProjectFormProps) {
                             max={6}
                             error={firstError(errors, 'solutions')}
                             renderItem={(text, update, index) => <Input aria-label={`Rozwiązanie ${index + 1}`} placeholder="Opisz rozwiązanie" value={text} onChange={(event) => update(event.target.value)} />}
+                        />
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="english" className="grid gap-6 pt-4">
+                    <p className="text-sm text-muted-foreground">
+                        Treść projektu na angielskiej wersji strony (/en). Wszystkie pola są opcjonalne: puste pole lub lista pokazują tam polską treść.
+                        Nazwa, adres, zdjęcia i technologie są wspólne dla obu wersji.
+                    </p>
+                    <ProjectTranslation
+                        source={{
+                            category: data.category,
+                            description: data.description,
+                            full_description: data.full_description,
+                            metrics: data.metrics,
+                            challenges: data.challenges,
+                            solutions: data.solutions,
+                        }}
+                        hasEnglishCopy={hasEnglishCopy(data)}
+                        onTranslated={applyTranslation}
+                    />
+                    <FormField label="Kategoria (EN)" htmlFor="category_en" error={errors.category_en}>
+                        <Input
+                            id="category_en"
+                            lang="en"
+                            placeholder="e.g. E-commerce / Headless CMS"
+                            value={data.category_en}
+                            aria-invalid={Boolean(errors.category_en)}
+                            onChange={(event) => setData('category_en', event.target.value)}
+                        />
+                    </FormField>
+                    <FormField label="Krótki opis (EN)" htmlFor="description_en" error={errors.description_en}>
+                        <Textarea
+                            id="description_en"
+                            lang="en"
+                            rows={3}
+                            value={data.description_en}
+                            aria-invalid={Boolean(errors.description_en)}
+                            onChange={(event) => setData('description_en', event.target.value)}
+                        />
+                    </FormField>
+                    <FormField label="Pełny opis (EN)" htmlFor="full_description_en" error={errors.full_description_en}>
+                        <Textarea
+                            id="full_description_en"
+                            lang="en"
+                            rows={6}
+                            value={data.full_description_en}
+                            aria-invalid={Boolean(errors.full_description_en)}
+                            onChange={(event) => setData('full_description_en', event.target.value)}
+                        />
+                    </FormField>
+                    <div className="grid gap-2">
+                        <h2 className="text-sm font-medium">Metryki (EN)</h2>
+                        <p className="text-sm text-muted-foreground">Liczby w angielskim zapisie, np. 99.9%, 1.2 s, 3.4k.</p>
+                        <RepeaterList<Metric>
+                            value={data.metrics_en}
+                            onChange={(metrics) => setData('metrics_en', metrics)}
+                            createItem={() => ({ value: '', label: '' })}
+                            addLabel="Dodaj metrykę"
+                            itemLabel="Metryki (EN)"
+                            max={3}
+                            error={firstError(errors, 'metrics_en')}
+                            renderItem={(metric, update, index) => (
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                    <Input
+                                        lang="en"
+                                        aria-label={`Wartość metryki ${index + 1} (EN)`}
+                                        placeholder="e.g. +45%, 99.9%, 10K+"
+                                        value={metric.value}
+                                        onChange={(event) => update({ ...metric, value: event.target.value })}
+                                    />
+                                    <Input
+                                        lang="en"
+                                        aria-label={`Etykieta metryki ${index + 1} (EN)`}
+                                        placeholder="e.g. conversion rate, uptime"
+                                        value={metric.label}
+                                        onChange={(event) => update({ ...metric, label: event.target.value })}
+                                    />
+                                </div>
+                            )}
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <h2 className="text-sm font-medium">Wyzwania (EN)</h2>
+                        <RepeaterList<string>
+                            value={data.challenges_en}
+                            onChange={(challenges) => setData('challenges_en', challenges)}
+                            createItem={() => ''}
+                            addLabel="Dodaj wyzwanie"
+                            itemLabel="Wyzwania (EN)"
+                            max={6}
+                            error={firstError(errors, 'challenges_en')}
+                            renderItem={(text, update, index) => (
+                                <Input lang="en" aria-label={`Wyzwanie ${index + 1} (EN)`} placeholder="Describe the challenge" value={text} onChange={(event) => update(event.target.value)} />
+                            )}
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <h2 className="text-sm font-medium">Rozwiązania (EN)</h2>
+                        <RepeaterList<string>
+                            value={data.solutions_en}
+                            onChange={(solutions) => setData('solutions_en', solutions)}
+                            createItem={() => ''}
+                            addLabel="Dodaj rozwiązanie"
+                            itemLabel="Rozwiązania (EN)"
+                            max={6}
+                            error={firstError(errors, 'solutions_en')}
+                            renderItem={(text, update, index) => (
+                                <Input lang="en" aria-label={`Rozwiązanie ${index + 1} (EN)`} placeholder="Describe the solution" value={text} onChange={(event) => update(event.target.value)} />
+                            )}
                         />
                     </div>
                 </TabsContent>

@@ -4,12 +4,28 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { localized, useCopy } from '@/lib/i18n';
 import { scrollBehavior } from '@/lib/in-page-navigation';
 import { cn } from '@/lib/utils';
 
 /**
  * Small form helpers shared by the homepage forms (brief, quick contact, callback, newsletter).
  */
+
+const COPY = localized({
+    pl: {
+        sending: 'Wysyłanie…',
+        requiredBefore: 'Pola oznaczone ',
+        asterisk: 'gwiazdką',
+        requiredAfter: ' są wymagane.',
+    },
+    en: {
+        sending: 'Sending…',
+        requiredBefore: 'Fields marked ',
+        asterisk: 'with an asterisk',
+        requiredAfter: ' are required.',
+    },
+});
 
 export const errorIdFor = (fieldId: string): string => `${fieldId}-error`;
 
@@ -61,6 +77,20 @@ export function RequiredMark({ className }: { className?: string }) {
         <span aria-hidden="true" className={cn('text-muted-foreground', className)}>
             *
         </span>
+    );
+}
+
+/** "Pola oznaczone * są wymagane." under a form; screen readers hear the asterisk named. */
+export function RequiredFieldsNote({ className }: { className?: string }) {
+    const copy = useCopy(COPY);
+
+    return (
+        <p className={cn('text-sm text-muted-foreground', className)}>
+            {copy.requiredBefore}
+            <span aria-hidden="true">*</span>
+            <span className="sr-only">{copy.asterisk}</span>
+            {copy.requiredAfter}
+        </p>
     );
 }
 
@@ -134,15 +164,18 @@ export function FormErrorAlert({ message, className }: { message?: string; class
 
 type SubmitButtonProps = Omit<ComponentProps<typeof Button>, 'type'> & {
     processing: boolean;
+    /** Label while the request runs (default "Wysyłanie…" / "Sending…"). */
     pendingLabel?: string;
 };
 
 /** Submit button: disabled with a spinner and a pending label while the request runs. */
-export function SubmitButton({ processing, pendingLabel = 'Wysyłanie…', children, disabled, ...props }: SubmitButtonProps) {
+export function SubmitButton({ processing, pendingLabel, children, disabled, ...props }: SubmitButtonProps) {
+    const copy = useCopy(COPY);
+
     return (
         <Button type="submit" disabled={processing || disabled} {...props}>
             {processing && <LoaderCircle aria-hidden="true" className="animate-spin" />}
-            {processing ? pendingLabel : children}
+            {processing ? (pendingLabel ?? copy.sending) : children}
         </Button>
     );
 }

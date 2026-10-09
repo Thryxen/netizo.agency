@@ -1,4 +1,7 @@
-import { briefOptions, type BriefOption } from '@/components/home/brief/brief-options';
+import { briefOptions as localizedBriefOptions, type BriefOption } from '@/components/home/brief/brief-options';
+
+/** The panel is Polish: briefs from both language versions are shown with the Polish labels. */
+const briefOptions = localizedBriefOptions.pl;
 
 export type BriefField = keyof typeof briefOptions;
 

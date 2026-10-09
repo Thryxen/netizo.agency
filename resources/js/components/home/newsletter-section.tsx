@@ -5,12 +5,43 @@ import { NewsletterScene } from '@/components/home/scenes/newsletter-scene';
 import { bleedClassName, gutterClassName, Section, SectionHeading } from '@/components/home/section';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { endpoints } from '@/lib/endpoints';
+import { useEndpoints } from '@/lib/endpoints';
+import { localized, useCopy } from '@/lib/i18n';
+import { useHomeSections } from '@/lib/sections';
 import { cn } from '@/lib/utils';
 
-const perks = ['Trendy technologiczne', 'Case studies projektów', 'Praktyczne porady dla firm'];
+const COPY = localized({
+    pl: {
+        title: 'Newsletter raz w miesiącu',
+        lead: 'Przegląd najważniejszych trendów, case studies i praktyczne porady dla firm.',
+        perksLabel: 'Co znajdziesz w newsletterze',
+        perks: ['Trendy technologiczne', 'Case studies projektów', 'Praktyczne porady dla firm'],
+        success: 'Zapisano. Pierwszy numer trafi do Ciebie w przyszłym miesiącu.',
+        formLabel: 'Zapis do newslettera',
+        email: 'Adres e-mail',
+        placeholder: 'ty@firma.pl',
+        pending: 'Zapisywanie…',
+        submit: 'Zapisz się',
+        note: 'Zero spamu. Możesz wypisać się w dowolnym momencie.',
+    },
+    en: {
+        title: 'A monthly newsletter',
+        lead: 'A roundup of the key trends, case studies and practical tips for businesses.',
+        perksLabel: 'What’s in the newsletter',
+        perks: ['Tech trends', 'Project case studies', 'Practical tips for businesses'],
+        success: 'You’re subscribed. Your first issue arrives next month.',
+        formLabel: 'Newsletter sign-up',
+        email: 'Email address',
+        placeholder: 'you@company.com',
+        pending: 'Subscribing…',
+        submit: 'Subscribe',
+        note: 'No spam. You can unsubscribe at any time.',
+    },
+});
 
 function NewsletterForm() {
+    const copy = useCopy(COPY);
+    const endpoints = useEndpoints();
     const form = useForm<{ email: string }>(() => ({ email: '' }));
     const [subscribed, setSubscribed] = useState(false);
     const successRef = useRef<HTMLParagraphElement>(null);
@@ -62,15 +93,15 @@ function NewsletterForm() {
     if (subscribed) {
         return (
             <p ref={successRef} tabIndex={-1} role="status" className="text-lg leading-relaxed font-medium outline-none">
-                Zapisano. Pierwszy numer trafi do Ciebie w przyszłym miesiącu.
+                {copy.success}
             </p>
         );
     }
 
     return (
-        <form onSubmit={handleSubmit} noValidate aria-label="Zapis do newslettera" className="grid gap-3">
+        <form onSubmit={handleSubmit} noValidate aria-label={copy.formLabel} className="grid gap-3">
             <Label htmlFor="newsletter-email" className="sr-only">
-                Adres e-mail
+                {copy.email}
             </Label>
             <div className="flex flex-col gap-2 sm:flex-row">
                 <Input
@@ -80,7 +111,7 @@ function NewsletterForm() {
                     type="email"
                     inputMode="email"
                     autoComplete="email"
-                    placeholder="ty@firma.pl"
+                    placeholder={copy.placeholder}
                     maxLength={255}
                     value={form.data.email}
                     onChange={(event) => {
@@ -94,14 +125,14 @@ function NewsletterForm() {
                     className="h-11 sm:flex-1 md:h-10"
                     {...invalidProps('newsletter-email', emailError, noteId)}
                 />
-                <SubmitButton processing={form.processing} pendingLabel="Zapisywanie…" size="lg" className="max-md:h-11 sm:min-w-32">
-                    Zapisz się
+                <SubmitButton processing={form.processing} pendingLabel={copy.pending} size="lg" className="max-md:h-11 sm:min-w-32">
+                    {copy.submit}
                 </SubmitButton>
             </div>
             <FieldError fieldId="newsletter-email" message={emailError} />
             <FormErrorAlert message={formError} />
             <p id={noteId} className="text-sm text-muted-foreground">
-                Zero spamu. Możesz wypisać się w dowolnym momencie.
+                {copy.note}
             </p>
         </form>
     );
@@ -113,17 +144,20 @@ function NewsletterForm() {
  * hairline and the next section's hairline are the band's edges (no container padding).
  */
 export function NewsletterSection() {
+    const copy = useCopy(COPY);
+    const sectionId = useHomeSections().newsletter;
+
     return (
-        <Section id="newsletter" labelledBy="newsletter-heading" containerClassName="py-0 md:py-0">
+        <Section id={sectionId} labelledBy={`${sectionId}-heading`} containerClassName="py-0 md:py-0">
             <div className={cn('grid gap-px bg-border lg:grid-cols-12', bleedClassName)}>
                 <SectionHeading
-                    id="newsletter-heading"
-                    title="Newsletter raz w miesiącu"
-                    lead="Przegląd najważniejszych trendów, case studies i praktyczne porady dla firm."
+                    id={`${sectionId}-heading`}
+                    title={copy.title}
+                    lead={copy.lead}
                     className={cn('mb-0 bg-background pt-20 pb-12 md:mb-0 md:pt-28 md:pb-16 lg:col-span-6 lg:row-span-2 lg:pb-28 xl:col-span-7', gutterClassName)}
                 >
-                    <ul className="mt-8 grid list-disc gap-3 pl-5 marker:text-muted-foreground" aria-label="Co znajdziesz w newsletterze">
-                        {perks.map((perk) => (
+                    <ul className="mt-8 grid list-disc gap-3 pl-5 marker:text-muted-foreground" aria-label={copy.perksLabel}>
+                        {copy.perks.map((perk) => (
                             <li key={perk} className="pl-1">
                                 {perk}
                             </li>

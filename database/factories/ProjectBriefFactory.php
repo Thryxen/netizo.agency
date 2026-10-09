@@ -18,6 +18,7 @@ class ProjectBriefFactory extends Factory
     public function definition(): array
     {
         return [
+            'locale' => 'pl',
             'types' => ['website'],
             'features' => ['auth', 'cms'],
             'industry' => 'saas',
@@ -40,5 +41,13 @@ class ProjectBriefFactory extends Factory
             'source' => 'google',
             'contact_pref' => ['email'],
         ];
+    }
+
+    /**
+     * A lead sent from the English site (/en).
+     */
+    public function english(): static
+    {
+        return $this->state(fn (array $attributes): array => ['locale' => 'en']);
     }
 }

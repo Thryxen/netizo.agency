@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\PartnerApplicationController;
 use App\Http\Controllers\Admin\ProjectBriefController;
 use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\ProjectTranslationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -20,6 +21,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
 
         Route::post('projects/reorder', [ProjectController::class, 'reorder'])->name('projects.reorder');
+        Route::post('projects/translate', ProjectTranslationController::class)->middleware('throttle:20,1')->name('projects.translate');
         Route::delete('projects', [ProjectController::class, 'destroyMany'])->name('projects.destroy-many');
         Route::resource('projects', ProjectController::class)->except('show');
 

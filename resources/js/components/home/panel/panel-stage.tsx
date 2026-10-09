@@ -2,9 +2,10 @@ import { Download, type LucideIcon, MessageSquare, ReceiptText } from 'lucide-re
 import type { ReactNode } from 'react';
 import { SceneBackdrop, STAGE_SIZES, WINDOW_SHADOW } from '@/components/home/scenes/scene-parts';
 import { useInViewLoop } from '@/components/motion/use-in-view-loop';
+import { useCopy } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { BoardScene } from './board-scene';
-import { BOARD_TOAST, PANEL_MODES, type PanelMode, SETTLEMENT_TOAST } from './panel-data';
+import { PANEL_MODES, PANEL_TEXT, type PanelMode } from './panel-data';
 import { PanelStyles } from './panel-styles';
 import { BOARD, BOARD_PHASE_MS, TIME, TIME_PHASE_MS, useSceneLoop } from './panel-timeline';
 import { PanelWindow } from './panel-window';
@@ -27,7 +28,8 @@ export function PanelStage({ mode, className }: { mode: PanelMode; className?: s
     const timeStep = useSceneLoop(TIME_PHASE_MS, { live, selected: mode === 'retainer', reducedMotion, holdStep: TIME.hold, resetStep: TIME.reset });
     const boardToast = mode === 'project' && boardStep === BOARD.hold;
     const timeToast = mode === 'retainer' && timeStep === TIME.hold;
-    const label = PANEL_MODES.find(({ value }) => value === mode)?.mockLabel;
+    const text = useCopy(PANEL_TEXT);
+    const label = useCopy(PANEL_MODES).find(({ value }) => value === mode)?.mockLabel;
 
     return (
         <figure ref={ref} data-panel-stage="" data-panel-live={live ? '' : undefined} className={cn('@container/panel relative overflow-hidden select-none', className)}>
@@ -49,23 +51,24 @@ export function PanelStage({ mode, className }: { mode: PanelMode; className?: s
                         </PanelWindow>
                     </div>
 
-                    <PanelToast show={boardToast} icon={MessageSquare} title={BOARD_TOAST.title} body={BOARD_TOAST.body} />
+                    <PanelToast show={boardToast} icon={MessageSquare} title={text.boardToast.title} body={text.boardToast.body} now={text.now} />
                     <PanelToast
                         show={timeToast}
                         icon={ReceiptText}
-                        title={SETTLEMENT_TOAST.title}
-                        body={SETTLEMENT_TOAST.body}
+                        title={text.settlementToast.title}
+                        body={text.settlementToast.body}
+                        now={text.now}
                         action={
                             <span className="flex h-[2.3em] shrink-0 items-center gap-[0.45em] rounded-[0.45em] border bg-background px-[0.8em] text-[0.95em] font-medium whitespace-nowrap dark:bg-input/12">
                                 <Download aria-hidden="true" className="size-[1.05em]" strokeWidth={2} />
-                                Pobierz fakturę
+                                {text.downloadInvoice}
                             </span>
                         }
                     />
                 </div>
 
                 <figcaption className="mt-[2.9em] w-fit rounded-[3px] border bg-background px-2 py-1 text-xs leading-none text-muted-foreground">
-                    Dane przykładowe.
+                    {text.sampleData}
                 </figcaption>
             </div>
         </figure>
@@ -89,11 +92,13 @@ type PanelToastProps = {
     icon: LucideIcon;
     title: string;
     body: string;
+    /** The time stamp ("teraz"). */
+    now: string;
     action?: ReactNode;
 };
 
 /** A notification sliding in over the window's lower-right edge (the panel shows it in-app and as a push). */
-function PanelToast({ show, icon: Icon, title, body, action }: PanelToastProps) {
+function PanelToast({ show, icon: Icon, title, body, now, action }: PanelToastProps) {
     return (
         <div
             data-show={show}
@@ -111,7 +116,7 @@ function PanelToast({ show, icon: Icon, title, body, action }: PanelToastProps) 
                 <span className="min-w-0 leading-[1.35]">
                     <span className="flex items-baseline gap-[0.8em]">
                         <span className="text-[1.05em] font-medium whitespace-nowrap">{title}</span>
-                        <span className="ml-auto text-[0.85em] text-muted-foreground">teraz</span>
+                        <span className="ml-auto text-[0.85em] text-muted-foreground">{now}</span>
                     </span>
                     <span className="block text-[0.98em] whitespace-nowrap text-muted-foreground">{body}</span>
                 </span>

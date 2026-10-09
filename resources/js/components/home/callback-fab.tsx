@@ -1,7 +1,13 @@
 import { Phone } from 'lucide-react';
 import { useHomeUi } from '@/components/home/home-ui-context';
 import { Button } from '@/components/ui/button';
+import { localized, useCopy } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+
+const COPY = localized({
+    pl: { label: 'Zamów rozmowę telefoniczną' },
+    en: { label: 'Request a phone call' },
+});
 
 /**
  * Floating square "bit" that opens the callback dialog. Sits below the cookie banner (z-index 45)
@@ -13,10 +19,11 @@ import { cn } from '@/lib/utils';
  */
 export function CallbackFab() {
     const { callbackOpen, openCallback } = useHomeUi();
+    const copy = useCopy(COPY);
 
     return (
         <Button
-            aria-label="Zamów rozmowę telefoniczną"
+            aria-label={copy.label}
             onClick={(event) => openCallback(event.currentTarget)}
             className={cn(
                 'fixed right-[max(0.5rem,env(safe-area-inset-right))] bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))_+_var(--cookie-banner-height,0px))] z-30 size-[52px] rounded-none p-0 ring-4 ring-background max-lg:hidden xl:right-[max(1.25rem,env(safe-area-inset-right))]',

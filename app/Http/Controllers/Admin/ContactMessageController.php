@@ -55,12 +55,13 @@ class ContactMessageController extends Controller
     }
 
     /**
-     * @return array{id: int, name: string, email: string, subject: string|null, excerpt: string, createdAt: string}
+     * @return array{id: int, locale: string, name: string, email: string, subject: string|null, excerpt: string, createdAt: string}
      */
     private function rowProps(ContactMessage $message): array
     {
         return [
             'id' => $message->id,
+            'locale' => $message->locale,
             'name' => $message->name,
             'email' => $message->email,
             'subject' => $message->subject,

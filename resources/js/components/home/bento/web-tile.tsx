@@ -1,5 +1,6 @@
 import { type RefObject, useEffect, useRef } from 'react';
 import { useLiveLoop } from '@/components/motion/use-in-view-loop';
+import { localized, useCopy } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { tween } from './bento-motion';
 import { Appear, BentoTile, BentoTileText, type BentoService, liveVisualProps, tileGutterTop, tileGutterX } from './bento-tile';
@@ -14,6 +15,11 @@ const REPORT = 5;
 const RESET = 6;
 
 const TICKS = Array.from({ length: 24 }, (_, index) => index);
+
+const COPY = localized({
+    pl: { cta: 'Rozpocznij', performance: 'Wydajność', metrics: 'LCP 0,8 s, CLS 0' },
+    en: { cta: 'Get started', performance: 'Performance', metrics: 'LCP 0.8 s, CLS 0' },
+});
 
 /**
  * Aplikacje webowe: a browser window in which a landing page assembles block by block; a cursor clicks its call to
@@ -74,6 +80,8 @@ export function WebTile({ service }: { service: BentoService }) {
 }
 
 function LandingPage({ step, at }: { step: number; at: (phase: number) => boolean }) {
+    const copy = useCopy(COPY);
+
     return (
         <div className="@container flex-1 p-4 @sm:p-6">
             <Appear show={at(NAV)} className="flex items-center justify-between gap-4">
@@ -108,7 +116,7 @@ function LandingPage({ step, at }: { step: number; at: (phase: number) => boolea
                                 step === CLICK && 'nz-bento-press',
                             )}
                         >
-                            Rozpocznij
+                            {copy.cta}
                         </span>
                         <Cursor show={at(CLICK)} clicking={step === CLICK} />
                     </Appear>
@@ -166,6 +174,8 @@ type PerformanceReportProps = {
 
 /** A small audit card: a 24-segment ring that fills while the score counts up, then the key metrics. */
 function PerformanceReport({ show, lit, scoreRef }: PerformanceReportProps) {
+    const copy = useCopy(COPY);
+
     return (
         <Appear show={show} className="mr-3 flex items-center gap-3 rounded-lg border border-foreground/15 bg-background py-2.5 pr-4 pl-2.5 sm:mr-5">
             <span className="relative size-14 shrink-0">
@@ -189,8 +199,8 @@ function PerformanceReport({ show, lit, scoreRef }: PerformanceReportProps) {
                 </span>
             </span>
             <span className="text-xs leading-snug">
-                <span className="block font-medium">Wydajność</span>
-                <span className="block text-muted-foreground">LCP 0,8 s, CLS 0</span>
+                <span className="block font-medium">{copy.performance}</span>
+                <span className="block text-muted-foreground">{copy.metrics}</span>
             </span>
         </Appear>
     );

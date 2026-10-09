@@ -26,6 +26,12 @@ class Project extends Model
         'metrics',
         'challenges',
         'solutions',
+        'category_en',
+        'description_en',
+        'full_description_en',
+        'metrics_en',
+        'challenges_en',
+        'solutions_en',
     ];
 
     protected $casts = [
@@ -34,6 +40,9 @@ class Project extends Model
         'metrics' => 'array',
         'challenges' => 'array',
         'solutions' => 'array',
+        'metrics_en' => 'array',
+        'challenges_en' => 'array',
+        'solutions_en' => 'array',
     ];
 
     public function scopeActive($query)

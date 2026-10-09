@@ -15,6 +15,7 @@ class ContactMessageController extends Controller
     public function store(StoreContactMessageRequest $request, DiscordWebhookService $discord): RedirectResponse
     {
         $data = [
+            'locale' => app()->getLocale(),
             'name' => $request->validated('name'),
             'email' => $request->validated('email'),
             'subject' => $request->validated('subject') ?? '',

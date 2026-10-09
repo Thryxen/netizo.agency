@@ -344,3 +344,44 @@ it('rate limits submissions to 10 per minute per IP', function () {
     assertDatabaseCount('project_briefs', 10);
     Http::assertSentCount(10);
 });
+
+it('stores a brief sent from the English site with its language', function () {
+    $this->from('/en')
+        ->post(route('en.project-briefs.store'), validProjectBriefPayload())
+        ->assertRedirect('/en')
+        ->assertSessionHasNoErrors();
+
+    expect(route('en.project-briefs.store'))->toEndWith('/en/brief')
+        ->and(ProjectBrief::sole()->locale)->toBe('en');
+
+    Http::assertSent(function (Request $request): bool {
+        $fields = collect($request['embeds'][0]['fields'])->pluck('value', 'name');
+
+        return $fields['Język'] === 'angielski' && $fields['Typ projektu'] === 'Strona WWW, E-commerce';
+    });
+});
+
+it('stores the language of a brief sent from the Polish site', function () {
+    $this->from('/')
+        ->post(route('project-briefs.store'), validProjectBriefPayload())
+        ->assertSessionHasNoErrors();
+
+    expect(ProjectBrief::sole()->locale)->toBe('pl');
+
+    Http::assertSent(fn (Request $request): bool => collect($request['embeds'][0]['fields'])->pluck('value', 'name')['Język'] === 'polski');
+});
+
+it('rejects invalid input on the English site with an English message', function (array $overrides, string $field, string $message) {
+    $this->from('/en')
+        ->post(route('en.project-briefs.store'), validProjectBriefPayload($overrides))
+        ->assertRedirect('/en')
+        ->assertSessionHasErrors([$field => $message]);
+
+    assertDatabaseCount('project_briefs', 0);
+    Http::assertNothingSent();
+})->with([
+    'no project type' => [['types' => []], 'types', 'Please choose at least one project type.'],
+    'unknown budget' => [['budget' => 'huge'], 'budget', 'Please choose a budget from the list.'],
+    'missing email' => [['email' => ''], 'email', 'Please enter your email address.'],
+    'privacy not accepted' => [['privacy' => false], 'privacy', 'Please accept the privacy policy.'],
+]);

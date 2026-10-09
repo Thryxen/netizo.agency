@@ -3,6 +3,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { localized, useCopy, useLocale } from '@/lib/i18n';
 import {
     audienceOptions,
     type BriefField,
@@ -22,7 +23,7 @@ import {
     timelineOptions,
 } from './brief-options';
 import { ChoiceCard, ChoiceChip, ChoiceFieldset, ChoiceGrid, toggleValue } from './choices';
-import { errorIdFor, Field, FieldError, invalidProps, RequiredMark, SelectField } from './fields';
+import { errorIdFor, Field, FieldError, invalidProps, RequiredFieldsNote, RequiredMark, SelectField } from './fields';
 
 export type BriefStepProps = {
     data: BriefFormData;
@@ -70,9 +71,10 @@ function CheckboxCards({ field, options, legend, props }: { field: ArrayField; o
 function RadioCards({ field, options, legend, gridClassName, props }: { field: StringField; options: BriefOption[]; legend: string; gridClassName?: string; props: BriefStepProps }) {
     const id = fieldId(field);
     const error = props.errors[field];
+    const copy = useCopy(COPY);
 
     return (
-        <ChoiceFieldset id={id} legend={legend} hint="Wybierz jedną opcję." error={error}>
+        <ChoiceFieldset id={id} legend={legend} hint={copy.pickOne} error={error}>
             <ChoiceGrid className={gridClassName}>
                 {options.map((option) => (
                     <ChoiceCard
@@ -165,27 +167,99 @@ type TextInputConfig = {
     required?: boolean;
 };
 
-const contactInputs: TextInputConfig[] = [
-    { field: 'name', label: 'Imię i nazwisko', type: 'text', autoComplete: 'name', placeholder: 'Jan Kowalski', required: true },
-    { field: 'email', label: 'E-mail', type: 'email', autoComplete: 'email', placeholder: 'jan@firma.pl', required: true },
-    { field: 'phone', label: 'Telefon', type: 'tel', autoComplete: 'tel', placeholder: '+48 000 000 000' },
-    { field: 'company', label: 'Firma', type: 'text', autoComplete: 'organization', placeholder: 'Nazwa firmy' },
-    { field: 'position', label: 'Stanowisko', type: 'text', autoComplete: 'organization-title', placeholder: 'CEO, CTO, PM…' },
-    { field: 'website', label: 'Strona WWW', type: 'url', autoComplete: 'url', placeholder: 'https://…' },
-];
+const COPY = localized({
+    pl: {
+        pickOne: 'Wybierz jedną opcję.',
+        contactInputs: [
+            { field: 'name', label: 'Imię i nazwisko', type: 'text', autoComplete: 'name', placeholder: 'Jan Kowalski', required: true },
+            { field: 'email', label: 'E-mail', type: 'email', autoComplete: 'email', placeholder: 'jan@firma.pl', required: true },
+            { field: 'phone', label: 'Telefon', type: 'tel', autoComplete: 'tel', placeholder: '+48 000 000 000' },
+            { field: 'company', label: 'Firma', type: 'text', autoComplete: 'organization', placeholder: 'Nazwa firmy' },
+            { field: 'position', label: 'Stanowisko', type: 'text', autoComplete: 'organization-title', placeholder: 'CEO, CTO, PM…' },
+            { field: 'website', label: 'Strona WWW', type: 'url', autoComplete: 'url', placeholder: 'https://…' },
+        ] as TextInputConfig[],
+        projectType: 'Typ projektu',
+        industry: 'Branża',
+        industryPlaceholder: 'Wybierz branżę…',
+        audience: 'Grupa docelowa',
+        audiencePlaceholder: 'Wybierz grupę…',
+        design: 'Czy masz projekt graficzny?',
+        timeline: 'Oczekiwany termin',
+        tech: 'Preferowane technologie',
+        security: 'Bezpieczeństwo',
+        securityPlaceholder: 'Wybierz poziom…',
+        hosting: 'Hosting',
+        hostingPlaceholder: 'Wybierz opcję…',
+        integrations: 'Integracje zewnętrzne (opcjonalnie)',
+        integrationsPlaceholder: 'Np. systemy ERP, CRM, bramki płatności, API…',
+        budget: 'Budżet',
+        cooperationModel: 'Model współpracy',
+        notes: 'Dodatkowe informacje (opcjonalnie)',
+        notesPlaceholder: 'Opisz swoją wizję, cele biznesowe, pytania…',
+        source: 'Skąd o nas wiesz?',
+        sourcePlaceholder: 'Wybierz…',
+        contactPreference: 'Preferowany kontakt',
+        privacyBefore: 'Akceptuję',
+        privacyLink: 'politykę prywatności',
+        privacyAfter: 'i wyrażam zgodę na kontakt w sprawie zapytania.',
+        privacyLinkLang: undefined as 'pl' | undefined,
+    },
+    en: {
+        pickOne: 'Choose one option.',
+        contactInputs: [
+            { field: 'name', label: 'Full name', type: 'text', autoComplete: 'name', placeholder: 'John Smith', required: true },
+            { field: 'email', label: 'Email', type: 'email', autoComplete: 'email', placeholder: 'john@company.com', required: true },
+            { field: 'phone', label: 'Phone', type: 'tel', autoComplete: 'tel', placeholder: '+1 555 123 4567' },
+            { field: 'company', label: 'Company', type: 'text', autoComplete: 'organization', placeholder: 'Company name' },
+            { field: 'position', label: 'Job title', type: 'text', autoComplete: 'organization-title', placeholder: 'CEO, CTO, PM…' },
+            { field: 'website', label: 'Website', type: 'url', autoComplete: 'url', placeholder: 'https://…' },
+        ],
+        projectType: 'Project type',
+        industry: 'Industry',
+        industryPlaceholder: 'Choose an industry…',
+        audience: 'Target audience',
+        audiencePlaceholder: 'Choose an audience…',
+        design: 'Do you have a design?',
+        timeline: 'Expected timeline',
+        tech: 'Preferred technologies',
+        security: 'Security',
+        securityPlaceholder: 'Choose a level…',
+        hosting: 'Hosting',
+        hostingPlaceholder: 'Choose an option…',
+        integrations: 'Third-party integrations (optional)',
+        integrationsPlaceholder: 'E.g. ERP or CRM systems, payment gateways, APIs…',
+        budget: 'Budget',
+        cooperationModel: 'Engagement model',
+        notes: 'Additional information (optional)',
+        notesPlaceholder: 'Describe your vision, business goals, questions…',
+        source: 'How did you hear about us?',
+        sourcePlaceholder: 'Choose…',
+        contactPreference: 'Preferred contact',
+        privacyBefore: 'I accept the',
+        privacyLink: 'privacy policy',
+        privacyAfter: 'and agree to be contacted about my inquiry.',
+        // The privacy policy exists in Polish only.
+        privacyLinkLang: 'pl',
+    },
+});
+
 
 /** Step 1 — project types. */
 export function ProjectTypeStep(props: BriefStepProps) {
-    return <CheckboxCards field="types" options={projectTypeOptions} legend="Typ projektu" props={props} />;
+    const copy = useCopy(COPY);
+    const locale = useLocale();
+
+    return <CheckboxCards field="types" options={projectTypeOptions[locale]} legend={copy.projectType} props={props} />;
 }
 
 /** Step 2 — features, grouped chips. */
 export function FeaturesStep(props: BriefStepProps) {
     const error = props.errors.features;
+    const groups = featureGroups[useLocale()];
 
     return (
         <div className="grid gap-7">
-            {featureGroups.map((group, index) => (
+            {groups.map((group, index) => (
                 <CheckboxChips key={group.title} field="features" options={group.options} legend={group.title} idSuffix={`-group-${index}`} props={props} />
             ))}
             <FieldError fieldId={fieldId('features')} message={error} />
@@ -195,46 +269,55 @@ export function FeaturesStep(props: BriefStepProps) {
 
 /** Step 3 — industry, audience, design, timeline. */
 export function DetailsStep(props: BriefStepProps) {
+    const copy = useCopy(COPY);
+    const locale = useLocale();
+
     return (
         <div className="grid gap-8">
             <div className="grid gap-5 sm:grid-cols-2">
-                <BriefSelect field="industry" label="Branża" placeholder="Wybierz branżę…" options={industryOptions} props={props} />
-                <BriefSelect field="audience" label="Grupa docelowa" placeholder="Wybierz grupę…" options={audienceOptions} props={props} />
+                <BriefSelect field="industry" label={copy.industry} placeholder={copy.industryPlaceholder} options={industryOptions[locale]} props={props} />
+                <BriefSelect field="audience" label={copy.audience} placeholder={copy.audiencePlaceholder} options={audienceOptions[locale]} props={props} />
             </div>
-            <RadioCards field="design" legend="Czy masz projekt graficzny?" options={designOptions} gridClassName="sm:grid-cols-3" props={props} />
-            <RadioCards field="timeline" legend="Oczekiwany termin" options={timelineOptions} gridClassName="sm:grid-cols-2 xl:grid-cols-4" props={props} />
+            <RadioCards field="design" legend={copy.design} options={designOptions[locale]} gridClassName="sm:grid-cols-3" props={props} />
+            <RadioCards field="timeline" legend={copy.timeline} options={timelineOptions[locale]} gridClassName="sm:grid-cols-2 xl:grid-cols-4" props={props} />
         </div>
     );
 }
 
 /** Step 4 — technologies, security, hosting, integrations. */
 export function TechStep(props: BriefStepProps) {
+    const copy = useCopy(COPY);
+    const locale = useLocale();
+
     return (
         <div className="grid gap-8">
-            <CheckboxChips field="tech" options={techOptions} legend="Preferowane technologie" props={props} />
+            <CheckboxChips field="tech" options={techOptions[locale]} legend={copy.tech} props={props} />
             <div className="grid gap-5 sm:grid-cols-2">
-                <BriefSelect field="security" label="Bezpieczeństwo" placeholder="Wybierz poziom…" options={securityOptions} props={props} />
-                <BriefSelect field="hosting" label="Hosting" placeholder="Wybierz opcję…" options={hostingOptions} props={props} />
+                <BriefSelect field="security" label={copy.security} placeholder={copy.securityPlaceholder} options={securityOptions[locale]} props={props} />
+                <BriefSelect field="hosting" label={copy.hosting} placeholder={copy.hostingPlaceholder} options={hostingOptions[locale]} props={props} />
             </div>
-            <BriefTextarea field="integrations" label="Integracje zewnętrzne (opcjonalnie)" placeholder="Np. systemy ERP, CRM, bramki płatności, API…" props={props} />
+            <BriefTextarea field="integrations" label={copy.integrations} placeholder={copy.integrationsPlaceholder} props={props} />
         </div>
     );
 }
 
 /** Step 5 — budget, cooperation model, notes. */
 export function BudgetStep(props: BriefStepProps) {
+    const copy = useCopy(COPY);
+    const locale = useLocale();
+
     return (
         <div className="grid gap-8">
             {/* Five options: 2 + 2 + a full-width "Do ustalenia" from sm; a row of 3, then 2 wider cards from lg. */}
             <RadioCards
                 field="budget"
-                legend="Budżet"
-                options={budgetOptions}
+                legend={copy.budget}
+                options={budgetOptions[locale]}
                 gridClassName="sm:grid-cols-2 sm:[&>*:last-child]:col-span-2 lg:grid-cols-6 lg:*:col-span-2 lg:[&>*:nth-child(n+4)]:col-span-3 lg:[&>*:last-child]:col-span-3"
                 props={props}
             />
-            <RadioCards field="cooperation_model" legend="Model współpracy" options={cooperationModelOptions} gridClassName="sm:grid-cols-3" props={props} />
-            <BriefTextarea field="notes" label="Dodatkowe informacje (opcjonalnie)" placeholder="Opisz swoją wizję, cele biznesowe, pytania…" props={props} />
+            <RadioCards field="cooperation_model" legend={copy.cooperationModel} options={cooperationModelOptions[locale]} gridClassName="sm:grid-cols-3" props={props} />
+            <BriefTextarea field="notes" label={copy.notes} placeholder={copy.notesPlaceholder} props={props} />
         </div>
     );
 }
@@ -243,11 +326,13 @@ export function BudgetStep(props: BriefStepProps) {
 export function ContactStep(props: BriefStepProps) {
     const { data, errors, setField } = props;
     const privacyId = fieldId('privacy');
+    const copy = useCopy(COPY);
+    const locale = useLocale();
 
     return (
         <div className="grid gap-8">
             <div className="grid gap-5 sm:grid-cols-2">
-                {contactInputs.map((input) => {
+                {copy.contactInputs.map((input) => {
                     const id = fieldId(input.field);
                     const error = errors[input.field];
 
@@ -272,8 +357,8 @@ export function ContactStep(props: BriefStepProps) {
             </div>
 
             <div className="grid gap-x-5 gap-y-8 sm:grid-cols-2">
-                <BriefSelect field="source" label="Skąd o nas wiesz?" placeholder="Wybierz…" options={sourceOptions} props={props} />
-                <CheckboxChips field="contact_pref" options={contactPreferenceOptions} legend="Preferowany kontakt" props={props} />
+                <BriefSelect field="source" label={copy.source} placeholder={copy.sourcePlaceholder} options={sourceOptions[locale]} props={props} />
+                <CheckboxChips field="contact_pref" options={contactPreferenceOptions[locale]} legend={copy.contactPreference} props={props} />
             </div>
 
             <div className="grid gap-2">
@@ -288,25 +373,23 @@ export function ContactStep(props: BriefStepProps) {
                         {...invalidProps(privacyId, errors.privacy)}
                     />
                     <Label htmlFor={privacyId} className="block leading-snug font-normal">
-                        Akceptuję{' '}
+                        {copy.privacyBefore}{' '}
                         <a
                             href="/polityka-prywatnosci"
+                            hrefLang={copy.privacyLinkLang}
                             target="_blank"
                             rel="noopener"
                             className="rounded-sm font-medium underline underline-offset-4 outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
                         >
-                            politykę prywatności
+                            {copy.privacyLink}
                         </a>{' '}
-                        i wyrażam zgodę na kontakt w sprawie zapytania. <RequiredMark />
+                        {copy.privacyAfter} <RequiredMark />
                     </Label>
                 </div>
                 <FieldError fieldId={privacyId} message={errors.privacy} className="pl-7" />
             </div>
 
-            <p className="text-sm text-muted-foreground">
-                Pola oznaczone <span aria-hidden="true">*</span>
-                <span className="sr-only">gwiazdką</span> są wymagane.
-            </p>
+            <RequiredFieldsNote />
         </div>
     );
 }

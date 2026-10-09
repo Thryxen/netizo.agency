@@ -245,3 +245,120 @@ it('is light by default, whatever the operating system prefers', function (?stri
     'no cookie' => [null],
     'legacy system value' => ['system'],
 ]);
+
+it('serves the english home page at /en with the english FAQ', function () {
+    expect(route('en.home', absolute: false))->toBe('/en');
+
+    $polishFaq = $this->get('/')->viewData('page')['props']['faq'];
+
+    $this->get('/en')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('home')
+            ->where('locale', 'en')
+            ->where('alternates', ['pl' => url('/'), 'en' => url('/en')])
+            ->has('faq', count($polishFaq), fn (Assert $item) => $item
+                ->whereType('question', 'string')
+                ->whereType('answer', 'string'))
+            ->where('faq.0.question', 'How much does a website or an app cost?'));
+});
+
+it('shares the language and the page in both languages with the polish home page', function () {
+    $this->get('/')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('locale', 'pl')
+            ->where('alternates', ['pl' => url('/'), 'en' => url('/en')]));
+});
+
+it('links both home pages to each other for search engines and share previews', function (string $path, string $language, string $ogLocale, string $ogAlternate) {
+    $this->get($path)
+        ->assertOk()
+        ->assertSee('<html lang="'.$language.'" class="">', false)
+        ->assertSee('<link rel="canonical" href="'.url($path).'">', false)
+        ->assertSee('<link rel="alternate" hreflang="pl" href="'.url('/').'">', false)
+        ->assertSee('<link rel="alternate" hreflang="en" href="'.url('/en').'">', false)
+        ->assertSee('<link rel="alternate" hreflang="x-default" href="'.url('/').'">', false)
+        ->assertSee('<meta property="og:url" content="'.url($path).'">', false)
+        ->assertSee('<meta property="og:locale" content="'.$ogLocale.'">', false)
+        ->assertSee('<meta property="og:locale:alternate" content="'.$ogAlternate.'">', false);
+})->with([
+    'polish' => ['/', 'pl', 'pl_PL', 'en_US'],
+    'english' => ['/en', 'en', 'en_US', 'pl_PL'],
+]);
+
+it('renders the english SEO tags, share image and JSON-LD on /en', function () {
+    $response = $this->get('/en')->assertOk();
+    $imageUrl = asset('assets/images/og-netizo-en.png');
+
+    $response
+        ->assertSee('<title>Websites and Web Apps for Ambitious Companies | Netizo</title>', false)
+        ->assertSee('<meta property="og:image" content="'.$imageUrl.'">', false)
+        ->assertSee('<meta name="twitter:image" content="'.$imageUrl.'">', false)
+        ->assertDontSee('Tworzymy Strony WWW dla Ambitnych Firm', false)
+        ->assertDontSee('og-netizo-2.png', false);
+
+    preg_match_all('/<script type="application\/ld\+json">(.*?)<\/script>/s', $response->getContent(), $matches);
+
+    $schemas = collect($matches[1])->map(fn (string $json): mixed => json_decode(trim($json), true));
+    $faqSchema = $schemas->firstWhere('@type', 'FAQPage');
+    $organization = $schemas->firstWhere('@type', 'ProfessionalService');
+
+    expect($faqSchema['inLanguage'])->toBe('en')
+        ->and(collect($faqSchema['mainEntity'])->pluck('name')->all())->toBe(array_column($response->viewData('page')['props']['faq'], 'question'))
+        ->and($organization['url'])->toBe(url('/en'))
+        ->and($organization['image'])->toBe($imageUrl)
+        ->and($organization['areaServed'])->toBe(['@type' => 'Country', 'name' => 'Poland'])
+        ->and($organization['knowsLanguage'])->toBe(['pl', 'en']);
+
+    expect(public_path('assets/images/og-netizo-en.png'))->toBeFile()
+        ->and(array_slice(getimagesize(public_path('assets/images/og-netizo-en.png')), 0, 2))->toBe([1200, 630])
+        ->and(filesize(public_path('assets/images/og-netizo-en.png')))->toBeLessThan(300 * 1024);
+});
+
+it('shows the english copy of a project on /en and falls back to polish field by field', function () {
+    createHomePageProject([
+        'slug' => 'przetlumaczony',
+        'title' => 'Złoty Kłos',
+        'category_en' => 'Company website',
+        'description_en' => 'Short project description.',
+        'full_description_en' => '   ',
+        'metrics_en' => [['value' => '+40%', 'label' => 'conversion rate']],
+        'challenges_en' => [['challenge' => 'A challenge']],
+        'solutions_en' => null,
+    ]);
+
+    $this->get('/en')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('projects.0.category', 'Company website')
+            ->where('projects.0.description', 'Short project description.')
+            ->where('projects.0.fullDescription', 'Pełny opis projektu.')
+            ->where('projects.0.metrics', [['value' => '+40%', 'label' => 'conversion rate']])
+            ->where('projects.0.challenges', ['A challenge'])
+            ->where('projects.0.solutions', ['Rozwiązanie'])
+            ->where('projects.0.title', 'Złoty Kłos')
+            ->where('projects.0.techStack', ['Laravel', 'React']));
+
+    $this->get('/')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('projects.0.category', 'Strona firmowa')
+            ->where('projects.0.description', 'Krótki opis projektu.')
+            ->where('projects.0.metrics', [['value' => '+40%', 'label' => 'konwersji']])
+            ->where('projects.0.challenges', ['Wyzwanie']));
+});
+
+it('shows the polish copy on /en for a project without an english one', function () {
+    createHomePageProject();
+
+    $this->get('/en')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('projects.0.category', 'Strona firmowa')
+            ->where('projects.0.description', 'Krótki opis projektu.')
+            ->where('projects.0.fullDescription', 'Pełny opis projektu.')
+            ->where('projects.0.metrics', [['value' => '+40%', 'label' => 'konwersji']])
+            ->where('projects.0.challenges', ['Wyzwanie'])
+            ->where('projects.0.solutions', ['Rozwiązanie']));
+});

@@ -3,8 +3,25 @@ import { type CSSProperties, useRef } from 'react';
 import { bleedClassName, gutterClassName, Rivet, Section, SectionHeading } from '@/components/home/section';
 import { useMotionStyle, useReducedMotionPreference } from '@/components/motion';
 import { Button } from '@/components/ui/button';
+import { localized, useCopy } from '@/lib/i18n';
+import { usePartnerSections } from '@/lib/sections';
 import { cn } from '@/lib/utils';
 import { STEPS } from './partner-data';
+
+const COPY = localized({
+    pl: {
+        title: 'Jak to działa',
+        lead: 'Cztery kroki. Ty polecasz, my zajmujemy się resztą.',
+        yourPart: 'Twoja część kończy się na drugim kroku.',
+        calculate: 'Policz, ile możesz zarobić',
+    },
+    en: {
+        title: 'How it works',
+        lead: 'Four steps. You refer, we take care of the rest.',
+        yourPart: 'Your part ends at step two.',
+        calculate: 'See how much you could earn',
+    },
+});
 
 /** A marker fills over this fraction of the rail after the line reaches it. */
 const MARKER_RAMP = 1 / 30;
@@ -47,13 +64,16 @@ function RailMarker({ at, className }: { at: number; className: string }) {
 }
 
 /**
- * Jak to działa (#jak-to-dziala): the four steps on the shared-border grid, a row of four from lg and a list below,
+ * Jak to działa (#jak-to-dziala, #how-it-works): the four steps on the shared-border grid, a row of four from lg and a list below,
  * with the rail running along their top edge (lg) or down their left side. Square markers sit where the rail meets
  * the cell borders (lg), as in "Jak pracujemy" on the home page, and one more ends the rail (the right rail from lg,
  * the strip below the list under lg). Scroll draws the rail: the line fills as the steps pass up the screen, each
  * marker fills when the line reaches it, and the line reaches its end while the steps are still in full view.
  */
 export function StepsSection() {
+    const copy = useCopy(COPY);
+    const steps = useCopy(STEPS);
+    const sectionIds = usePartnerSections();
     const listRef = useRef<HTMLOListElement>(null);
     const reduced = useReducedMotionPreference();
     // lg: the row is short, so the rail is full once its top edge is 40% down the screen (the steps sit mid-screen).
@@ -66,9 +86,9 @@ export function StepsSection() {
     useMotionStyle(listRef, { '--rail-x': railX, '--rail-y': railY });
 
     return (
-        <Section id="jak-to-dziala" labelledBy="jak-to-dziala-heading" containerClassName="pb-0 md:pb-0">
+        <Section id={sectionIds.howItWorks} labelledBy={`${sectionIds.howItWorks}-heading`} containerClassName="pb-0 md:pb-0">
             <style>{STEPS_CSS}</style>
-            <SectionHeading id="jak-to-dziala-heading" title="Jak to działa" lead="Cztery kroki. Ty polecasz, my zajmujemy się resztą." />
+            <SectionHeading id={`${sectionIds.howItWorks}-heading`} title={copy.title} lead={copy.lead} />
 
             {/* lg: the top corners carry step 1's marker and the rail's end marker, so the rivets show only below lg. */}
             <div className={cn('relative border-t border-border', bleedClassName)}>
@@ -87,12 +107,12 @@ export function StepsSection() {
                     <RailMarker at={END_AT} className="-top-[6px] -right-[6px] hidden lg:block" />
                     <RailMarker at={END_AT} className="-bottom-[6px] left-4 sm:left-6 lg:hidden" />
 
-                    {STEPS.map((step, index) => (
+                    {steps.map((step, index) => (
                         <li
                             key={step.number}
                             className="relative flex min-w-0 flex-col bg-background pt-8 pr-4 pb-10 pl-11 sm:pr-6 sm:pl-[3.25rem] lg:px-6 lg:pt-9 lg:pb-10 xl:px-7"
                         >
-                            <RailMarker at={index / STEPS.length} className="top-[2.15rem] left-4 sm:left-6 lg:-top-[6px] lg:-left-[6px]" />
+                            <RailMarker at={index / steps.length} className="top-[2.15rem] left-4 sm:left-6 lg:-top-[6px] lg:-left-[6px]" />
 
                             <span aria-hidden="true" className="font-mono text-sm text-muted-foreground">
                                 {step.number}
@@ -108,9 +128,9 @@ export function StepsSection() {
                 <Rivet side="left" />
                 <Rivet side="right" />
                 <div className={cn('flex flex-col items-start gap-5 py-8 sm:flex-row sm:items-center sm:justify-between md:py-9', gutterClassName)}>
-                    <p className="text-lg leading-snug font-medium tracking-tight text-balance">Twoja część kończy się na drugim kroku.</p>
+                    <p className="text-lg leading-snug font-medium tracking-tight text-balance">{copy.yourPart}</p>
                     <Button size="lg" variant="outline" className="shrink-0 max-md:h-11" asChild>
-                        <a href="#kalkulator">Policz, ile możesz zarobić</a>
+                        <a href={`#${sectionIds.calculator}`}>{copy.calculate}</a>
                     </Button>
                 </div>
             </div>

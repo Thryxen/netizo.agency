@@ -162,3 +162,18 @@ it('redirects guests away from the briefs and changes nothing', function () {
 
     assertDatabaseHas('project_briefs', ['id' => $brief->id]);
 });
+
+it('shows the language of the site each brief came from', function () {
+    $polish = ProjectBrief::factory()->create(['created_at' => now()->subMinute()]);
+    $english = ProjectBrief::factory()->english()->create();
+
+    $this->get(route('admin.briefs.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('briefs.data.0.id', $english->id)
+            ->where('briefs.data.0.locale', 'en')
+            ->where('briefs.data.1.id', $polish->id)
+            ->where('briefs.data.1.locale', 'pl'));
+
+    $this->get(route('admin.briefs.show', $english))
+        ->assertInertia(fn (Assert $page) => $page->where('brief.locale', 'en'));
+});

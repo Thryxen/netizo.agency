@@ -1,9 +1,11 @@
 @extends('errors::minimal')
 
-@section('title', 'Coś poszło nie tak')
+@section('title', __('errors.pages.500.title'))
 @section('code', '500')
-@section('description', 'To błąd na naszym serwerze. Spróbuj ponownie za kilka minut.')
+@section('description')
+    {!! __('errors.pages.500.description') !!}
+@endsection
 
 @section('visual')
-    @include('errors::partials.window', ['icon' => 'server-crash', 'chipTitle' => 'Serwer nie odpowiada'])
+    @include('errors::partials.window', ['icon' => 'server-crash', 'chipTitle' => __('errors.pages.500.chip')])
 @endsection

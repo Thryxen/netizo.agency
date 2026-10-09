@@ -40,28 +40,12 @@ class StorePartnerApplicationRequest extends FormRequest
     }
 
     /**
-     * Get the custom validation messages.
+     * Get the custom validation messages, in the language of the page the form was sent from (lang/{pl,en}/forms.php).
      *
      * @return array<string, string>
      */
     public function messages(): array
     {
-        return [
-            'name.required' => 'Imię i nazwisko jest wymagane.',
-            'name.string' => 'Podaj poprawne imię i nazwisko.',
-            'name.min' => 'Imię i nazwisko musi mieć co najmniej 2 znaki.',
-            'name.max' => 'Imię i nazwisko może mieć maksymalnie 255 znaków.',
-            'email.required' => 'Adres e-mail jest wymagany.',
-            'email.email' => 'Podaj poprawny adres e-mail.',
-            'email.max' => 'Adres e-mail może mieć maksymalnie 255 znaków.',
-            'phone.string' => 'Podaj poprawny numer telefonu.',
-            'phone.min' => 'Podaj poprawny numer telefonu.',
-            'phone.max' => 'Podaj poprawny numer telefonu.',
-            'partner_type.required' => 'Wybierz, kim jesteś.',
-            'partner_type.string' => 'Wybierz, kim jesteś.',
-            'partner_type.in' => 'Wybierz, kim jesteś.',
-            'message.string' => 'Podaj poprawną treść.',
-            'message.max' => 'Wiadomość może mieć maksymalnie 2000 znaków.',
-        ];
+        return __('forms.partner');
     }
 }

@@ -39,6 +39,17 @@ class SaveProjectRequest extends FormRequest
             'challenges.*' => ['required', 'string', 'max:1000'],
             'solutions' => ['required', 'array', 'min:1', 'max:6'],
             'solutions.*' => ['required', 'string', 'max:1000'],
+            'category_en' => ['nullable', 'string', 'max:255'],
+            'description_en' => ['nullable', 'string', 'max:2000'],
+            'full_description_en' => ['nullable', 'string', 'max:20000'],
+            'metrics_en' => ['nullable', 'array', 'max:3'],
+            'metrics_en.*' => ['array'],
+            'metrics_en.*.value' => ['nullable', 'string', 'max:50'],
+            'metrics_en.*.label' => ['nullable', 'string', 'max:100'],
+            'challenges_en' => ['nullable', 'array', 'max:6'],
+            'challenges_en.*' => ['nullable', 'string', 'max:1000'],
+            'solutions_en' => ['nullable', 'array', 'max:6'],
+            'solutions_en.*' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -67,6 +78,16 @@ class SaveProjectRequest extends FormRequest
             'challenges.*' => 'wyzwanie',
             'solutions' => 'rozwiązania',
             'solutions.*' => 'rozwiązanie',
+            'category_en' => 'kategoria (EN)',
+            'description_en' => 'krótki opis (EN)',
+            'full_description_en' => 'pełny opis (EN)',
+            'metrics_en' => 'metryki (EN)',
+            'metrics_en.*.value' => 'wartość metryki (EN)',
+            'metrics_en.*.label' => 'etykieta metryki (EN)',
+            'challenges_en' => 'wyzwania (EN)',
+            'challenges_en.*' => 'wyzwanie (EN)',
+            'solutions_en' => 'rozwiązania (EN)',
+            'solutions_en.*' => 'rozwiązanie (EN)',
         ];
     }
 
@@ -85,11 +106,15 @@ class SaveProjectRequest extends FormRequest
             'metrics.max' => 'Możesz dodać najwyżej 3 metryki.',
             'challenges.max' => 'Możesz dodać najwyżej 6 wyzwań.',
             'solutions.max' => 'Możesz dodać najwyżej 6 rozwiązań.',
+            'metrics_en.max' => 'Możesz dodać najwyżej 3 metryki.',
+            'challenges_en.max' => 'Możesz dodać najwyżej 6 wyzwań.',
+            'solutions_en.max' => 'Możesz dodać najwyżej 6 rozwiązań.',
         ];
     }
 
     /**
      * Columns of the project except the images, with challenges and solutions in the stored repeater-row format.
+     * The English copy is optional: blank fields and rows are stored as null, so the /en site falls back to Polish.
      *
      * @return array<string, mixed>
      */
@@ -113,6 +138,54 @@ class SaveProjectRequest extends FormRequest
             )),
             'challenges' => array_map(fn (string $text): array => ['challenge' => $text], array_values($data['challenges'])),
             'solutions' => array_map(fn (string $text): array => ['solution' => $text], array_values($data['solutions'])),
+            'category_en' => $this->optionalText($data['category_en'] ?? null),
+            'description_en' => $this->optionalText($data['description_en'] ?? null),
+            'full_description_en' => $this->optionalText($data['full_description_en'] ?? null),
+            'metrics_en' => $this->optionalMetrics($data['metrics_en'] ?? null),
+            'challenges_en' => $this->optionalRows($data['challenges_en'] ?? null, 'challenge'),
+            'solutions_en' => $this->optionalRows($data['solutions_en'] ?? null, 'solution'),
         ];
+    }
+
+    private function optionalText(?string $text): ?string
+    {
+        $text = trim((string) $text);
+
+        return $text === '' ? null : $text;
+    }
+
+    /**
+     * Metrics with a value or a label; null when there are none.
+     *
+     * @param  array<int, array{value?: string|null, label?: string|null}>|null  $metrics
+     * @return list<array{value: string, label: string}>|null
+     */
+    private function optionalMetrics(?array $metrics): ?array
+    {
+        $rows = collect($metrics ?? [])
+            ->map(fn (array $metric): array => ['value' => trim((string) ($metric['value'] ?? '')), 'label' => trim((string) ($metric['label'] ?? ''))])
+            ->filter(fn (array $metric): bool => $metric['value'] !== '' || $metric['label'] !== '')
+            ->values()
+            ->all();
+
+        return $rows === [] ? null : $rows;
+    }
+
+    /**
+     * Non-blank texts as repeater rows (['challenge' => '…']); null when there are none.
+     *
+     * @param  array<int, string|null>|null  $texts
+     * @return list<array<string, string>>|null
+     */
+    private function optionalRows(?array $texts, string $key): ?array
+    {
+        $rows = collect($texts ?? [])
+            ->map(fn (?string $text): string => trim((string) $text))
+            ->filter(fn (string $text): bool => $text !== '')
+            ->map(fn (string $text): array => [$key => $text])
+            ->values()
+            ->all();
+
+        return $rows === [] ? null : $rows;
     }
 }

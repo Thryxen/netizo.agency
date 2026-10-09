@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import { BulkBar } from '@/components/admin/bulk-bar';
 import { ConfirmDeleteDialog } from '@/components/admin/confirm-delete-dialog';
+import { LeadLocaleBadge } from '@/components/admin/lead-locale';
 import { ListToolbar } from '@/components/admin/list-toolbar';
 import { Pagination } from '@/components/admin/pagination';
 import { SortHeader } from '@/components/admin/sort-header';
@@ -105,6 +106,7 @@ export default function MessagesIndex({ messages, filters }: Props) {
                                     <Link href={adminRoutes.messages.show(message.id)} className="hover:underline">
                                         {message.name}
                                     </Link>
+                                    <LeadLocaleBadge locale={message.locale} />
                                 </TableCell>
                                 <TableCell>{message.email}</TableCell>
                                 <TableCell className="text-muted-foreground">{message.subject ?? 'Brak tematu'}</TableCell>

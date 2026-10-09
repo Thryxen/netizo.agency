@@ -96,7 +96,7 @@ it('keeps the partner types in step with the form options', function () {
 
     preg_match_all("/value: '([a-z]+)'/", $options, $matches);
 
-    expect($matches[1])->toBe(StorePartnerApplicationRequest::PARTNER_TYPES);
+    expect(array_values(array_unique($matches[1])))->toBe(StorePartnerApplicationRequest::PARTNER_TYPES);
 });
 
 it('rejects invalid input with a Polish message', function (array $overrides, string $field, string $message) {
@@ -181,3 +181,48 @@ it('shares the forms rate limit of 10 submissions per minute per IP', function (
     assertDatabaseCount('partner_applications', 10);
     Http::assertSentCount(10);
 });
+
+it('stores an application sent from the English site with its language', function () {
+    $this->from('/en/partners')
+        ->post(route('en.partner-applications.store'), validPartnerApplicationPayload())
+        ->assertRedirect('/en/partners')
+        ->assertSessionHasNoErrors();
+
+    expect(route('en.partner-applications.store'))->toEndWith('/en/partners');
+
+    assertDatabaseHas('partner_applications', ['email' => 'anna@biuro.pl', 'locale' => 'en']);
+
+    Http::assertSent(fn (Request $request): bool => collect($request['embeds'][0]['fields'])->pluck('value', 'name')['Język'] === 'angielski');
+});
+
+it('stores the language of an application sent from the Polish site', function () {
+    $this->from('/partnerzy')
+        ->post(route('partner-applications.store'), validPartnerApplicationPayload())
+        ->assertSessionHasNoErrors();
+
+    expect(PartnerApplication::sole()->locale)->toBe('pl');
+
+    Http::assertSent(fn (Request $request): bool => collect($request['embeds'][0]['fields'])->pluck('value', 'name')['Język'] === 'polski');
+});
+
+it('does not let the form choose the stored language', function () {
+    $this->from('/partnerzy')
+        ->post(route('partner-applications.store'), validPartnerApplicationPayload(['locale' => 'en']))
+        ->assertSessionHasNoErrors();
+
+    expect(PartnerApplication::sole()->locale)->toBe('pl');
+});
+
+it('rejects invalid input on the English site with an English message', function (array $overrides, string $field, string $message) {
+    $this->from('/en/partners')
+        ->post(route('en.partner-applications.store'), validPartnerApplicationPayload($overrides))
+        ->assertRedirect('/en/partners')
+        ->assertSessionHasErrors([$field => $message]);
+
+    assertDatabaseCount('partner_applications', 0);
+    Http::assertNothingSent();
+})->with([
+    'missing name' => [['name' => ''], 'name', 'Please enter your full name.'],
+    'unknown partner type' => [['partner_type' => 'influencer'], 'partner_type', 'Please tell us who you are.'],
+    'too long message' => [['message' => str_repeat('a', 2001)], 'message', 'Your message can be at most 2,000 characters long.'],
+]);

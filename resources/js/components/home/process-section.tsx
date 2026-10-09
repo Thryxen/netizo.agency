@@ -10,12 +10,31 @@ import { useProcessRelay } from '@/components/home/process/use-process-relay';
 import { bleedClassName, gutterClassName, Rivet, Section, SectionHeading } from '@/components/home/section';
 import { TechTag } from '@/components/home/tech-tag';
 import { Button } from '@/components/ui/button';
+import { localized, useCopy } from '@/lib/i18n';
+import { useHomeSections } from '@/lib/sections';
 import { cn } from '@/lib/utils';
+
+const COPY = localized({
+    pl: {
+        title: 'Jak pracujemy',
+        lead: 'Cztery etapy. Na każdym wiesz, co się dzieje i co dostajesz.',
+        youGet: 'Dostajesz:',
+        bridge: 'Po wdrożeniu pracujemy dalej w panelu klienta.',
+        bridgeCta: 'Zobacz, jak wygląda panel',
+    },
+    en: {
+        title: 'How we work',
+        lead: 'Four stages. At each one, you know what’s happening and what you get.',
+        youGet: 'You get:',
+        bridge: 'After launch, we keep working together in the client portal.',
+        bridgeCta: 'See what the portal looks like',
+    },
+});
 
 const ARTIFACTS: ((props: { state: StepState }) => ReactNode)[] = [BriefArtifact, DesignArtifact, SprintArtifact, LaunchArtifact];
 
 /**
- * Jak pracujemy (#proces): four steps as a relay of four live artifacts, each showing what the client gets at that
+ * Jak pracujemy (#proces, #process): four steps as a relay of four live artifacts, each showing what the client gets at that
  * step (a brief to approve, a prototype, a sprint on staging, the live site with its panel).
  *
  * One bleed block rail to rail, cells on the shared-border grid like the bento: a row of four from lg, 2 × 2 from md,
@@ -28,11 +47,14 @@ const ARTIFACTS: ((props: { state: StepState }) => ReactNode)[] = [BriefArtifact
  */
 export function ProcessSection() {
     const relay = useProcessRelay();
+    const copy = useCopy(COPY);
+    const steps = useCopy(PROCESS_STEPS);
+    const sectionId = useHomeSections().process;
 
     return (
-        <Section id="proces" labelledBy="proces-heading" containerClassName="pb-0 md:pb-0">
+        <Section id={sectionId} labelledBy={`${sectionId}-heading`} containerClassName="pb-0 md:pb-0">
             <ProcessStyles />
-            <SectionHeading id="proces-heading" title="Jak pracujemy" lead="Cztery etapy. Na każdym wiesz, co się dzieje i co dostajesz." />
+            <SectionHeading id={`${sectionId}-heading`} title={copy.title} lead={copy.lead} />
 
             {/* The top-left corner carries step 1's marker (md+), so only the right end gets a rivet. */}
             <div className={cn('relative border-t border-border', bleedClassName)}>
@@ -44,7 +66,7 @@ export function ProcessSection() {
                     data-relay-instant={relay.instant ? '' : undefined}
                     className="grid gap-px bg-border md:grid-cols-2 lg:grid-cols-4"
                 >
-                    {PROCESS_STEPS.map((step, index) => (
+                    {steps.map((step, index) => (
                         <ProcessStepCell
                             key={step.number}
                             step={step}
@@ -69,7 +91,8 @@ type ProcessStepCellProps = {
 };
 
 function ProcessStepCell({ step, index, state, artifactRef }: ProcessStepCellProps) {
-    const isLast = index === PROCESS_STEPS.length - 1;
+    const copy = useCopy(COPY);
+    const isLast = index === PROCESS_STEPS.pl.length - 1;
     const Artifact = ARTIFACTS[index];
 
     return (
@@ -106,7 +129,7 @@ function ProcessStepCell({ step, index, state, artifactRef }: ProcessStepCellPro
 
             <p className="mt-5 max-w-[46ch] text-sm leading-relaxed text-pretty text-muted-foreground">{step.text}</p>
             <p className="mt-3 max-w-[46ch] text-sm leading-relaxed text-pretty">
-                <span className="font-semibold">Dostajesz:</span> {step.deliverable}
+                <span className="font-semibold">{copy.youGet}</span> {step.deliverable}
             </p>
 
             <ul className="mt-5 flex flex-wrap gap-1.5 md:mt-auto md:pt-5">
@@ -120,8 +143,11 @@ function ProcessStepCell({ step, index, state, artifactRef }: ProcessStepCellPro
     );
 }
 
-/** After the launch: one strip rail to rail that leads on to the client panel (#panel). */
+/** After the launch: one strip rail to rail that leads on to the client panel (#panel, #client-portal). */
 function ProcessBridge() {
+    const copy = useCopy(COPY);
+    const panelId = useHomeSections().panel;
+
     return (
         <div className={cn('relative border-t border-border', bleedClassName)}>
             <Rivet side="left" />
@@ -131,10 +157,10 @@ function ProcessBridge() {
                     <span aria-hidden="true">
                         <PanelMark className="size-7 rounded-[4px]" />
                     </span>
-                    Po wdrożeniu pracujemy dalej w panelu klienta.
+                    {copy.bridge}
                 </p>
                 <Button size="lg" variant="outline" className="shrink-0 max-md:h-11" asChild>
-                    <a href="#panel">Zobacz, jak wygląda panel</a>
+                    <a href={`#${panelId}`}>{copy.bridgeCta}</a>
                 </Button>
             </div>
         </div>

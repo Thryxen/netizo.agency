@@ -28,17 +28,12 @@ class StoreCallbackRequestRequest extends FormRequest
     }
 
     /**
-     * Get the custom validation messages.
+     * Get the custom validation messages, in the language of the page the form was sent from (lang/{pl,en}/forms.php).
      *
      * @return array<string, string>
      */
     public function messages(): array
     {
-        return [
-            'phone.required' => 'Numer telefonu jest wymagany.',
-            'phone.string' => 'Podaj poprawny numer telefonu.',
-            'phone.min' => 'Podaj poprawny numer telefonu.',
-            'phone.max' => 'Podaj poprawny numer telefonu.',
-        ];
+        return __('forms.callback');
     }
 }

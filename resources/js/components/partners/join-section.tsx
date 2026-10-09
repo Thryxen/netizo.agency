@@ -2,8 +2,25 @@ import { Check } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { Logo } from '@/components/home/logo';
 import { bleedClassName, gutterClassName, Section, SectionHeading } from '@/components/home/section';
+import { localized, useCopy } from '@/lib/i18n';
+import { usePartnerSections } from '@/lib/sections';
 import { cn } from '@/lib/utils';
 import { PartnerApplicationForm } from './partner-application-form';
+
+const COPY = localized({
+    pl: {
+        title: 'Dołącz do programu',
+        lead: 'Zgłoszenie zajmuje minutę. W ciągu 24 godzin odezwiemy się z kodem partnera i umową do przejrzenia.',
+        namePlaceholder: 'Twoje imię i nazwisko',
+        cardRole: 'Partner Netizo',
+    },
+    en: {
+        title: 'Join the program',
+        lead: 'Applying takes a minute. Within 24 hours we’ll get back to you with your partner code and an agreement to review.',
+        namePlaceholder: 'Your full name',
+        cardRole: 'Netizo partner',
+    },
+});
 
 type PartnerCardProps = {
     name: string;
@@ -16,6 +33,7 @@ type PartnerCardProps = {
  * card straightens and the stub is ticked. Decorative: the form says everything it shows.
  */
 function PartnerCard({ name, sent }: PartnerCardProps) {
+    const copy = useCopy(COPY);
     const typedName = name.trim();
 
     return (
@@ -27,8 +45,8 @@ function PartnerCard({ name, sent }: PartnerCardProps) {
             <div className="absolute inset-y-0 left-0 flex w-[85%] flex-col justify-between p-5 sm:p-6">
                 <Logo className="h-6 self-start" />
                 <div className="min-w-0">
-                    <p className={cn('truncate text-lg font-semibold tracking-tight', !typedName && 'text-background/45')}>{typedName || 'Twoje imię i nazwisko'}</p>
-                    <p className="mt-1 text-xs text-background/60">Partner Netizo</p>
+                    <p className={cn('truncate text-lg font-semibold tracking-tight', !typedName && 'text-background/45')}>{typedName || copy.namePlaceholder}</p>
+                    <p className="mt-1 text-xs text-background/60">{copy.cardRole}</p>
                 </div>
             </div>
             <div className="absolute inset-y-0 right-0 flex w-[15%] flex-col items-center justify-between border-l border-dashed border-background/30 py-5 sm:py-6">
@@ -45,24 +63,21 @@ function PartnerCard({ name, sent }: PartnerCardProps) {
 }
 
 /**
- * Dołącz (#dolacz): a bleed split band, the heading and the partner card on the left, the application form on the
+ * Dołącz (#dolacz, #join): a bleed split band, the heading and the partner card on the left, the application form on the
  * right (stacked below lg).
  */
 export function JoinSection() {
+    const copy = useCopy(COPY);
+    const sectionId = usePartnerSections().join;
     const [name, setName] = useState('');
     const [sentName, setSentName] = useState<string | null>(null);
     const handleNameChange = useCallback((value: string) => setName(value), []);
 
     return (
-        <Section id="dolacz" labelledBy="dolacz-heading" containerClassName="py-0 md:py-0">
+        <Section id={sectionId} labelledBy={`${sectionId}-heading`} containerClassName="py-0 md:py-0">
             <div className={cn('grid gap-px bg-border lg:grid-cols-12', bleedClassName)}>
                 <div className={cn('flex flex-col bg-background pt-20 pb-14 md:pt-28 lg:col-span-5 lg:pb-28', gutterClassName)}>
-                    <SectionHeading
-                        id="dolacz-heading"
-                        title="Dołącz do programu"
-                        lead="Zgłoszenie zajmuje minutę. W ciągu 24 godzin odezwiemy się z kodem partnera i umową do przejrzenia."
-                        className="mb-12 md:mb-14"
-                    />
+                    <SectionHeading id={`${sectionId}-heading`} title={copy.title} lead={copy.lead} className="mb-12 md:mb-14" />
                     <div className="px-1">
                         <PartnerCard name={sentName ?? name} sent={sentName !== null} />
                     </div>

@@ -13,6 +13,7 @@ import { ProcessSection } from '@/components/home/process-section';
 import { ProjectsSection } from '@/components/home/projects-section';
 import { ServicesSection } from '@/components/home/services-section';
 import { SiteFooter } from '@/components/home/site-footer';
+import { SkipLink } from '@/components/home/skip-link';
 import { SiteHeader } from '@/components/home/site-header';
 import { MotionRoot } from '@/components/motion/motion-root';
 import { useInPageAnchors } from '@/hooks/use-in-page-anchors';
@@ -24,12 +25,7 @@ export default function Home({ projects, clients, faq }: HomePageProps) {
     return (
         <MotionRoot>
             <HomeUiProvider>
-                <a
-                    href="#main-content"
-                    className="sr-only rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-                >
-                    Przejdź do treści
-                </a>
+                <SkipLink />
                 <SiteHeader />
                 <main id="main-content" tabIndex={-1} className="outline-none">
                     <Hero />

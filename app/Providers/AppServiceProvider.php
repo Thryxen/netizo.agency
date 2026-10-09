@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\LocalizedRoutes;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,8 +28,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->setLocaleFromPath();
         $this->configureRateLimiting();
         $this->reportSsrFailures();
+    }
+
+    /**
+     * Pick the page's language already while the app boots (SetLocale does it again for every request): the cookie
+     * banner translates its categories and cookie descriptions when they are registered, right after boot.
+     */
+    protected function setLocaleFromPath(): void
+    {
+        $this->app->setLocale(LocalizedRoutes::localeFromPath($this->app->make('request')));
     }
 
     /**
@@ -41,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(10)
                 ->by($request->ip())
                 ->response(fn (): RedirectResponse => back()->withErrors([
-                    'form' => 'Zbyt wiele prób. Spróbuj ponownie za minutę.',
+                    'form' => __('forms.errors.throttled'),
                 ]));
         });
     }

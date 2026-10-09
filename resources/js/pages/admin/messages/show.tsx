@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import { ConfirmDeleteDialog } from '@/components/admin/confirm-delete-dialog';
 import { CopyButton, DetailItem, DetailList } from '@/components/admin/detail';
+import { leadLocaleLabel } from '@/components/admin/lead-locale';
 import { Button } from '@/components/ui/button';
 import { adminRoutes } from '@/lib/admin-routes';
 import type { AdminMessage } from '@/types/admin';
@@ -39,6 +40,7 @@ export default function MessageShow({ message }: { message: AdminMessage }) {
                         {message.subject}
                     </DetailItem>
                     <DetailItem label="Data wysłania">{message.createdAt}</DetailItem>
+                    <DetailItem label="Język">{leadLocaleLabel(message.locale)}</DetailItem>
                 </DetailList>
 
                 <section className="grid gap-2">

@@ -1,3 +1,5 @@
+import { localized } from '@/lib/i18n';
+
 /**
  * Content of "Jak pracujemy" (spec v5) and the relay's timing. Every step says in one sentence what happens and in
  * one line what the client gets; its live artifact shows that deliverable being made.
@@ -14,36 +16,68 @@ export type ProcessStep = {
     tags: string[];
 };
 
-export const PROCESS_STEPS: ProcessStep[] = [
-    {
-        number: '01',
-        title: 'Odkrywanie',
-        text: 'Poznajemy Twój biznes, cele i konkurencję, a potem spisujemy zakres prac.',
-        deliverable: 'brief i zakres prac do akceptacji',
-        tags: ['Warsztaty', 'Analiza', 'Strategia'],
-    },
-    {
-        number: '02',
-        title: 'Projektowanie',
-        text: 'Projektujemy wygląd i klikalny prototyp, zanim powstanie linijka kodu.',
-        deliverable: 'klikalny prototyp do przetestowania',
-        tags: ['Makiety', 'Prototyp', 'Projekt graficzny'],
-    },
-    {
-        number: '03',
-        title: 'Rozwój',
-        text: 'Programujemy w dwutygodniowych sprintach i co sprint pokazujemy postępy.',
-        deliverable: 'dostęp do wersji testowej i regularne demo',
-        tags: ['Sprinty', 'Testy', 'Wersja testowa'],
-    },
-    {
-        number: '04',
-        title: 'Wdrożenie',
-        text: 'Publikujemy stronę, monitorujemy ją i zostajemy z Tobą po starcie.',
-        deliverable: 'działająca strona, monitoring i dostęp do panelu klienta',
-        tags: ['Publikacja', 'Monitoring', 'Wsparcie'],
-    },
-];
+export const PROCESS_STEPS = localized<ProcessStep[]>({
+    pl: [
+        {
+            number: '01',
+            title: 'Odkrywanie',
+            text: 'Poznajemy Twój biznes, cele i konkurencję, a potem spisujemy zakres prac.',
+            deliverable: 'brief i zakres prac do akceptacji',
+            tags: ['Warsztaty', 'Analiza', 'Strategia'],
+        },
+        {
+            number: '02',
+            title: 'Projektowanie',
+            text: 'Projektujemy wygląd i klikalny prototyp, zanim powstanie linijka kodu.',
+            deliverable: 'klikalny prototyp do przetestowania',
+            tags: ['Makiety', 'Prototyp', 'Projekt graficzny'],
+        },
+        {
+            number: '03',
+            title: 'Rozwój',
+            text: 'Programujemy w dwutygodniowych sprintach i co sprint pokazujemy postępy.',
+            deliverable: 'dostęp do wersji testowej i regularne demo',
+            tags: ['Sprinty', 'Testy', 'Wersja testowa'],
+        },
+        {
+            number: '04',
+            title: 'Wdrożenie',
+            text: 'Publikujemy stronę, monitorujemy ją i zostajemy z Tobą po starcie.',
+            deliverable: 'działająca strona, monitoring i dostęp do panelu klienta',
+            tags: ['Publikacja', 'Monitoring', 'Wsparcie'],
+        },
+    ],
+    en: [
+        {
+            number: '01',
+            title: 'Discovery',
+            text: 'We get to know your business, goals and competitors, then write down the scope of work.',
+            deliverable: 'a brief and scope of work to approve',
+            tags: ['Workshops', 'Analysis', 'Strategy'],
+        },
+        {
+            number: '02',
+            title: 'Design',
+            text: 'We design the look and a clickable prototype before a single line of code is written.',
+            deliverable: 'a clickable prototype to test',
+            tags: ['Wireframes', 'Prototype', 'Visual design'],
+        },
+        {
+            number: '03',
+            title: 'Development',
+            text: 'We code in two-week sprints and show you the progress after every sprint.',
+            deliverable: 'access to the staging version and regular demos',
+            tags: ['Sprints', 'Testing', 'Staging'],
+        },
+        {
+            number: '04',
+            title: 'Launch',
+            text: 'We publish the website, monitor it and stay with you after launch.',
+            deliverable: 'a live website, monitoring and access to the client portal',
+            tags: ['Go-live', 'Monitoring', 'Support'],
+        },
+    ],
+});
 
 /**
  * Where a step is in the relay: not reached yet (its artifact shows its first frame, dimmed), holding the baton (the

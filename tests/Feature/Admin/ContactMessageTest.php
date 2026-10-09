@@ -174,3 +174,18 @@ it('redirects guests away from the messages and changes nothing', function () {
 
     assertDatabaseHas('contact_messages', ['id' => $message->id]);
 });
+
+it('shows the language of the site each message came from', function () {
+    $polish = ContactMessage::factory()->create(['created_at' => now()->subMinute()]);
+    $english = ContactMessage::factory()->english()->create();
+
+    $this->get(route('admin.messages.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('messages.data.0.id', $english->id)
+            ->where('messages.data.0.locale', 'en')
+            ->where('messages.data.1.id', $polish->id)
+            ->where('messages.data.1.locale', 'pl'));
+
+    $this->get(route('admin.messages.show', $english))
+        ->assertInertia(fn (Assert $page) => $page->where('message.locale', 'en'));
+});

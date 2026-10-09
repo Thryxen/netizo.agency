@@ -11,5 +11,5 @@ class CallbackRequest extends Model
     /** @use HasFactory<CallbackRequestFactory> */
     use HasFactory;
 
-    protected $fillable = ['phone'];
+    protected $fillable = ['locale', 'phone'];
 }

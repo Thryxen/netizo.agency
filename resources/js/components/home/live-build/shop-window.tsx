@@ -1,7 +1,8 @@
 import { Lock, ShoppingBag } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useCopy } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { SHOP_BRAND, SHOP_CTA, SHOP_HEADLINE, SHOP_LEAD, SHOP_NAV, SHOP_PRODUCTS, SHOP_URL } from './shop-data';
+import { SHOP } from './shop-data';
 import { StagePhoto } from './stage-photo';
 
 /** Wireframe vocabulary (act 1): hairline dashed slots and quiet bars. Hidden in the finished page. */
@@ -37,6 +38,8 @@ function PhotoSlot({ name, drawn = false, children, className }: { name: string;
  * act-1 wireframe laid over the same slots, the code-link highlights, the cursor and the wipe panel.
  */
 export function ShopWindow() {
+    const shop = useCopy(SHOP);
+
     return (
         <div className="flex flex-col overflow-hidden rounded-[0.9em] border bg-background">
             <div className="flex h-[3.4em] shrink-0 items-center gap-[1.4em] border-b bg-muted/60 px-[1.3em]">
@@ -49,7 +52,7 @@ export function ShopWindow() {
                     <Lock aria-hidden="true" className="size-[1em] shrink-0 text-muted-foreground" strokeWidth={2} />
                     <span className="relative overflow-hidden font-mono text-[1.1em] leading-[1.4] whitespace-pre">
                         <span data-lb-url="" data-lb-in="">
-                            {SHOP_URL}
+                            {shop.url}
                         </span>
                         <span data-lb-cover="" data-lb-url-cover="" className="absolute inset-y-0 left-0 w-full bg-background">
                             <span className="absolute inset-y-[0.12em] left-0 w-[0.1em] bg-foreground/70" />
@@ -73,6 +76,8 @@ export function ShopWindow() {
 }
 
 function ShopNav() {
+    const shop = useCopy(SHOP);
+
     return (
         <div className="relative h-[4.4em] border-b">
             <div className="absolute inset-0 flex items-center justify-between px-[2.4em]">
@@ -90,10 +95,10 @@ function ShopNav() {
             <div data-lb="nav" data-lb-in="" className="absolute inset-0 flex items-center justify-between px-[2.4em]">
                 <span className="flex items-center gap-[0.7em]">
                     <span className="size-[1.2em] bg-foreground" />
-                    <span className="text-[1.3em] font-semibold tracking-tight">{SHOP_BRAND}</span>
+                    <span className="text-[1.3em] font-semibold tracking-tight">{shop.brand}</span>
                 </span>
                 <span className="flex items-center gap-[1.8em] text-[1.1em] text-muted-foreground">
-                    {SHOP_NAV.map((item) => (
+                    {shop.nav.map((item) => (
                         <span key={item}>{item}</span>
                     ))}
                 </span>
@@ -113,11 +118,13 @@ const LINE_MASK = '-mt-[0.1em] -mb-[0.16em] block overflow-hidden pt-[0.1em] pb-
 const HEADLINE_BARS = ['w-[94%]', 'w-[80%]', 'w-[44%]'];
 
 function ShopHero() {
+    const shop = useCopy(SHOP);
+
     return (
         <div className="relative grid grid-cols-[1fr_24em] gap-[2.4em] px-[2.4em] pt-[2.2em]">
             <div className="flex min-w-0 flex-col justify-center">
                 <span className="block text-[2.55em] leading-[1.06] font-semibold tracking-[-0.035em]">
-                    {SHOP_HEADLINE.map((line, index) => (
+                    {shop.headline.map((line, index) => (
                         <span key={line} className="relative block">
                             <span data-lb={`wf-head-${index}`} className={cn(WF_BAR, 'top-[0.24em] h-[0.6em] rounded-[0.12em]', HEADLINE_BARS[index])} />
                             <span className={LINE_MASK}>
@@ -131,7 +138,7 @@ function ShopHero() {
                 <span className="relative mt-[1.1em] block">
                     <span data-lb="wf-lead" className={cn(WF_BAR, 'top-[0.45em] h-[0.65em] w-[78%]')} />
                     <span data-lb="lead" data-lb-in="" className="block text-[1.15em] leading-[1.45] text-muted-foreground">
-                        {SHOP_LEAD}
+                        {shop.lead}
                     </span>
                 </span>
                 <span data-lb-target="cta" className="relative mt-[1.7em] block w-fit">
@@ -141,7 +148,7 @@ function ShopHero() {
                         data-lb-in=""
                         className="flex h-[2.9em] items-center rounded-[0.45em] bg-foreground px-[1.4em] text-[1.1em] font-medium text-background"
                     >
-                        {SHOP_CTA}
+                        {shop.cta}
                     </span>
                 </span>
             </div>
@@ -162,9 +169,11 @@ function ShopHero() {
 }
 
 function ShopProducts() {
+    const shop = useCopy(SHOP);
+
     return (
         <div className="relative grid grid-cols-3 gap-[1.4em] px-[2.4em] pt-[2.3em]">
-            {SHOP_PRODUCTS.map((product, index) => (
+            {shop.products.map((product, index) => (
                 <div key={product.name} className="min-w-0">
                     <PhotoSlot name={`card-${index}`} drawn={index === 0} className="aspect-[16/10]">
                         <StagePhoto

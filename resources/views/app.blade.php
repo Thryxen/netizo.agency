@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl" @class(['dark' => ($appearance ?? 'light') === 'dark'])>
+<html lang="{{ app()->getLocale() }}" @class(['dark' => ($appearance ?? 'light') === 'dark'])>
 <head>
     {{-- Trusted Types Policy for XSS Protection --}}
     <script>

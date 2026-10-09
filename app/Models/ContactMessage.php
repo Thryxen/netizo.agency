@@ -12,6 +12,7 @@ class ContactMessage extends Model
     use HasFactory;
 
     protected $fillable = [
+        'locale',
         'name',
         'email',
         'subject',

@@ -6,10 +6,34 @@ import { useHomeUi } from '@/components/home/home-ui-context';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { endpoints } from '@/lib/endpoints';
+import { useEndpoints } from '@/lib/endpoints';
+import { localized, useCopy } from '@/lib/i18n';
 import { contact } from '@/lib/site';
 
+const COPY = localized({
+    pl: {
+        title: 'Oddzwonimy do Ciebie',
+        description: 'Zostaw numer telefonu, a oddzwonimy najszybciej, jak to możliwe.',
+        phone: 'Numer telefonu',
+        submit: 'Zadzwońcie do mnie',
+        success: 'Dziękujemy, oddzwonimy wkrótce.',
+        close: 'Zamknij',
+        callNow: 'Wolisz zadzwonić od razu?',
+    },
+    en: {
+        title: 'We’ll call you back',
+        description: 'Leave your phone number and we’ll call you back as soon as we can.',
+        phone: 'Phone number',
+        submit: 'Call me',
+        success: 'Thank you, we’ll call you back soon.',
+        close: 'Close',
+        callNow: 'Prefer to call right away?',
+    },
+});
+
 function CallbackForm() {
+    const copy = useCopy(COPY);
+    const endpoints = useEndpoints();
     const form = useForm<{ phone: string }>(() => ({ phone: '' }));
     const [submitted, setSubmitted] = useState(false);
     const successRef = useRef<HTMLParagraphElement>(null);
@@ -61,11 +85,11 @@ function CallbackForm() {
         return (
             <div className="grid gap-6">
                 <p ref={successRef} tabIndex={-1} role="status" className="font-medium outline-none">
-                    Dziękujemy, oddzwonimy wkrótce.
+                    {copy.success}
                 </p>
                 <DialogClose asChild>
                     <Button type="button" variant="outline" className="w-full max-md:h-11">
-                        Zamknij
+                        {copy.close}
                     </Button>
                 </DialogClose>
             </div>
@@ -73,8 +97,8 @@ function CallbackForm() {
     }
 
     return (
-        <form onSubmit={handleSubmit} noValidate aria-label="Oddzwonimy do Ciebie" className="grid gap-5">
-            <Field fieldId="callback-phone" label="Numer telefonu" required error={phoneError}>
+        <form onSubmit={handleSubmit} noValidate aria-label={copy.title} className="grid gap-5">
+            <Field fieldId="callback-phone" label={copy.phone} required error={phoneError}>
                 <Input
                     ref={phoneInputRef}
                     id="callback-phone"
@@ -100,11 +124,11 @@ function CallbackForm() {
             <FormErrorAlert message={formError} />
 
             <SubmitButton processing={form.processing} className="w-full max-md:h-11">
-                Zadzwońcie do mnie
+                {copy.submit}
             </SubmitButton>
 
             <p className="text-center text-sm text-muted-foreground">
-                Wolisz zadzwonić od razu?{' '}
+                {copy.callNow}{' '}
                 <a
                     href={contact.phone.href}
                     className="rounded-sm font-medium whitespace-nowrap text-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
@@ -119,6 +143,7 @@ function CallbackForm() {
 /** "Oddzwonimy do Ciebie" dialog, bound to `callbackOpen` from the home UI context. */
 export function CallbackDialog() {
     const { callbackOpen, setCallbackOpen, callbackReturnFocusRef } = useHomeUi();
+    const copy = useCopy(COPY);
 
     // Fresh form state every time the dialog opens (adjusting state during render, not in an effect).
     const [session, setSession] = useState(0);
@@ -147,8 +172,8 @@ export function CallbackDialog() {
         <Dialog open={callbackOpen} onOpenChange={setCallbackOpen}>
             <DialogContent showCloseButton={false} onCloseAutoFocus={handleCloseAutoFocus} className="gap-6 sm:max-w-md">
                 <DialogHeader className="pr-8 text-left">
-                    <DialogTitle className="text-xl tracking-tight">Oddzwonimy do Ciebie</DialogTitle>
-                    <DialogDescription>Zostaw numer telefonu, a oddzwonimy najszybciej, jak to możliwe.</DialogDescription>
+                    <DialogTitle className="text-xl tracking-tight">{copy.title}</DialogTitle>
+                    <DialogDescription>{copy.description}</DialogDescription>
                 </DialogHeader>
 
                 <CallbackForm key={session} />
@@ -161,7 +186,7 @@ export function CallbackDialog() {
                         className="absolute top-3 right-3 text-muted-foreground hover:text-foreground max-md:top-2 max-md:right-2 max-md:size-11"
                     >
                         <XIcon aria-hidden="true" />
-                        <span className="sr-only">Zamknij</span>
+                        <span className="sr-only">{copy.close}</span>
                     </Button>
                 </DialogClose>
             </DialogContent>

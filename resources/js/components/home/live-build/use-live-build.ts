@@ -1,5 +1,6 @@
 import { type RefObject, useEffect } from 'react';
 import { useCanAnimate, useReducedMotionPreference } from '@/components/motion/motion-env';
+import { type Locale, useLocale } from '@/lib/i18n';
 import { createPhotoReveal, type PhotoReveal } from './stage-photo';
 import {
     clamp01,
@@ -18,8 +19,8 @@ import {
     SCORE,
     scoreProgress,
     stepState,
+    LOCALIZED_TRACKS,
     type Track,
-    TRACKS,
     translate,
     urlCharacters,
 } from './timeline';
@@ -128,18 +129,20 @@ const lerp = (from: Point, to: Point, amount: number): Point => ({ x: from.x + (
  * Everything the stage shows at loop time `t`, written to the DOM: the TRACKS, the typing, the pipeline and step
  * states, the score, the photos and the cursor. Pure function of `t` + the measured layout.
  */
-function createStage(root: HTMLElement) {
+function createStage(root: HTMLElement, locale: Locale) {
     const write = createWriter();
     const query = <T extends Element = HTMLElement>(selector: string): T[] => Array.from(root.querySelectorAll<T>(selector));
     const one = (selector: string): HTMLElement | null => root.querySelector<HTMLElement>(selector);
 
     const tracked = query('[data-lb]').flatMap((element) => {
-        const track = TRACKS[element.dataset.lb ?? ''] as Track | undefined;
+        const track = LOCALIZED_TRACKS[locale][element.dataset.lb ?? ''] as Track | undefined;
 
         return track ? [{ element, track }] : [];
     });
     const url = one('[data-lb-url]');
+    const urlLength = url?.textContent?.length ?? 0;
     const urlCover = one('[data-lb-url-cover]');
+    const codeSchedule = CODE_SCHEDULE[locale];
     const codeRows = query('[data-lb-code-row]');
     const codeCovers = query('[data-lb-code]');
     const steps = query('[data-lb-step]');
@@ -258,9 +261,9 @@ function createStage(root: HTMLElement) {
                 write.style(url, 'opacity', '1');
             }
 
-            cover(urlCover, urlCharacters(t), url?.textContent?.length ?? 0);
+            cover(urlCover, urlCharacters(t, urlLength), urlLength);
 
-            CODE_SCHEDULE.forEach((line, index) => {
+            codeSchedule.forEach((line, index) => {
                 const typed = codeCharacters(t, line);
 
                 if (codeRows[index]) {
@@ -381,6 +384,7 @@ function createTilt(root: HTMLElement, scene: HTMLElement) {
 export function useLiveBuild(rootRef: RefObject<HTMLElement | null>): void {
     const reduced = useReducedMotionPreference();
     const canAnimate = useCanAnimate();
+    const locale = useLocale();
 
     useEffect(() => {
         const root = rootRef.current;
@@ -390,7 +394,7 @@ export function useLiveBuild(rootRef: RefObject<HTMLElement | null>): void {
             return;
         }
 
-        const stage = createStage(root);
+        const stage = createStage(root, locale);
         const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
         const tilt = finePointer ? createTilt(root, scene) : null;
         let t = 0;
@@ -453,5 +457,5 @@ export function useLiveBuild(rootRef: RefObject<HTMLElement | null>): void {
             root.removeAttribute('data-lb-live');
             root.removeAttribute('data-lb-running');
         };
-    }, [rootRef, reduced, canAnimate]);
+    }, [rootRef, reduced, canAnimate, locale]);
 }

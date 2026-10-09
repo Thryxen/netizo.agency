@@ -1,6 +1,7 @@
 import { Bot, Check } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useLiveLoop } from '@/components/motion/use-in-view-loop';
+import { localized, useCopy } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Appear, BentoTile, type BentoRivet, BentoTileText, type BentoService, liveVisualProps, tileGutterBottom, tileGutterTop, tileGutterX } from './bento-tile';
 
@@ -11,9 +12,19 @@ const ANSWER = 2;
 const TASK = 3;
 const RESET = 4;
 
-const QUESTION = 'Ile kosztuje wysyłka do Niemiec?';
-/** No-break spaces keep "39 zł" and "2–3 dni" together. */
-const ANSWER_WORDS = 'Wysyłka kosztuje 39\u00a0zł, dostawa w\u00a02–3\u00a0dni robocze.'.split(' ');
+/** No-break spaces keep "39 zł" / "PLN 39" and "2–3 dni" / "2–3 business days" together. */
+const COPY = localized({
+    pl: {
+        question: 'Ile kosztuje wysyłka do Niemiec?',
+        answerWords: 'Wysyłka kosztuje 39\u00a0zł, dostawa w\u00a02–3\u00a0dni robocze.'.split(' '),
+        task: 'Zadanie dodane do CRM',
+    },
+    en: {
+        question: 'How much is shipping to Germany?',
+        answerWords: 'Shipping is PLN\u00a039, with delivery in 2–3\u00a0business days.'.split(' '),
+        task: 'Task added to the CRM',
+    },
+});
 const WORD_MS = 125;
 
 /**
@@ -23,6 +34,8 @@ const WORD_MS = 125;
 export function AiTile({ service, rivets }: { service: BentoService; rivets?: BentoRivet[] }) {
     const { ref, step, active } = useLiveLoop<HTMLDivElement>(PHASE_MS, { staticStep: TASK });
     const at = (phase: number): boolean => step >= phase && step !== RESET;
+    const copy = useCopy(COPY);
+    const answerWords = copy.answerWords;
 
     return (
         <BentoTile rivets={rivets}>
@@ -30,7 +43,7 @@ export function AiTile({ service, rivets }: { service: BentoService; rivets?: Be
 
             <div ref={ref} {...liveVisualProps(active)} className={cn('mt-auto flex flex-col gap-2 pt-7', tileGutterX, tileGutterBottom)}>
                 <Appear show={step !== RESET} className="max-w-[88%] self-end rounded-lg rounded-br-[3px] bg-foreground px-3 py-2 text-xs leading-snug text-background">
-                    {QUESTION}
+                    {copy.question}
                 </Appear>
 
                 <div className="flex items-start gap-2">
@@ -39,7 +52,7 @@ export function AiTile({ service, rivets }: { service: BentoService; rivets?: Be
                     </Appear>
                     <div className="relative min-w-0">
                         <Appear show={at(ANSWER)} className="rounded-lg rounded-tl-[3px] bg-muted px-3 py-2 text-xs leading-snug">
-                            {ANSWER_WORDS.map((word, index) => (
+                            {answerWords.map((word, index) => (
                                 <span key={index}>
                                     <span
                                         data-show={at(ANSWER)}
@@ -48,7 +61,7 @@ export function AiTile({ service, rivets }: { service: BentoService; rivets?: Be
                                     >
                                         {word}
                                     </span>
-                                    {index < ANSWER_WORDS.length - 1 && ' '}
+                                    {index < answerWords.length - 1 && ' '}
                                 </span>
                             ))}
                         </Appear>
@@ -71,7 +84,7 @@ export function AiTile({ service, rivets }: { service: BentoService; rivets?: Be
 
                 <Appear show={at(TASK)} className="ml-8 inline-flex w-fit items-center gap-1.5 rounded-[3px] border px-2 py-1 text-[11px] text-muted-foreground">
                     <Check aria-hidden="true" className="size-3 text-foreground" strokeWidth={2.25} />
-                    Zadanie dodane do CRM
+                    {copy.task}
                 </Appear>
             </div>
         </BentoTile>

@@ -25,7 +25,7 @@ it('paginates the applications, 25 per page, newest first', function () {
             ->has('partners.data', 25)
             ->where('partners.total', 31)
             ->where('partners.data.0.id', $newest->id)
-            ->has('partners.data.0', fn (Assert $row) => $row->hasAll(['id', 'name', 'email', 'phone', 'partnerType', 'createdAt']))
+            ->has('partners.data.0', fn (Assert $row) => $row->hasAll(['id', 'locale', 'name', 'email', 'phone', 'partnerType', 'createdAt']))
             ->where('filters.sort', 'created_at')
             ->where('filters.direction', 'desc'));
 });
@@ -110,4 +110,19 @@ it('redirects guests away from the applications and changes nothing', function (
     $this->delete(route('admin.partners.destroy-many'), ['ids' => [$application->id]])->assertRedirect(route('admin.login'));
 
     assertDatabaseHas('partner_applications', ['id' => $application->id]);
+});
+
+it('shows the language of the site each partner came from', function () {
+    $polish = PartnerApplication::factory()->create(['created_at' => now()->subMinute()]);
+    $english = PartnerApplication::factory()->english()->create();
+
+    $this->get(route('admin.partners.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('partners.data.0.id', $english->id)
+            ->where('partners.data.0.locale', 'en')
+            ->where('partners.data.1.id', $polish->id)
+            ->where('partners.data.1.locale', 'pl'));
+
+    $this->get(route('admin.partners.show', $english))
+        ->assertInertia(fn (Assert $page) => $page->where('partner.locale', 'en'));
 });

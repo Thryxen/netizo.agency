@@ -5,10 +5,12 @@
     $statusCode = isset($exception) && method_exists($exception, 'getStatusCode') ? $exception->getStatusCode() : 500;
 @endphp
 
-@section('title', 'Coś poszło nie tak')
+@section('title', __('errors.pages.5xx.title'))
 @section('code', (string) $statusCode)
-@section('description', 'To błąd na naszym serwerze. Spróbuj ponownie za kilka minut.')
+@section('description')
+    {!! __('errors.pages.5xx.description') !!}
+@endsection
 
 @section('visual')
-    @include('errors::partials.window', ['icon' => 'server-crash', 'chipTitle' => 'Serwer nie odpowiada'])
+    @include('errors::partials.window', ['icon' => 'server-crash', 'chipTitle' => __('errors.pages.5xx.chip')])
 @endsection

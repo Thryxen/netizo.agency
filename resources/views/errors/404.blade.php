@@ -1,11 +1,11 @@
 @extends('errors::minimal')
 
-@section('title', 'Nie ma takiej strony')
+@section('title', __('errors.pages.404.title'))
 @section('code', '404')
 @section('description')
-    Adres mógł się zmienić albo strona została usunięta. Sprawdź, czy w&nbsp;adresie nie ma literówki.
+    {!! __('errors.pages.404.description') !!}
 @endsection
 
 @section('visual')
-    @include('errors::partials.window', ['icon' => 'file-x', 'chipTitle' => 'Pod tym adresem nic nie ma'])
+    @include('errors::partials.window', ['icon' => 'file-x', 'chipTitle' => __('errors.pages.404.chip')])
 @endsection

@@ -47,12 +47,13 @@ class CallbackRequestController extends Controller
     }
 
     /**
-     * @return array{id: int, phone: string, createdAt: string}
+     * @return array{id: int, locale: string, phone: string, createdAt: string}
      */
     private function rowProps(CallbackRequest $callback): array
     {
         return [
             'id' => $callback->id,
+            'locale' => $callback->locale,
             'phone' => $callback->phone,
             'createdAt' => $callback->created_at?->format('d.m.Y H:i') ?? '',
         ];

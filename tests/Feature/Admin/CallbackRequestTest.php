@@ -111,3 +111,15 @@ it('redirects guests away from the callback requests and changes nothing', funct
 
     assertDatabaseHas('callback_requests', ['id' => $callback->id]);
 });
+
+it('shows the language of the site each callback request came from', function () {
+    $polish = CallbackRequest::factory()->create(['created_at' => now()->subMinute()]);
+    $english = CallbackRequest::factory()->english()->create();
+
+    $this->get(route('admin.callbacks.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('callbacks.data.0.id', $english->id)
+            ->where('callbacks.data.0.locale', 'en')
+            ->where('callbacks.data.1.id', $polish->id)
+            ->where('callbacks.data.1.locale', 'pl'));
+});

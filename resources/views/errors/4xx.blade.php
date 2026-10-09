@@ -5,10 +5,12 @@
     $statusCode = isset($exception) && method_exists($exception, 'getStatusCode') ? $exception->getStatusCode() : 400;
 @endphp
 
-@section('title', 'Nie udało się otworzyć strony')
+@section('title', __('errors.pages.4xx.title'))
 @section('code', (string) $statusCode)
-@section('description', 'Nie możemy obsłużyć tego zapytania. Sprawdź adres strony.')
+@section('description')
+    {!! __('errors.pages.4xx.description') !!}
+@endsection
 
 @section('visual')
-    @include('errors::partials.window', ['icon' => 'ban', 'chipTitle' => 'Zapytanie odrzucone'])
+    @include('errors::partials.window', ['icon' => 'ban', 'chipTitle' => __('errors.pages.4xx.chip')])
 @endsection

@@ -14,7 +14,10 @@ class PartnerApplicationController extends Controller
      */
     public function store(StorePartnerApplicationRequest $request, DiscordWebhookService $discord): RedirectResponse
     {
-        $data = $request->validated();
+        $data = [
+            'locale' => app()->getLocale(),
+            ...$request->validated(),
+        ];
 
         PartnerApplication::create($data);
 

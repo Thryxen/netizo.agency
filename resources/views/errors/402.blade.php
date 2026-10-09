@@ -1,11 +1,11 @@
 @extends('errors::minimal')
 
-@section('title', 'Wymagana płatność')
+@section('title', __('errors.pages.402.title'))
 @section('code', '402')
 @section('description')
-    Dostęp do tej strony wymaga opłaty. Jeśli to pomyłka, skontaktuj się z&nbsp;nami.
+    {!! __('errors.pages.402.description') !!}
 @endsection
 
 @section('visual')
-    @include('errors::partials.window', ['scene' => 'locked', 'icon' => 'credit-card', 'chipTitle' => 'Treść płatna'])
+    @include('errors::partials.window', ['scene' => 'locked', 'icon' => 'credit-card', 'chipTitle' => __('errors.pages.402.chip')])
 @endsection

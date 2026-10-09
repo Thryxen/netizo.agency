@@ -33,7 +33,7 @@ class ProjectBriefController extends Controller
      */
     public function store(StoreProjectBriefRequest $request, DiscordWebhookService $discord): RedirectResponse
     {
-        $data = [];
+        $data = ['locale' => app()->getLocale()];
 
         foreach (self::ARRAY_FIELDS as $field) {
             $data[$field] = array_values(array_unique($request->validated($field) ?? []));

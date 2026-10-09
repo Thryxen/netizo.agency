@@ -179,3 +179,60 @@ it('prerenders the maintenance page outside an HTTP request', function () {
         ->not->toContain('Sekcje strony')
         ->not->toContain('@font-face');
 });
+
+it('renders a missing page under /en in English, linking the English site', function () {
+    $response = $this->get('/en/this-page-does-not-exist')
+        ->assertNotFound()
+        ->assertSee('<title>404 – Page not found | Netizo</title>', false)
+        ->assertSee('The address may have changed or the page may have been removed. Check the address for typos.')
+        ->assertSee('<span class="chip__title">Nothing at this address</span>', false)
+        ->assertSee('<span class="sr-only">Error 404. </span>', false)
+        ->assertSee('<a class="logo-link" href="/en" aria-label="Netizo – home page">', false)
+        ->assertSee('<a class="button button--primary" href="/en">Home page</a>', false)
+        ->assertSee('<a class="button button--outline" href="/en#contact">Contact us</a>', false)
+        ->assertSee('<nav class="site-nav" aria-label="Page sections">', false)
+        ->assertSeeInOrder(['href="/en#services"', 'href="/en#projects"', 'href="/en#process"', 'href="/en#faq"', 'href="/en#contact"'], false)
+        ->assertSee('Client portal<span class="sr-only"> (opens in a new tab)</span>', false)
+        ->assertSee('You can also email us at <a href="mailto:kontakt@netizo.pl">kontakt@netizo.pl</a> or call', false)
+        ->assertSee('© '.date('Y').' Netizo. All rights reserved.')
+        ->assertDontSee('Nie ma takiej strony')
+        ->assertDontSee('Wszelkie prawa zastrzeżone');
+
+    expect(errorPageHtmlTag($response->getContent()))->toBe('<html lang="en">');
+});
+
+it('keeps Polish error pages for addresses that only start like the English site', function () {
+    expect(errorPageHtmlTag($this->get('/english-page')->assertNotFound()->getContent()))->toBe('<html lang="pl">');
+});
+
+it('renders each error page in English under /en', function (int $status, string $title, string $primaryAction, string $chipTitle) {
+    Route::middleware('web')->get('/en/_error-probe/{status}', fn (int $status) => abort($status));
+
+    $response = $this->get("/en/_error-probe/{$status}")
+        ->assertStatus($status)
+        ->assertSee("<title>{$status} – {$title} | Netizo</title>", false)
+        ->assertSee(">{$primaryAction}</a>", false)
+        ->assertSee("<span class=\"chip__title\">{$chipTitle}</span>", false);
+
+    expect(errorPageHtmlTag($response->getContent()))->toBe('<html lang="en">');
+})->with([
+    '401' => [401, 'Login required', 'Home page', 'Members-only page'],
+    '402' => [402, 'Payment required', 'Home page', 'Paid content'],
+    '403' => [403, 'Access denied', 'Home page', 'Access blocked'],
+    '419' => [419, 'Session expired', 'Back to the form', 'Form expired'],
+    '429' => [429, 'Too many attempts', 'Home page', 'Wait a minute'],
+    '500' => [500, 'Something went wrong', 'Home page', 'Server not responding'],
+    '503' => [503, 'Maintenance in progress', 'Reload the page', 'Update in progress'],
+    '410' => [410, 'Couldn’t open the page', 'Home page', 'Request rejected'],
+    '502' => [502, 'Something went wrong', 'Home page', 'Server not responding'],
+]);
+
+it('sends an English visitor back to the English home page when the expired form is unknown', function () {
+    Route::middleware('web')->get('/en/_error-probe/{status}', fn (int $status) => abort($status));
+
+    $this->withHeader('Referer', 'https://example.com/form')
+        ->get('/en/_error-probe/419')
+        ->assertSee('href="/en">Back to the form', false)
+        ->assertSee('href="/en#contact">Contact us', false)
+        ->assertDontSee('example.com');
+});

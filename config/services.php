@@ -43,4 +43,12 @@ return [
         'role_id' => env('DISCORD_ROLE_ID'),
     ],
 
+    /*
+     * The API key is read by the AI SDK (config/ai.php in laravel/ai: OPENROUTER_API_KEY). The model translates
+     * project copy into English in the admin panel (App\Ai\Agents\ProjectTranslator).
+     */
+    'openrouter' => [
+        'translation_model' => env('OPENROUTER_TRANSLATION_MODEL', 'anthropic/claude-haiku-5.5'),
+    ],
+
 ];

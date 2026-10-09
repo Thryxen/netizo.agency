@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\LocalizedRoutes;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -45,7 +46,11 @@ class HandleInertiaRequests extends Middleware
         $shared = parent::share($request);
 
         if (! $this->isAdminRequest($request)) {
-            return $shared;
+            return [
+                ...$shared,
+                'locale' => app()->getLocale(),
+                'alternates' => LocalizedRoutes::alternates($request->route()?->getName()),
+            ];
         }
 
         return [

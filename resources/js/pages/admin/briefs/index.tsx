@@ -6,6 +6,7 @@ import { AdminLayout } from '@/components/admin/admin-layout';
 import { briefLabel, briefLabels } from '@/components/admin/brief-labels';
 import { BulkBar } from '@/components/admin/bulk-bar';
 import { ConfirmDeleteDialog } from '@/components/admin/confirm-delete-dialog';
+import { LeadLocaleBadge } from '@/components/admin/lead-locale';
 import { ListToolbar } from '@/components/admin/list-toolbar';
 import { Pagination } from '@/components/admin/pagination';
 import { SortHeader } from '@/components/admin/sort-header';
@@ -95,8 +96,8 @@ export default function BriefsIndex({ briefs, filters }: Props) {
                 hasActiveFilters={hasActiveFilters}
                 onReset={() => update({ search: '', from: '', until: '', budget: '', timeline: '' })}
             >
-                <OptionFilter id="brief-budget" label="Budżet" value={values.budget} options={budgetOptions} onChange={(budget) => update({ budget })} />
-                <OptionFilter id="brief-timeline" label="Termin" value={values.timeline} options={timelineOptions} onChange={(timeline) => update({ timeline })} />
+                <OptionFilter id="brief-budget" label="Budżet" value={values.budget} options={budgetOptions.pl} onChange={(budget) => update({ budget })} />
+                <OptionFilter id="brief-timeline" label="Termin" value={values.timeline} options={timelineOptions.pl} onChange={(timeline) => update({ timeline })} />
             </ListToolbar>
 
             <BulkBar count={selected.length} onDelete={() => setBulkOpen(true)} />
@@ -140,6 +141,7 @@ export default function BriefsIndex({ briefs, filters }: Props) {
                                         <Link href={adminRoutes.briefs.show(brief.id)} className="hover:underline">
                                             {brief.name}
                                         </Link>
+                                        <LeadLocaleBadge locale={brief.locale} />
                                     </TableCell>
                                     <TableCell>{brief.email}</TableCell>
                                     <TableCell className="text-muted-foreground">{brief.company ?? '—'}</TableCell>

@@ -4,7 +4,22 @@ import { FaqScene } from '@/components/home/scenes/faq-scene';
 import { Section, SectionHeading } from '@/components/home/section';
 import { Accordion, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { localized, useCopy } from '@/lib/i18n';
+import { useHomeSections } from '@/lib/sections';
 import type { FaqItem } from '@/types/home';
+
+const COPY = localized({
+    pl: {
+        title: 'Częste pytania',
+        lead: 'Nie ma tu Twojego pytania? Napisz, odpowiemy w ciągu 24 godzin.',
+        write: 'Napisz do nas',
+    },
+    en: {
+        title: 'Frequently asked questions',
+        lead: 'Don’t see your question here? Write to us and we’ll reply within 24 hours.',
+        write: 'Write to us',
+    },
+});
 
 /**
  * From lg: heading + CTA on the left with the photo scene under them (a client asking, Netizo answering: what "Napisz
@@ -14,19 +29,16 @@ import type { FaqItem } from '@/types/home';
  */
 export function FaqSection({ faq }: { faq: FaqItem[] }) {
     const { openContact } = useHomeUi();
+    const copy = useCopy(COPY);
+    const sectionId = useHomeSections().faq;
 
     return (
-        <Section id="faq" labelledBy="faq-heading">
+        <Section id={sectionId} labelledBy={`${sectionId}-heading`}>
             <div className="grid gap-12 lg:grid-cols-12 lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-10">
                 <div className="lg:col-span-4">
-                    <SectionHeading
-                        id="faq-heading"
-                        title="Częste pytania"
-                        lead="Nie ma tu Twojego pytania? Napisz, odpowiemy w ciągu 24 godzin."
-                        className="mb-0 md:mb-0"
-                    >
+                    <SectionHeading id={`${sectionId}-heading`} title={copy.title} lead={copy.lead} className="mb-0 md:mb-0">
                         <Button variant="outline" className="mt-8 max-md:h-11" onClick={() => openContact('quick')}>
-                            Napisz do nas
+                            {copy.write}
                         </Button>
                     </SectionHeading>
                 </div>

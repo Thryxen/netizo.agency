@@ -46,6 +46,13 @@ export type AdminProject = AdminProjectRow & {
     metrics: { value: string; label: string }[];
     challenges: string[];
     solutions: string[];
+    /** English copy for /en; empty strings and lists fall back to the Polish copy there. */
+    categoryEn: string;
+    descriptionEn: string;
+    fullDescriptionEn: string;
+    metricsEn: { value: string; label: string }[];
+    challengesEn: string[];
+    solutionsEn: string[];
 };
 
 export type AdminClient = {
@@ -57,8 +64,12 @@ export type AdminClient = {
     updatedAt: string;
 };
 
+/** Language of the site a lead came from (`/` or `/en`). */
+export type LeadLocale = 'pl' | 'en';
+
 export type AdminMessageRow = {
     id: number;
+    locale: LeadLocale;
     name: string;
     email: string;
     subject: string | null;
@@ -70,6 +81,7 @@ export type AdminMessage = AdminMessageRow & { message: string };
 
 export type AdminBriefRow = {
     id: number;
+    locale: LeadLocale;
     name: string;
     email: string;
     company: string | null;
@@ -97,10 +109,11 @@ export type AdminBrief = AdminBriefRow & {
     notes: string | null;
 };
 
-export type AdminCallbackRow = { id: number; phone: string; createdAt: string };
+export type AdminCallbackRow = { id: number; locale: LeadLocale; phone: string; createdAt: string };
 
 export type AdminPartnerRow = {
     id: number;
+    locale: LeadLocale;
     name: string;
     email: string;
     phone: string | null;

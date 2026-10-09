@@ -54,12 +54,13 @@ class PartnerApplicationController extends Controller
     }
 
     /**
-     * @return array{id: int, name: string, email: string, phone: string|null, partnerType: string, createdAt: string}
+     * @return array{id: int, locale: string, name: string, email: string, phone: string|null, partnerType: string, createdAt: string}
      */
     private function rowProps(PartnerApplication $partner): array
     {
         return [
             'id' => $partner->id,
+            'locale' => $partner->locale,
             'name' => $partner->name,
             'email' => $partner->email,
             'phone' => $partner->phone,

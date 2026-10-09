@@ -1,9 +1,9 @@
 @extends('errors::minimal')
 
-@section('title', 'Sesja wygasła')
+@section('title', __('errors.pages.419.title'))
 @section('code', '419')
 @section('description')
-    Formularz był otwarty zbyt długo i&nbsp;ze względów bezpieczeństwa stracił ważność. Otwórz go ponownie i&nbsp;wyślij jeszcze raz.
+    {!! __('errors.pages.419.description') !!}
 @endsection
 
 {{--
@@ -12,16 +12,17 @@
 --}}
 @section('actions')
     @php
-        $formUrl = rescue(function (): string {
+        $homeUrl = __('errors.home_url');
+        $formUrl = rescue(function () use ($homeUrl): string {
             $referer = (string) request()->headers->get('referer', '');
 
-            return str_starts_with($referer, request()->getSchemeAndHttpHost().'/') ? $referer : '/';
-        }, '/', false);
+            return str_starts_with($referer, request()->getSchemeAndHttpHost().'/') ? $referer : $homeUrl;
+        }, $homeUrl, false);
     @endphp
-    <a class="button button--primary" href="{{ $formUrl }}">Wróć do formularza</a>
-    <a class="button button--outline" href="/#kontakt">Napisz do nas</a>
+    <a class="button button--primary" href="{{ $formUrl }}">{{ __('errors.back_to_form') }}</a>
+    <a class="button button--outline" href="{{ __('errors.contact_url') }}">{{ __('errors.contact') }}</a>
 @endsection
 
 @section('visual')
-    @include('errors::partials.window', ['scene' => 'form', 'icon' => 'clock', 'chipTitle' => 'Formularz wygasł'])
+    @include('errors::partials.window', ['scene' => 'form', 'icon' => 'clock', 'chipTitle' => __('errors.pages.419.chip')])
 @endsection

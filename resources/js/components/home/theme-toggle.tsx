@@ -1,7 +1,13 @@
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppearance } from '@/hooks/use-appearance';
+import { localized, useCopy } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+
+const COPY = localized({
+    pl: { dark: 'Włącz ciemny motyw', light: 'Włącz jasny motyw' },
+    en: { dark: 'Switch to dark theme', light: 'Switch to light theme' },
+});
 
 /**
  * One click switches light ↔ dark (saved for the next visits). The icon shows what the click does: a moon on the
@@ -10,11 +16,12 @@ import { cn } from '@/lib/utils';
  */
 export function ThemeToggle({ className }: { className?: string }) {
     const { toggleAppearance } = useAppearance();
+    const copy = useCopy(COPY);
 
     return (
         <Button variant="ghost" size="icon" onClick={toggleAppearance} className={cn('relative overflow-hidden', className)}>
-            <span className="sr-only dark:hidden">Włącz ciemny motyw</span>
-            <span className="sr-only hidden dark:inline">Włącz jasny motyw</span>
+            <span className="sr-only dark:hidden">{copy.dark}</span>
+            <span className="sr-only hidden dark:inline">{copy.light}</span>
             <Moon
                 aria-hidden="true"
                 className="transition-[rotate,scale,opacity] duration-300 ease-out motion-reduce:transition-none dark:scale-50 dark:-rotate-90 dark:opacity-0"

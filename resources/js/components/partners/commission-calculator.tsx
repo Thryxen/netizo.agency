@@ -1,19 +1,56 @@
 import { cubicBezier } from 'motion/react';
 import { Plus, X } from 'lucide-react';
-import { type CSSProperties, type RefObject, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { bleedClassName, gutterClassName, Rivet, Section, SectionHeading } from '@/components/home/section';
 import { motionTokens, useCanAnimate, useEntrance } from '@/components/motion';
 import { Button } from '@/components/ui/button';
+import { formatPln, localized, useCopy, useLocale } from '@/lib/i18n';
+import { usePartnerSections } from '@/lib/sections';
 import { cn } from '@/lib/utils';
-import { commission, formatPln, INITIAL_BASKET, MAX_FIRMS, PROJECT_PRESETS, type ProjectPreset } from './partner-data';
+import { commission, INITIAL_BASKET, MAX_FIRMS, PROJECT_PRESETS, type ProjectPreset, type ProjectPresetId } from './partner-data';
 
 type BasketItem = { key: number; preset: ProjectPreset; added: boolean };
 
-const presetById = (id: string): ProjectPreset => PROJECT_PRESETS.find((preset) => preset.id === id) ?? PROJECT_PRESETS[0];
+const presetById = (presets: ProjectPreset[], id: ProjectPresetId): ProjectPreset => presets.find((preset) => preset.id === id) ?? presets[0];
 
-const MAX_VALUE = Math.max(...PROJECT_PRESETS.map((preset) => preset.value));
+const MAX_VALUE = Math.max(...PROJECT_PRESETS.pl.map((preset) => preset.value));
 
 const easeOutExpo = cubicBezier(...motionTokens.ease);
+
+const COPY = localized({
+    pl: {
+        title: 'Policz swoją prowizję',
+        lead: 'Dodaj firmy, które możesz nam polecić. Kwoty to typowe wyceny z naszych realizacji, ostateczna cena zależy od zakresu projektu.',
+        addHeading: 'Dodaj poleconą firmę',
+        add: (label: string, price: string) => `Dodaj: ${label}, ${price}`,
+        remove: (label: string, price: string) => `Usuń: ${label}, ${price}`,
+        full: 'To maksimum kalkulatora. W programie limitu nie ma.',
+        removeHint: 'Kliknij słupek na wykresie, żeby go usunąć.',
+        clear: 'Wyczyść',
+        empty: 'Dodaj pierwszą firmę, żeby zobaczyć swoją prowizję.',
+        legend: 'Każdy słupek to jedno zamówienie. Wypełniona część to Twoje 15%.',
+        noFirms: 'Brak poleconych firm.',
+        summary: (count: number, orders: string) => `${firmsLabel(count)}, zamówienia za ${orders} netto.`,
+        total: 'Twoja prowizja',
+        followUp: 'Do tego 15% od kolejnych zamówień tych firm przez 12 miesięcy, na przykład za rozbudowę albo opiekę techniczną.',
+    },
+    en: {
+        title: 'Calculate your commission',
+        lead: 'Add the companies you could refer to us. The amounts are typical quotes from our projects; the final price depends on the project’s scope.',
+        addHeading: 'Add a referred company',
+        add: (label, price) => `Add: ${label}, ${price}`,
+        remove: (label, price) => `Remove: ${label}, ${price}`,
+        full: 'That’s the calculator’s maximum. The program itself has no limit.',
+        removeHint: 'Click a bar in the chart to remove it.',
+        clear: 'Clear',
+        empty: 'Add your first company to see your commission.',
+        legend: 'Each bar is one order. The filled part is your 15%.',
+        noFirms: 'No referred companies yet.',
+        summary: (count, orders) => `${count === 1 ? '1 company' : `${count} companies`}, orders worth ${orders} net.`,
+        total: 'Your commission',
+        followUp: 'Plus 15% of these companies’ further orders for 12 months, for example for extensions or technical care.',
+    },
+});
 
 /** "1 firma", "3 firmy", "5 firm", "22 firmy". */
 function firmsLabel(count: number): string {
@@ -100,12 +137,18 @@ function useTweenedText(ref: RefObject<HTMLElement | null>, value: number, forma
 }
 
 /**
- * Kalkulator (#kalkulator): add the firms you could refer, one project each; every firm is a column as tall as its
+ * Kalkulator (#kalkulator, #calculator): add the firms you could refer, one project each; every firm is a column as tall as its
  * order with the partner's 15% as its filled cap, and the total commission counts to its new value. Clicking a
  * column removes it. Typical quotes come from the home page's price ranges.
  */
 export function CommissionCalculator() {
-    const [items, setItems] = useState<BasketItem[]>(() => INITIAL_BASKET.map((id, index) => ({ key: index, preset: presetById(id), added: false })));
+    const locale = useLocale();
+    const copy = useCopy(COPY);
+    const presets = PROJECT_PRESETS[locale];
+    const sectionId = usePartnerSections().calculator;
+    const [items, setItems] = useState<BasketItem[]>(() =>
+        INITIAL_BASKET.map((id, index) => ({ key: index, preset: presetById(presets, id), added: false })),
+    );
     const nextKeyRef = useRef(INITIAL_BASKET.length);
     const chartRef = useRef<HTMLDivElement>(null);
     const totalRef = useRef<HTMLSpanElement>(null);
@@ -117,7 +160,9 @@ export function CommissionCalculator() {
     // Each column's commission sits above it while the columns are wide enough for it.
     const labelClassName = items.length <= 6 ? '' : items.length <= 9 ? 'max-sm:hidden' : 'hidden';
 
-    useTweenedText(totalRef, total, formatPln);
+    const format = useCallback((value: number) => formatPln(value, locale), [locale]);
+
+    useTweenedText(totalRef, total, format);
 
     const add = (preset: ProjectPreset): void => {
         if (full) {
@@ -132,13 +177,9 @@ export function CommissionCalculator() {
     const remove = (key: number): void => setItems((current) => current.filter((item) => item.key !== key));
 
     return (
-        <Section id="kalkulator" labelledBy="kalkulator-heading" containerClassName="pb-0 md:pb-0">
+        <Section id={sectionId} labelledBy={`${sectionId}-heading`} containerClassName="pb-0 md:pb-0">
             <style>{CALCULATOR_CSS}</style>
-            <SectionHeading
-                id="kalkulator-heading"
-                title="Policz swoją prowizję"
-                lead="Dodaj firmy, które możesz nam polecić. Kwoty to typowe wyceny z naszych realizacji, ostateczna cena zależy od zakresu projektu."
-            />
+            <SectionHeading id={`${sectionId}-heading`} title={copy.title} lead={copy.lead} />
 
             <div className={cn('relative grid gap-px border-t border-border bg-border lg:grid-cols-12', bleedClassName)}>
                 <Rivet side="left" />
@@ -146,15 +187,15 @@ export function CommissionCalculator() {
 
                 <div className={cn('bg-background py-8 md:py-10 lg:col-span-5', gutterClassName)}>
                     <h3 id="calculator-add-heading" className="text-sm font-medium">
-                        Dodaj poleconą firmę
+                        {copy.addHeading}
                     </h3>
                     <ul aria-labelledby="calculator-add-heading" className="mt-4 grid border-t border-border">
-                        {PROJECT_PRESETS.map((preset) => (
+                        {presets.map((preset) => (
                             <li key={preset.id} className="border-b border-border">
                                 <button
                                     type="button"
                                     disabled={full}
-                                    aria-label={`Dodaj: ${preset.label}, ${formatPln(preset.value)}`}
+                                    aria-label={copy.add(preset.label, format(preset.value))}
                                     onClick={() => add(preset)}
                                     className="group flex min-h-14 w-full items-center gap-3 py-3 text-left transition-colors outline-none hover:bg-accent/60 focus-visible:bg-accent/60 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50 sm:-mx-2 sm:w-[calc(100%+1rem)] sm:px-2"
                                 >
@@ -162,18 +203,18 @@ export function CommissionCalculator() {
                                         <Plus aria-hidden="true" className="size-4" />
                                     </span>
                                     <span className="flex-1 font-medium">{preset.label}</span>
-                                    <span className="text-sm text-muted-foreground tabular-nums">{formatPln(preset.value)}</span>
+                                    <span className="text-sm text-muted-foreground tabular-nums">{format(preset.value)}</span>
                                 </button>
                             </li>
                         ))}
                     </ul>
                     <div className="mt-4 flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-2">
                         <p className="text-sm text-muted-foreground">
-                            {full ? 'To maksimum kalkulatora. W programie limitu nie ma.' : 'Kliknij słupek na wykresie, żeby go usunąć.'}
+                            {full ? copy.full : copy.removeHint}
                         </p>
                         {items.length > 0 && (
                             <Button type="button" variant="ghost" size="sm" className="-mr-2 max-md:h-11" onClick={() => setItems([])}>
-                                Wyczyść
+                                {copy.clear}
                             </Button>
                         )}
                     </div>
@@ -188,7 +229,7 @@ export function CommissionCalculator() {
                     >
                         {items.length === 0 && (
                             <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-muted-foreground">
-                                Dodaj pierwszą firmę, żeby zobaczyć swoją prowizję.
+                                {copy.empty}
                             </p>
                         )}
                         {items.map((item, index) => (
@@ -197,8 +238,8 @@ export function CommissionCalculator() {
                                 type="button"
                                 data-calc-column=""
                                 data-added={item.added ? '' : undefined}
-                                aria-label={`Usuń: ${item.preset.label}, ${formatPln(item.preset.value)}`}
-                                title={`${item.preset.label}, ${formatPln(item.preset.value)}`}
+                                aria-label={copy.remove(item.preset.label, format(item.preset.value))}
+                                title={`${item.preset.label}, ${format(item.preset.value)}`}
                                 onClick={() => remove(item.key)}
                                 style={{ height: `${(item.preset.value / MAX_VALUE) * 100}%`, '--column-index': item.added ? 0 : index } as CSSProperties}
                                 className="group relative flex max-w-14 min-w-0 flex-1 rounded-t-[4px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
@@ -208,7 +249,7 @@ export function CommissionCalculator() {
                                     aria-hidden="true"
                                     className={cn('absolute -inset-x-4 bottom-full mb-1.5 text-center text-[11px] font-medium whitespace-nowrap tabular-nums', labelClassName)}
                                 >
-                                    {formatPln(commission(item.preset.value))}
+                                    {format(commission(item.preset.value))}
                                 </span>
                                 <span data-calc-bar="" className="flex size-full flex-col">
                                     <span data-calc-fade="" className="block h-[15%] min-h-1.5 rounded-t-[4px] bg-foreground" />
@@ -219,24 +260,24 @@ export function CommissionCalculator() {
                             </button>
                         ))}
                     </div>
-                    <p className="mt-3 text-sm text-muted-foreground">Każdy słupek to jedno zamówienie. Wypełniona część to Twoje 15%.</p>
+                    <p className="mt-3 text-sm text-muted-foreground">{copy.legend}</p>
 
                     <div className="mt-8 flex flex-wrap items-end justify-between gap-x-8 gap-y-4 border-t border-border pt-6 lg:mt-auto">
                         <p className="max-w-[28ch] text-pretty text-muted-foreground">
-                            {items.length === 0 ? 'Brak poleconych firm.' : `${firmsLabel(items.length)}, zamówienia za ${formatPln(orders)} netto.`}
+                            {items.length === 0 ? copy.noFirms : copy.summary(items.length, format(orders))}
                         </p>
                         <p className="flex flex-col items-start gap-1 sm:items-end">
-                            <span className="text-sm text-muted-foreground">Twoja prowizja</span>
+                            <span className="text-sm text-muted-foreground">{copy.total}</span>
                             <output aria-live="polite" className="text-[clamp(2.5rem,6vw,3.75rem)] leading-none font-semibold tracking-[-0.04em] tabular-nums">
-                                <span className="sr-only">{formatPln(total)}</span>
+                                <span className="sr-only">{format(total)}</span>
                                 <span ref={totalRef} aria-hidden="true">
-                                    {formatPln(total)}
+                                    {format(total)}
                                 </span>
                             </output>
                         </p>
                     </div>
                     <p className="mt-4 text-sm leading-relaxed text-pretty text-muted-foreground">
-                        Do tego 15% od kolejnych zamówień tych firm przez 12 miesięcy, na przykład za rozbudowę albo opiekę techniczną.
+                        {copy.followUp}
                     </p>
                 </div>
             </div>

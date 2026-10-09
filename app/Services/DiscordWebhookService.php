@@ -222,9 +222,20 @@ class DiscordWebhookService
             ['name' => 'Preferowany kontakt', 'value' => $contactPref ?: '-', 'inline' => true],
             ['name' => 'Skąd o nas', 'value' => $sourceLabels[$data['source']] ?? $data['source'] ?: '-', 'inline' => true],
             ['name' => 'Uwagi', 'value' => $data['notes'] ?: '-', 'inline' => false],
+            $this->languageField($data['locale'] ?? 'pl'),
         ];
 
         return $this->send($this->webhookBrief, 'Nowy Brief Projektu', $fields, 0x10B981);
+    }
+
+    /**
+     * The language of the site the lead came from, so the reply goes out in it.
+     *
+     * @return array{name: string, value: string, inline: bool}
+     */
+    protected function languageField(string $locale): array
+    {
+        return ['name' => 'Język', 'value' => $locale === 'en' ? 'angielski' : 'polski', 'inline' => true];
     }
 
     protected function mapArray(array $values, array $labels): string
@@ -250,15 +261,17 @@ class DiscordWebhookService
             ['name' => 'Email', 'value' => $data['email'], 'inline' => true],
             ['name' => 'Temat', 'value' => $subject, 'inline' => true],
             ['name' => 'Wiadomość', 'value' => $data['message'], 'inline' => false],
+            $this->languageField($data['locale'] ?? 'pl'),
         ];
 
         return $this->send($this->webhookContact, 'Nowa wiadomość kontaktowa', $fields, 0x3B82F6);
     }
 
-    public function sendCallbackRequest(string $phone): bool
+    public function sendCallbackRequest(string $phone, string $locale = 'pl'): bool
     {
         $fields = [
             ['name' => 'Numer telefonu', 'value' => $phone, 'inline' => false],
+            $this->languageField($locale),
         ];
 
         return $this->send($this->webhookCallback, 'Prośba o telefon', $fields, 0xF59E0B);
@@ -281,6 +294,7 @@ class DiscordWebhookService
             ['name' => 'Telefon', 'value' => ($data['phone'] ?? null) ?: '-', 'inline' => true],
             ['name' => 'Kim jest', 'value' => $typeLabels[$data['partner_type']] ?? $data['partner_type'], 'inline' => true],
             ['name' => 'Kogo chce polecać', 'value' => ($data['message'] ?? null) ?: '-', 'inline' => false],
+            $this->languageField($data['locale'] ?? 'pl'),
         ];
 
         return $this->send($this->webhookPartner ?? '', 'Nowe zgłoszenie do programu partnerskiego', $fields, 0x8B5CF6);

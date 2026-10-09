@@ -74,3 +74,42 @@ it('rate limits submissions to 10 per minute per IP', function () {
 
     assertDatabaseCount('newsletter_subscribers', 10);
 });
+
+it('subscribes an address from the English site with its language', function () {
+    $this->from('/en')
+        ->post(route('en.newsletter-subscriptions.store'), ['email' => 'john@company.com'])
+        ->assertRedirect('/en')
+        ->assertSessionHasNoErrors();
+
+    expect(route('en.newsletter-subscriptions.store'))->toEndWith('/en/newsletter');
+
+    assertDatabaseHas('newsletter_subscribers', ['email' => 'john@company.com', 'locale' => 'en']);
+});
+
+it('stores the language of an address subscribed on the Polish site', function () {
+    $this->from('/')
+        ->post(route('newsletter-subscriptions.store'), ['email' => 'jan@firma.pl'])
+        ->assertSessionHasNoErrors();
+
+    expect(NewsletterSubscriber::sole()->locale)->toBe('pl');
+});
+
+it('rejects invalid input on the English site with an English message', function (array $payload, string $message) {
+    $this->from('/en')
+        ->post(route('en.newsletter-subscriptions.store'), $payload)
+        ->assertRedirect('/en')
+        ->assertSessionHasErrors(['email' => $message]);
+
+    assertDatabaseCount('newsletter_subscribers', 0);
+})->with([
+    'missing email' => [[], 'Please enter your email address.'],
+    'invalid email' => [['email' => 'not-an-email'], 'Please enter a valid email address.'],
+]);
+
+it('tells an English visitor the address is already subscribed', function () {
+    NewsletterSubscriber::create(['email' => 'john@company.com', 'subscribed_at' => now()]);
+
+    $this->from('/en')
+        ->post(route('en.newsletter-subscriptions.store'), ['email' => 'john@company.com'])
+        ->assertSessionHasErrors(['email' => 'This address is already subscribed to the newsletter.']);
+});

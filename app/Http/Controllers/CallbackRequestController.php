@@ -15,12 +15,14 @@ class CallbackRequestController extends Controller
     public function store(StoreCallbackRequestRequest $request, DiscordWebhookService $discord): RedirectResponse
     {
         $phone = $request->validated('phone');
+        $locale = app()->getLocale();
 
         CallbackRequest::create([
+            'locale' => $locale,
             'phone' => $phone,
         ]);
 
-        $discord->sendCallbackRequest($phone);
+        $discord->sendCallbackRequest($phone, $locale);
 
         return back();
     }

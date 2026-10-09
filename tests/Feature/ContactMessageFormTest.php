@@ -154,3 +154,57 @@ it('rate limits submissions to 10 per minute per IP', function () {
 
     assertDatabaseCount('contact_messages', 12);
 });
+
+it('stores the language of the Polish site and tells Discord', function () {
+    $this->from('/')
+        ->post(route('contact-messages.store'), validContactMessagePayload())
+        ->assertSessionHasNoErrors();
+
+    expect(ContactMessage::sole()->locale)->toBe('pl');
+
+    Http::assertSent(fn (Request $request): bool => collect($request['embeds'][0]['fields'])->pluck('value', 'name')['Język'] === 'polski');
+});
+
+it('stores a message sent from the English site with its language', function () {
+    $this->from('/en')
+        ->post(route('en.contact-messages.store'), validContactMessagePayload())
+        ->assertRedirect('/en')
+        ->assertSessionHasNoErrors();
+
+    expect(route('en.contact-messages.store'))->toEndWith('/en/contact');
+
+    assertDatabaseHas('contact_messages', ['email' => 'jan@firma.pl', 'locale' => 'en']);
+
+    Http::assertSentCount(1);
+    Http::assertSent(fn (Request $request): bool => collect($request['embeds'][0]['fields'])->pluck('value', 'name')['Język'] === 'angielski');
+});
+
+it('rejects invalid input on the English site with an English message', function (array $overrides, string $field, string $message) {
+    $this->from('/en')
+        ->post(route('en.contact-messages.store'), validContactMessagePayload($overrides))
+        ->assertRedirect('/en')
+        ->assertSessionHasErrors([$field => $message]);
+
+    assertDatabaseCount('contact_messages', 0);
+    Http::assertNothingSent();
+})->with([
+    'missing name' => [['name' => ''], 'name', 'Please enter your full name.'],
+    'invalid email' => [['email' => 'not-an-email'], 'email', 'Please enter a valid email address.'],
+    'unknown subject' => [['subject' => 'spam'], 'subject', 'Please choose a subject from the list.'],
+    'too short message' => [['message' => 'Short'], 'message', 'Your message must be at least 10 characters long.'],
+]);
+
+it('rate limits the English site with an English message', function () {
+    foreach (range(1, 10) as $attempt) {
+        $this->from('/en')
+            ->post(route('en.contact-messages.store'), validContactMessagePayload())
+            ->assertSessionHasNoErrors();
+    }
+
+    $this->from('/en')
+        ->post(route('en.contact-messages.store'), validContactMessagePayload())
+        ->assertRedirect('/en')
+        ->assertSessionHasErrors(['form' => 'Too many attempts. Please try again in a minute.']);
+
+    assertDatabaseCount('contact_messages', 10);
+});

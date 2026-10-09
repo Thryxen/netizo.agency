@@ -2,6 +2,7 @@ import { Appear } from '@/components/home/bento/bento-tile';
 import { PanelMark } from '@/components/home/panel/panel-window';
 import { Photo } from '@/components/home/photo';
 import { useLiveLoop } from '@/components/motion/use-in-view-loop';
+import { localized, useCopy } from '@/lib/i18n';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
 import { CHIP_SURFACE, sceneProps, TypingDots } from './scene-parts';
@@ -11,12 +12,18 @@ const PHASE_MS = [800, 1400, 5600] as const;
 const TYPING = 1;
 const MESSAGE = 2;
 
+const COPY = localized({
+    pl: { now: 'teraz', greeting: 'Cześć! W czym możemy pomóc?' },
+    en: { now: 'now', greeting: 'Hi! How can we help?' },
+});
+
 /**
  * Kontakt: the meeting table (contact-desk) with a greeting from Netizo arriving over it:
  * typing, then the message (the reply time is on the form's tab right beside it).
  */
 export function ContactScene({ className }: { className?: string }) {
     const { ref, step, active } = useLiveLoop<HTMLDivElement>(PHASE_MS, { staticStep: MESSAGE, amount: 0.3 });
+    const copy = useCopy(COPY);
 
     return (
         <div ref={ref} {...sceneProps(active)} className={cn('relative overflow-hidden bg-muted', className)}>
@@ -35,11 +42,11 @@ export function ContactScene({ className }: { className?: string }) {
                 <span className="min-w-0 flex-1 text-xs leading-snug">
                     <span className="flex items-baseline gap-2">
                         <span className="font-medium">Netizo</span>
-                        <span className="ml-auto text-[11px] text-muted-foreground">teraz</span>
+                        <span className="ml-auto text-[11px] text-muted-foreground">{copy.now}</span>
                     </span>
                     <span className="relative mt-0.5 block">
                         <span data-show={step === MESSAGE} className="block transition-opacity duration-300 data-[show=false]:opacity-0">
-                            Cześć! W czym możemy pomóc?
+                            {copy.greeting}
                         </span>
                         <span data-show={step === TYPING} className="absolute inset-0 flex items-center transition-opacity duration-200 data-[show=false]:opacity-0">
                             <TypingDots />

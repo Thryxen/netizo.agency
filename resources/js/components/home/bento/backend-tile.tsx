@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useInViewLoop } from '@/components/motion/use-in-view-loop';
+import { formatInteger, type Localized, localized, useCopy, useLocale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { BentoTile, type BentoRivet, BentoTileText, type BentoService, liveVisualProps, tileGutterTop, tileGutterX } from './bento-tile';
 
@@ -20,10 +21,20 @@ const LINE = Array.from({ length: CHART_WIDTH + 1 }, (_, x) => {
 }).join('');
 const AREA = `${LINE}L${CHART_WIDTH} ${CHART_HEIGHT}L0 ${CHART_HEIGHT}Z`;
 
-/** Readings the counters step through while live (no-break thousands space); index 0 is the static frame. */
-const REQUESTS = ['1\u00a0284', '1\u00a0312', '1\u00a0297', '1\u00a0341', '1\u00a0326', '1\u00a0268', '1\u00a0305', '1\u00a0289'] as const;
+/** Readings the counters step through while live; index 0 is the static frame. */
+const READINGS = [1284, 1312, 1297, 1341, 1326, 1268, 1305, 1289] as const;
+/** The readings as shown: "1 284" (no-break thousands space) in Polish, "1,284" in English. */
+const REQUESTS: Localized<string[]> = {
+    pl: READINGS.map((reading) => formatInteger(reading, 'pl')),
+    en: READINGS.map((reading) => formatInteger(reading, 'en')),
+};
 const P95 = ['42', '44', '41', '43', '46', '42', '40', '43'] as const;
 const TICK_MS = 1200;
+
+const COPY = localized({
+    pl: { requests: 'Żądania na sekundę', live: 'na żywo', errors: 'błędy', errorRate: '0,02%' },
+    en: { requests: 'Requests per second', live: 'live', errors: 'errors', errorRate: '0.02%' },
+});
 
 /**
  * Systemy backend: a live traffic panel. The requests-per-second sparkline keeps scrolling (one CSS transform) and the
@@ -34,6 +45,8 @@ export function BackendTile({ service, rivets }: { service: BentoService; rivets
     const requestsRef = useRef<HTMLSpanElement>(null);
     const p95Ref = useRef<HTMLSpanElement>(null);
     const readingRef = useRef(0);
+    const copy = useCopy(COPY);
+    const locale = useLocale();
 
     useEffect(() => {
         if (!active) {
@@ -41,10 +54,10 @@ export function BackendTile({ service, rivets }: { service: BentoService; rivets
         }
 
         const tick = (): void => {
-            readingRef.current = (readingRef.current + 1) % REQUESTS.length;
+            readingRef.current = (readingRef.current + 1) % READINGS.length;
 
             if (requestsRef.current) {
-                requestsRef.current.textContent = REQUESTS[readingRef.current];
+                requestsRef.current.textContent = REQUESTS[locale][readingRef.current];
             }
 
             if (p95Ref.current) {
@@ -58,7 +71,7 @@ export function BackendTile({ service, rivets }: { service: BentoService; rivets
             window.clearTimeout(first);
             window.clearInterval(timer);
         };
-    }, [active]);
+    }, [active, locale]);
 
     return (
         <BentoTile rivets={rivets}>
@@ -67,14 +80,14 @@ export function BackendTile({ service, rivets }: { service: BentoService; rivets
             <div ref={ref} {...liveVisualProps(active)} className="mt-auto pt-7">
                 <div className={cn('flex items-end justify-between gap-3', tileGutterX)}>
                     <span className="min-w-0">
-                        <span className="block text-[11px] text-muted-foreground">Żądania na sekundę</span>
+                        <span className="block text-[11px] text-muted-foreground">{copy.requests}</span>
                         <span ref={requestsRef} className="mt-0.5 block text-2xl leading-none font-semibold tracking-tight tabular-nums">
-                            {REQUESTS[0]}
+                            {REQUESTS[locale][0]}
                         </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground">
                         <span className="nz-bento-blink nz-bento-loop size-1.5 bg-foreground" />
-                        na żywo
+                        {copy.live}
                     </span>
                 </div>
 
@@ -102,7 +115,7 @@ export function BackendTile({ service, rivets }: { service: BentoService; rivets
                         </span>
                     </span>
                     <span>
-                        błędy <span className="font-medium text-foreground tabular-nums">0,02%</span>
+                        {copy.errors} <span className="font-medium text-foreground tabular-nums">{copy.errorRate}</span>
                     </span>
                 </div>
             </div>

@@ -4,6 +4,8 @@ import { LiveBuild } from '@/components/home/live-build/live-build';
 import { Container, gutterClassName, Rivet } from '@/components/home/section';
 import { CountUp, SplitLines } from '@/components/motion';
 import { Button } from '@/components/ui/button';
+import { localized, useCopy } from '@/lib/i18n';
+import { useHomeSections } from '@/lib/sections';
 import { cn } from '@/lib/utils';
 
 type HeroStat = {
@@ -17,12 +19,20 @@ type HeroStat = {
  * Only the figures that read well while moving count: "150+" from 120 and "99,9%" from 99,0 (just the decimal moves).
  * A small integer ("8 lat") or a ceiling metric counted up from zero would read as a claim about zero.
  */
-const STATS: HeroStat[] = [
-    { value: '150+', label: 'zrealizowanych projektów', countFrom: 120 },
-    { value: '8 lat', label: 'doświadczenia' },
-    { value: '99,9%', label: 'dostępności wdrożeń', countFrom: 99 },
-    { value: '0 zł', label: 'za wycenę i konsultację' },
-];
+const STATS = localized<HeroStat[]>({
+    pl: [
+        { value: '150+', label: 'zrealizowanych projektów', countFrom: 120 },
+        { value: '8 lat', label: 'doświadczenia' },
+        { value: '99,9%', label: 'dostępności wdrożeń', countFrom: 99 },
+        { value: '0 zł', label: 'za wycenę i konsultację' },
+    ],
+    en: [
+        { value: '150+', label: 'projects delivered', countFrom: 120 },
+        { value: '8 years', label: 'of experience' },
+        { value: '99.9%', label: 'uptime across our deployments', countFrom: 99 },
+        { value: 'Free', label: 'quote and consultation' },
+    ],
+});
 
 /** Shared borders for a 2×2 (mobile) / 1×4 (lg) strip: right edges between columns, bottom edge under the first row. */
 const STAT_CELL_BORDERS = ['border-r border-b lg:border-b-0', 'border-b lg:border-r lg:border-b-0', 'border-r', ''];
@@ -31,9 +41,24 @@ const STAT_VALUE_CLASS = 'text-[2.25rem] leading-none font-semibold tracking-tig
 
 /**
  * The heading as fixed lines: three in the narrow column (phones, and from lg beside the stage), two between md and lg
- * where it spans the full width.
+ * where it spans the full width. Each language keeps its widest line no wider than "dla ambitnych." (~6.5 em).
  */
-const HEADING_LINES = ['Tworzymy', 'strony WWW', 'dla ambitnych.'];
+const COPY = localized({
+    pl: {
+        headingLines: ['Tworzymy', 'strony WWW', 'dla ambitnych.'],
+        lead: 'Strony, aplikacje webowe i mobilne oraz systemy dla firm. Projektujemy, programujemy i opiekujemy się nimi po wdrożeniu.',
+        quote: 'Wyceń projekt',
+        work: 'Zobacz realizacje',
+        reply: 'Odpowiadamy w ciągu 24 godzin.',
+    },
+    en: {
+        headingLines: ['We build', 'websites for', 'the ambitious.'],
+        lead: 'Websites, web and mobile apps, and systems for businesses. We design them, build them and look after them once they’re live.',
+        quote: 'Get a quote',
+        work: 'See our work',
+        reply: 'We reply within 24 hours.',
+    },
+});
 const HEADING_WIDE_LINES = [[0, 1], [2]];
 
 /**
@@ -60,6 +85,9 @@ const STAGE_BLEED = '-mx-4 border-t border-border sm:-mx-6 lg:col-span-7 lg:ml-0
 
 export function Hero() {
     const { openContact } = useHomeUi();
+    const copy = useCopy(COPY);
+    const stats = useCopy(STATS);
+    const sections = useHomeSections();
 
     return (
         <section aria-labelledby="hero-heading" className="relative">
@@ -71,26 +99,25 @@ export function Hero() {
                     <div className="max-w-2xl pt-8 pb-12 sm:pt-16 lg:col-span-5 lg:flex lg:max-w-none lg:flex-col lg:justify-center lg:py-14 lg:pr-8 lg:[container-type:inline-size] xl:pr-10 [@media(min-width:1024px)_and_(max-height:820px)]:py-10">
                         <SplitLines
                             id="hero-heading"
-                            lines={HEADING_LINES}
+                            lines={copy.headingLines}
                             wideLines={HEADING_WIDE_LINES}
                             className="text-[clamp(2.375rem,min(6vw,9svh),4.25rem)] leading-[1.04] font-semibold tracking-[-0.04em] lg:text-[clamp(2.25rem,min(12.5cqw,3.9vw,7.5svh),3.5rem)]"
                         />
                         <p data-hero-rise="" style={riseDelay(0)} className="mt-6 max-w-xl text-lg leading-relaxed text-pretty text-muted-foreground lg:text-[1.0625rem] xl:text-lg">
-                            Strony, aplikacje webowe i mobilne oraz systemy dla firm. Projektujemy, programujemy i opiekujemy się nimi po
-                            wdrożeniu.
+                            {copy.lead}
                         </p>
                         <div data-hero-rise="" style={riseDelay(1)} className="mt-9 flex flex-wrap items-center gap-3 lg:mt-8">
                             <Button size="lg" className="max-md:h-11" onClick={() => openContact('brief')}>
-                                Wyceń projekt
+                                {copy.quote}
                             </Button>
                             <Button size="lg" variant="outline" className="max-md:h-11" asChild>
-                                <a href="#projekty">Zobacz realizacje</a>
+                                <a href={`#${sections.projects}`}>{copy.work}</a>
                             </Button>
                         </div>
                         {/* Phones: left out, so more of the stage (and its photo) makes the first screen; it is quoted again
                             in the FAQ and on the contact form. */}
                         <p data-hero-rise="" style={riseDelay(2)} className="mt-6 hidden text-sm text-muted-foreground sm:block">
-                            Odpowiadamy w ciągu 24 godzin.
+                            {copy.reply}
                         </p>
                     </div>
 
@@ -103,7 +130,7 @@ export function Hero() {
                     <Rivet side="left" />
                     <Rivet side="right" />
                     <ul className="grid grid-cols-2 lg:grid-cols-4">
-                        {STATS.map((stat, index) => (
+                        {stats.map((stat, index) => (
                             <li
                                 key={stat.label}
                                 className={cn('flex min-w-0 flex-col gap-2 border-border py-7 sm:py-8', gutterClassName, STAT_CELL_BORDERS[index])}

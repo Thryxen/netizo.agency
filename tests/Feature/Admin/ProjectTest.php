@@ -270,3 +270,95 @@ it('accepts an edit sent as a post with a spoofed method, as the form does', fun
 
     Storage::disk('public')->assertMissing('projects/full/old.webp');
 });
+
+it('saves the optional english copy of a project, dropping blank rows', function () {
+    $this->post(route('admin.projects.store'), validProjectPayload([
+        'category_en' => '  Web app  ',
+        'description_en' => 'Short description.',
+        'full_description_en' => 'Full description.',
+        'metrics_en' => [['value' => '+40%', 'label' => 'Conversion rate'], ['value' => '', 'label' => '']],
+        'challenges_en' => ['Integration with the client’s system', ''],
+        'solutions_en' => ['A dedicated API'],
+    ]))->assertRedirect(route('admin.projects.index'))->assertSessionHasNoErrors();
+
+    $project = Project::query()->where('slug', 'netizo-case-study')->firstOrFail();
+
+    expect($project->category_en)->toBe('Web app')
+        ->and($project->description_en)->toBe('Short description.')
+        ->and($project->full_description_en)->toBe('Full description.')
+        ->and($project->metrics_en)->toBe([['value' => '+40%', 'label' => 'Conversion rate']])
+        ->and($project->challenges_en)->toBe([['challenge' => 'Integration with the client’s system']])
+        ->and($project->solutions_en)->toBe([['solution' => 'A dedicated API']]);
+});
+
+it('creates a project without any english copy', function () {
+    $this->post(route('admin.projects.store'), validProjectPayload())->assertSessionHasNoErrors();
+
+    assertDatabaseHas('projects', [
+        'slug' => 'netizo-case-study',
+        'category_en' => null,
+        'description_en' => null,
+        'full_description_en' => null,
+        'metrics_en' => null,
+        'challenges_en' => null,
+        'solutions_en' => null,
+    ]);
+});
+
+it('clears the english copy when its fields are emptied', function () {
+    $project = Project::factory()->create([
+        'slug' => 'netizo-case-study',
+        'category_en' => 'Web app',
+        'description_en' => 'Short description.',
+        'metrics_en' => [['value' => '1', 'label' => 'a']],
+        'challenges_en' => [['challenge' => 'A challenge']],
+    ]);
+
+    $this->put(route('admin.projects.update', $project), validProjectPayload([
+        'category_en' => '',
+        'description_en' => '   ',
+        'metrics_en' => [['value' => '', 'label' => '']],
+        'challenges_en' => [''],
+    ]))->assertSessionHasNoErrors();
+
+    expect($project->fresh())
+        ->category_en->toBeNull()
+        ->description_en->toBeNull()
+        ->metrics_en->toBeNull()
+        ->challenges_en->toBeNull()
+        ->solutions_en->toBeNull();
+});
+
+it('validates the english copy', function (array $overrides, string $field) {
+    $this->post(route('admin.projects.store'), validProjectPayload($overrides))->assertSessionHasErrors($field);
+
+    assertDatabaseCount('projects', 0);
+})->with([
+    'category too long' => [['category_en' => str_repeat('a', 256)], 'category_en'],
+    'description too long' => [['description_en' => str_repeat('a', 2001)], 'description_en'],
+    'four metrics' => [['metrics_en' => array_fill(0, 4, ['value' => '1', 'label' => 'a'])], 'metrics_en'],
+    'metric that is not a row' => [['metrics_en' => ['+40%']], 'metrics_en.0'],
+    'seven challenges' => [['challenges_en' => array_fill(0, 7, 'x')], 'challenges_en'],
+    'solution too long' => [['solutions_en' => [str_repeat('a', 1001)]], 'solutions_en.0'],
+]);
+
+it('passes the english copy to the edit form', function () {
+    $project = Project::factory()->create([
+        'category_en' => 'Web app',
+        'description_en' => 'Short description.',
+        'full_description_en' => null,
+        'metrics_en' => [['value' => '99.9%', 'label' => 'uptime']],
+        'challenges_en' => [['challenge' => 'Challenge A'], 'Challenge B'],
+        'solutions_en' => null,
+    ]);
+
+    $this->get(route('admin.projects.edit', $project))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('project.categoryEn', 'Web app')
+            ->where('project.descriptionEn', 'Short description.')
+            ->where('project.fullDescriptionEn', '')
+            ->where('project.metricsEn', [['value' => '99.9%', 'label' => 'uptime']])
+            ->where('project.challengesEn', ['Challenge A', 'Challenge B'])
+            ->where('project.solutionsEn', []));
+});

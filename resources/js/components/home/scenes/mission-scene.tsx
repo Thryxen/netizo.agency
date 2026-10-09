@@ -1,8 +1,14 @@
 import { Check, FileText } from 'lucide-react';
 import { Photo } from '@/components/home/photo';
+import { localized, useCopy } from '@/lib/i18n';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
 import { SceneChip, sceneProps, useSceneArrival } from './scene-parts';
+
+const COPY = localized({
+    pl: { title: 'Architektura systemu', detail: 'Zatwierdzona przed kodowaniem' },
+    en: { title: 'System architecture', detail: 'Approved before coding' },
+});
 
 /** The chip slides in this long after the scene is first seen; its box ticks once it has landed. */
 const ARRIVE_MS = 500;
@@ -14,6 +20,7 @@ const ARRIVE_MS = 500;
  */
 export function MissionScene({ className }: { className?: string }) {
     const { ref, shown, active } = useSceneArrival<HTMLDivElement>(ARRIVE_MS, { amount: 0.3 });
+    const copy = useCopy(COPY);
 
     return (
         <div ref={ref} {...sceneProps(active)} className={cn('relative overflow-hidden border bg-muted', className)}>
@@ -26,8 +33,8 @@ export function MissionScene({ className }: { className?: string }) {
             <SceneChip
                 show={shown}
                 icon={FileText}
-                title="Architektura systemu"
-                detail="Zatwierdzona przed kodowaniem"
+                title={copy.title}
+                detail={copy.detail}
                 trailing={
                     <span
                         data-state={shown ? 'done' : 'pending'}

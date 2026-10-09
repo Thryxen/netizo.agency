@@ -1,11 +1,11 @@
 @extends('errors::minimal')
 
-@section('title', 'Zbyt wiele prób')
+@section('title', __('errors.pages.429.title'))
 @section('code', '429')
 @section('description')
-    W&nbsp;krótkim czasie wysłano zbyt wiele zapytań. Odczekaj minutę i&nbsp;spróbuj ponownie.
+    {!! __('errors.pages.429.description') !!}
 @endsection
 
 @section('visual')
-    @include('errors::partials.window', ['scene' => 'requests', 'icon' => 'hourglass', 'chipTitle' => 'Odczekaj minutę'])
+    @include('errors::partials.window', ['scene' => 'requests', 'icon' => 'hourglass', 'chipTitle' => __('errors.pages.429.chip')])
 @endsection

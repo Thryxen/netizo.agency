@@ -100,3 +100,43 @@ it('rate limits submissions to 10 per minute per IP', function () {
     assertDatabaseCount('callback_requests', 10);
     Http::assertSentCount(10);
 });
+
+it('stores a callback request sent from the English site with its language', function () {
+    $this->from('/en')
+        ->post(route('en.callback-requests.store'), ['phone' => '+44 20 7946 0958'])
+        ->assertRedirect('/en')
+        ->assertSessionHasNoErrors();
+
+    expect(route('en.callback-requests.store'))->toEndWith('/en/callback');
+
+    assertDatabaseHas('callback_requests', ['phone' => '+44 20 7946 0958', 'locale' => 'en']);
+
+    Http::assertSent(function (Request $request): bool {
+        $fields = $request['embeds'][0]['fields'];
+
+        return $fields[0]['value'] === '+44 20 7946 0958' && $fields[1]['name'] === 'Język' && $fields[1]['value'] === 'angielski';
+    });
+});
+
+it('stores the language of a callback request sent from the Polish site', function () {
+    $this->from('/')
+        ->post(route('callback-requests.store'), ['phone' => '884343924'])
+        ->assertSessionHasNoErrors();
+
+    expect(CallbackRequest::sole()->locale)->toBe('pl');
+
+    Http::assertSent(fn (Request $request): bool => $request['embeds'][0]['fields'][1]['value'] === 'polski');
+});
+
+it('rejects invalid input on the English site with an English message', function (array $payload, string $message) {
+    $this->from('/en')
+        ->post(route('en.callback-requests.store'), $payload)
+        ->assertRedirect('/en')
+        ->assertSessionHasErrors(['phone' => $message]);
+
+    assertDatabaseCount('callback_requests', 0);
+    Http::assertNothingSent();
+})->with([
+    'missing phone' => [[], 'Please enter your phone number.'],
+    'too short phone' => [['phone' => '12345678'], 'Please enter a valid phone number.'],
+]);

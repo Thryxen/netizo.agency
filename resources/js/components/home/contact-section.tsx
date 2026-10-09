@@ -6,13 +6,35 @@ import { ContactScene } from '@/components/home/scenes/contact-scene';
 import { bleedClassName, gutterClassName, Rivet, Section, SectionHeading } from '@/components/home/section';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { localized, useCopy } from '@/lib/i18n';
+import { useHomeSections } from '@/lib/sections';
 import { contact } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
-const tabs: { value: ContactTab; label: string; hint: string }[] = [
-    { value: 'brief', label: 'Brief projektu', hint: 'Szczegółowa wycena' },
-    { value: 'quick', label: 'Szybka wiadomość', hint: 'Odpowiemy w 24 h' },
-];
+const COPY = localized({
+    pl: {
+        tabs: [
+            { value: 'brief', label: 'Brief projektu', hint: 'Szczegółowa wycena' },
+            { value: 'quick', label: 'Szybka wiadomość', hint: 'Odpowiemy w 24 h' },
+        ] as { value: ContactTab; label: string; hint: string }[],
+        title: 'Rozpocznij współpracę',
+        lead: 'Wypełnij brief, jeśli chcesz dokładnej wyceny, albo napisz krótko, czego potrzebujesz.',
+        tabsLabel: 'Sposób kontaktu',
+        altHeading: 'Wolisz porozmawiać?',
+        callMe: 'Zadzwońcie do mnie',
+    },
+    en: {
+        tabs: [
+            { value: 'brief', label: 'Project brief', hint: 'Detailed quote' },
+            { value: 'quick', label: 'Quick message', hint: 'Reply within 24 h' },
+        ],
+        title: 'Let’s work together',
+        lead: 'Fill in the brief for a detailed quote, or tell us briefly what you need.',
+        tabsLabel: 'How to contact us',
+        altHeading: 'Prefer to talk?',
+        callMe: 'Call me back',
+    },
+});
 
 const contactLinkClass =
     'inline-flex min-h-11 items-center gap-3 rounded-sm text-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 md:min-h-0';
@@ -23,14 +45,12 @@ const contactLinkClass =
  */
 export function ContactSection() {
     const { contactTab, setContactTab, openCallback } = useHomeUi();
+    const copy = useCopy(COPY);
+    const id = useHomeSections().contact;
 
     return (
-        <Section id="kontakt" labelledBy="kontakt-heading" containerClassName="pb-0 md:pb-0">
-            <SectionHeading
-                id="kontakt-heading"
-                title="Rozpocznij współpracę"
-                lead="Wypełnij brief, jeśli chcesz dokładnej wyceny, albo napisz krótko, czego potrzebujesz."
-            />
+        <Section id={id} labelledBy={`${id}-heading`} containerClassName="pb-0 md:pb-0">
+            <SectionHeading id={`${id}-heading`} title={copy.title} lead={copy.lead} />
 
             <div className={cn('relative border-t border-border', bleedClassName)}>
                 <Rivet side="left" />
@@ -40,10 +60,10 @@ export function ContactSection() {
                         <Tabs value={contactTab} onValueChange={(value) => isContactTab(value) && setContactTab(value)} className="gap-8">
                             <TabsList
                                 variant="line"
-                                aria-label="Sposób kontaktu"
+                                aria-label={copy.tabsLabel}
                                 className="grid h-auto w-full grid-cols-2 gap-0 border-b border-border p-0 group-data-[orientation=horizontal]/tabs:h-auto"
                             >
-                                {tabs.map((tab) => (
+                                {copy.tabs.map((tab) => (
                                     <TabsTrigger
                                         key={tab.value}
                                         value={tab.value}
@@ -75,7 +95,7 @@ export function ContactSection() {
                     </div>
 
                     <aside
-                        aria-labelledby="kontakt-alt-heading"
+                        aria-labelledby={`${id}-alt-heading`}
                         className="grid min-w-0 gap-px sm:grid-cols-2 lg:col-span-4 lg:grid-cols-1 lg:grid-rows-[auto_1fr]"
                     >
                         {/* Phones skip the photo so the phone and e-mail alternative follows the form directly. */}
@@ -84,8 +104,8 @@ export function ContactSection() {
                         </div>
 
                         <div className="flex flex-col gap-6 bg-background px-4 py-10 sm:p-6 lg:p-8">
-                            <h3 id="kontakt-alt-heading" className="text-xl font-semibold tracking-tight">
-                                Wolisz porozmawiać?
+                            <h3 id={`${id}-alt-heading`} className="text-xl font-semibold tracking-tight">
+                                {copy.altHeading}
                             </h3>
                             <ul className="grid gap-1 md:gap-4">
                                 <li>
@@ -102,7 +122,7 @@ export function ContactSection() {
                                 </li>
                             </ul>
                             <Button type="button" variant="outline" onClick={(event) => openCallback(event.currentTarget)} className="self-start max-md:h-11">
-                                Zadzwońcie do mnie
+                                {copy.callMe}
                             </Button>
                         </div>
                     </aside>

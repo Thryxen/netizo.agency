@@ -3,7 +3,8 @@ import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'rea
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useRememberedValue } from '@/hooks/use-remembered-value';
-import { endpoints } from '@/lib/endpoints';
+import { useEndpoints } from '@/lib/endpoints';
+import { type Locale, localized, useCopy, useLocale } from '@/lib/i18n';
 import {
     BRIEF_TOTAL_STEPS,
     type BriefField,
@@ -16,7 +17,43 @@ import {
 import { type BriefStepProps, BudgetStep, ContactStep, DetailsStep, FeaturesStep, ProjectTypeStep, TechStep } from './brief-steps';
 import { fieldError, focusAndReveal, FormErrorAlert, formLevelError, SubmitButton } from './fields';
 
-const TYPES_REQUIRED_MESSAGE = 'Wybierz przynajmniej jeden typ projektu.';
+/** Client-side messages: the same wording as the server's (lang/{pl,en}/forms.php, `brief`). */
+const COPY = localized({
+    pl: {
+        typesRequired: 'Wybierz przynajmniej jeden typ projektu.',
+        nameRequired: 'Imię i nazwisko jest wymagane.',
+        nameMin: 'Imię i nazwisko musi mieć co najmniej 2 znaki.',
+        emailRequired: 'Adres e-mail jest wymagany.',
+        emailInvalid: 'Podaj poprawny adres e-mail.',
+        privacyRequired: 'Musisz zaakceptować politykę prywatności.',
+        stepOf: (step: number, total: number): string => `Krok ${step} z ${total}`,
+        progress: 'Postęp briefu',
+        sentHeading: 'Brief wysłany',
+        sentMessage: 'Dziękujemy. Przeanalizujemy wymagania i odezwiemy się w ciągu 24 godzin.',
+        nextSteps: 'Co dalej',
+        restart: 'Wypełnij ponownie',
+        back: 'Wstecz',
+        submit: 'Wyślij brief',
+        next: 'Dalej',
+    },
+    en: {
+        typesRequired: 'Please choose at least one project type.',
+        nameRequired: 'Please enter your full name.',
+        nameMin: 'Your full name must be at least 2 characters long.',
+        emailRequired: 'Please enter your email address.',
+        emailInvalid: 'Please enter a valid email address.',
+        privacyRequired: 'Please accept the privacy policy.',
+        stepOf: (step: number, total: number): string => `Step ${step} of ${total}`,
+        progress: 'Brief progress',
+        sentHeading: 'Brief sent',
+        sentMessage: 'Thank you. We’ll review your requirements and get back to you within 24 hours.',
+        nextSteps: 'What’s next',
+        restart: 'Start a new brief',
+        back: 'Back',
+        submit: 'Send brief',
+        next: 'Next',
+    },
+});
 
 /** Ignore a "Wyślij brief" click that lands right after "Dalej" turned into it (double click on step 5). */
 const SUBMIT_GUARD_MS = 400;
@@ -35,25 +72,26 @@ const briefFields = Object.keys(briefFieldStep) as BriefField[];
 type ContactErrors = Partial<Record<'name' | 'email' | 'privacy', string>>;
 
 /** Client-side gate for step 6 (mirrors StoreProjectBriefRequest; the server stays the source of truth). */
-function validateContact(data: BriefFormData): ContactErrors {
+function validateContact(data: BriefFormData, locale: Locale): ContactErrors {
+    const copy = COPY[locale];
     const errors: ContactErrors = {};
     const name = data.name.trim();
     const email = data.email.trim();
 
     if (name === '') {
-        errors.name = 'Imię i nazwisko jest wymagane.';
+        errors.name = copy.nameRequired;
     } else if (name.length < 2) {
-        errors.name = 'Imię i nazwisko musi mieć co najmniej 2 znaki.';
+        errors.name = copy.nameMin;
     }
 
     if (email === '') {
-        errors.email = 'Adres e-mail jest wymagany.';
+        errors.email = copy.emailRequired;
     } else if (!/^[^\s@]+@[^\s@]+$/.test(email)) {
-        errors.email = 'Podaj poprawny adres e-mail.';
+        errors.email = copy.emailInvalid;
     }
 
     if (!data.privacy) {
-        errors.privacy = 'Musisz zaakceptować politykę prywatności.';
+        errors.privacy = copy.privacyRequired;
     }
 
     return errors;
@@ -74,6 +112,9 @@ type PendingFocus = 'heading' | 'success' | 'invalid' | null;
 const isBriefStep = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 1 && (value as number) <= BRIEF_TOTAL_STEPS;
 
 export function BriefWizard() {
+    const locale = useLocale();
+    const copy = useCopy(COPY);
+    const endpoints = useEndpoints();
     const form = useForm<BriefFormData>(createInitialBriefData);
     const [step, setStep] = useState(1);
     const [submitted, setSubmitted] = useState(false);
@@ -154,7 +195,7 @@ export function BriefWizard() {
 
         if (step === 1 && form.data.types.length === 0) {
             pendingFocus.current = 'invalid';
-            form.setError('types', TYPES_REQUIRED_MESSAGE);
+            form.setError('types', copy.typesRequired);
 
             return;
         }
@@ -169,7 +210,7 @@ export function BriefWizard() {
             return;
         }
 
-        const contactErrors = validateContact(form.data);
+        const contactErrors = validateContact(form.data, locale);
 
         if (Object.keys(contactErrors).length > 0) {
             pendingFocus.current = 'invalid';
@@ -212,17 +253,17 @@ export function BriefWizard() {
             <div ref={rootRef} className="grid gap-8">
                 <div className="grid gap-3">
                     <h3 ref={successHeadingRef} tabIndex={-1} className="scroll-mt-4 text-2xl font-semibold tracking-tight outline-none">
-                        Brief wysłany
+                        {copy.sentHeading}
                     </h3>
                     <p role="status" className="max-w-prose leading-relaxed text-muted-foreground">
-                        Dziękujemy. Przeanalizujemy wymagania i odezwiemy się w ciągu 24 godzin.
+                        {copy.sentMessage}
                     </p>
                 </div>
 
                 <div className="grid gap-3">
-                    <h4 className="text-sm font-medium">Co dalej</h4>
+                    <h4 className="text-sm font-medium">{copy.nextSteps}</h4>
                     <ol className="grid border-t border-l border-border sm:grid-cols-3">
-                        {briefNextSteps.map((item, index) => (
+                        {briefNextSteps[locale].map((item, index) => (
                             <li key={item.title} className="flex gap-3 border-r border-b border-border p-4">
                                 <span
                                     aria-hidden="true"
@@ -241,14 +282,14 @@ export function BriefWizard() {
 
                 <div>
                     <Button type="button" variant="outline" className="max-md:h-11" onClick={restart}>
-                        Wypełnij ponownie
+                        {copy.restart}
                     </Button>
                 </div>
             </div>
         );
     }
 
-    const current = briefSteps[step - 1];
+    const current = briefSteps[locale][step - 1];
     const StepBody = stepComponents[step];
     const isLastStep = step === BRIEF_TOTAL_STEPS;
     const headingId = 'brief-step-heading';
@@ -259,12 +300,12 @@ export function BriefWizard() {
                 <div className="grid gap-5">
                     <div className="flex items-center gap-4">
                         <p aria-hidden="true" className="shrink-0 text-sm text-muted-foreground tabular-nums">
-                            Krok {step} z {BRIEF_TOTAL_STEPS}
+                            {copy.stepOf(step, BRIEF_TOTAL_STEPS)}
                         </p>
                         <Progress
                             value={(step / BRIEF_TOTAL_STEPS) * 100}
-                            aria-label="Postęp briefu"
-                            getValueLabel={() => `Krok ${step} z ${BRIEF_TOTAL_STEPS}`}
+                            aria-label={copy.progress}
+                            getValueLabel={() => copy.stepOf(step, BRIEF_TOTAL_STEPS)}
                             className="h-1 rounded-none bg-border"
                         />
                     </div>
@@ -275,9 +316,7 @@ export function BriefWizard() {
                             tabIndex={-1}
                             className="scroll-mt-4 text-xl font-semibold tracking-tight text-balance outline-none sm:text-2xl"
                         >
-                            <span className="sr-only">
-                                Krok {step} z {BRIEF_TOTAL_STEPS}:{' '}
-                            </span>
+                            <span className="sr-only">{`${copy.stepOf(step, BRIEF_TOTAL_STEPS)}: `}</span>
                             {current.title}
                         </h3>
                         <p className="text-muted-foreground">{current.description}</p>
@@ -291,11 +330,11 @@ export function BriefWizard() {
                 <div className="flex flex-wrap items-center gap-3 border-t border-border pt-6">
                     {step > 1 && (
                         <Button type="button" variant="outline" className="max-md:h-11" onClick={() => goToStep(step - 1)} disabled={form.processing}>
-                            Wstecz
+                            {copy.back}
                         </Button>
                     )}
                     <SubmitButton processing={form.processing} className="ml-auto min-w-28 max-md:h-11">
-                        {isLastStep ? 'Wyślij brief' : 'Dalej'}
+                        {isLastStep ? copy.submit : copy.next}
                     </SubmitButton>
                 </div>
             </form>

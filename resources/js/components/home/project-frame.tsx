@@ -3,11 +3,25 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Photo } from '@/components/home/photo';
 import { ThemedImage } from '@/components/home/themed-image';
 import { useMotionStyle, useReducedMotionPreference } from '@/components/motion';
+import { localized, useCopy } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { Project } from '@/types/home';
 
 const PLACEHOLDER_LIGHT = '/assets/images/illustrations/project-placeholder-light.webp';
 const PLACEHOLDER_DARK = '/assets/images/illustrations/project-placeholder-dark.webp';
+
+const COPY = localized({
+    pl: {
+        alt: (title: string): string => `Zrzut ekranu strony ${title}`,
+        scrollable: (alt: string): string => `${alt} (przewijany)`,
+        scrollHint: 'Przewiń zrzut, aby zobaczyć całą stronę.',
+    },
+    en: {
+        alt: (title: string): string => `Screenshot of the ${title} website`,
+        scrollable: (alt: string): string => `${alt} (scrollable)`,
+        scrollHint: 'Scroll the screenshot to see the whole page.',
+    },
+});
 
 /** How far (px) the screenshot drifts up inside its window while the frame passes through the viewport. */
 const PARALLAX_DISTANCE = 24;
@@ -31,8 +45,9 @@ type ProjectFrameProps = {
  * the fonts and scripts the first screen needs.
  */
 export function ProjectFrame({ project, variant = 'preview', className }: ProjectFrameProps) {
+    const copy = useCopy(COPY);
     const imageUrl = project.fullImageUrl ?? project.thumbnailUrl;
-    const alt = `Zrzut ekranu strony ${project.title}`;
+    const alt = copy.alt(project.title);
 
     return (
         <div data-slot="project-frame" className={cn('group/frame overflow-hidden rounded-lg border bg-background', className)}>
@@ -115,6 +130,7 @@ const CAPPED_VIEWPORT_QUERY = '(min-width: 768px)';
  * the gesture in a nested scroll box.
  */
 function ScrollableScreenshot({ src, alt }: { src: string; alt: string }) {
+    const copy = useCopy(COPY);
     const viewportRef = useRef<HTMLDivElement>(null);
     const [isScrollable, setIsScrollable] = useState(false);
 
@@ -154,14 +170,14 @@ function ScrollableScreenshot({ src, alt }: { src: string; alt: string }) {
             <div
                 ref={viewportRef}
                 role={isScrollable ? 'region' : undefined}
-                aria-label={isScrollable ? `${alt} (przewijany)` : undefined}
+                aria-label={isScrollable ? copy.scrollable(alt) : undefined}
                 tabIndex={isScrollable ? 0 : undefined}
                 className="bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 md:max-h-[min(65vh,720px)] md:overflow-y-auto"
             >
                 <img src={src} alt={alt} decoding="async" onLoad={measure} className="block h-auto w-full" />
             </div>
             {isScrollable && (
-                <p className="border-t bg-muted/60 px-3.5 py-2 text-xs text-muted-foreground">Przewiń zrzut, aby zobaczyć całą stronę.</p>
+                <p className="border-t bg-muted/60 px-3.5 py-2 text-xs text-muted-foreground">{copy.scrollHint}</p>
             )}
         </>
     );

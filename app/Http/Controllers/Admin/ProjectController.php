@@ -150,17 +150,31 @@ class ProjectController extends Controller
             'fullDescription' => (string) $project->full_description,
             'fullImageUrl' => $project->full_image ? asset('storage/'.$project->full_image) : null,
             'techStack' => $this->stringList($project->tech_stack, null),
-            'metrics' => collect(is_array($project->metrics) ? $project->metrics : [])
-                ->filter(fn (mixed $metric): bool => is_array($metric))
-                ->map(fn (array $metric): array => [
-                    'value' => (string) ($metric['value'] ?? ''),
-                    'label' => (string) ($metric['label'] ?? ''),
-                ])
-                ->values()
-                ->all(),
+            'metrics' => $this->metricList($project->metrics),
             'challenges' => $this->stringList($project->challenges, 'challenge'),
             'solutions' => $this->stringList($project->solutions, 'solution'),
+            'categoryEn' => (string) $project->category_en,
+            'descriptionEn' => (string) $project->description_en,
+            'fullDescriptionEn' => (string) $project->full_description_en,
+            'metricsEn' => $this->metricList($project->metrics_en),
+            'challengesEn' => $this->stringList($project->challenges_en, 'challenge'),
+            'solutionsEn' => $this->stringList($project->solutions_en, 'solution'),
         ];
+    }
+
+    /**
+     * @return list<array{value: string, label: string}>
+     */
+    private function metricList(mixed $value): array
+    {
+        return collect(is_array($value) ? $value : [])
+            ->filter(fn (mixed $metric): bool => is_array($metric))
+            ->map(fn (array $metric): array => [
+                'value' => (string) ($metric['value'] ?? ''),
+                'label' => (string) ($metric['label'] ?? ''),
+            ])
+            ->values()
+            ->all();
     }
 
     /**

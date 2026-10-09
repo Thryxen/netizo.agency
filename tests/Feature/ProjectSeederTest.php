@@ -58,3 +58,28 @@ it('shows the seeded projects on the home page with flattened challenges and sol
             ->where('projects.0.solutions', fn ($solutions): bool => count($solutions) === 3)
         );
 });
+
+it('seeds an english copy of every sample project for the english site', function () {
+    $this->withoutVite();
+    $this->seed(ProjectSeeder::class);
+
+    Project::query()->get()->each(function (Project $project): void {
+        expect($project->category_en)->not->toBeEmpty()
+            ->and($project->description_en)->not->toBeEmpty()
+            ->and($project->full_description_en)->not->toBeEmpty()
+            ->and($project->metrics_en)->toHaveCount(3)
+            ->and($project->challenges_en)->toHaveCount(count($project->challenges))
+            ->and($project->solutions_en)->toHaveCount(count($project->solutions))
+            ->and($project->challenges_en[0])->toHaveKey('challenge')
+            ->and($project->solutions_en[0])->toHaveKey('solution');
+    });
+
+    $this->get('/en')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('projects', 4)
+            ->where('projects.0.category', 'Company website / Online orders')
+            ->where('projects.0.metrics.2', ['value' => '0.9 s', 'label' => 'LCP on mobile'])
+            ->where('projects.0.challenges.0', 'Orders from the phone, Messenger and paper notes had to be copied into one list every evening.')
+        );
+});

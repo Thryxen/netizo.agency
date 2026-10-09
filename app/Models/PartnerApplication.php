@@ -12,6 +12,7 @@ class PartnerApplication extends Model
     use HasFactory;
 
     protected $fillable = [
+        'locale',
         'name',
         'email',
         'phone',

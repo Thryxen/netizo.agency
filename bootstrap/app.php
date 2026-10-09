@@ -3,6 +3,7 @@
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -50,6 +51,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Global, so responses produced outside the web group (routing 404/405, CSRF 419, maintenance 503) get the headers too.
         $middleware->append(SecurityHeaders::class);
+
+        // Global and first, so error pages and form errors produced before a route matches use the page's language.
+        $middleware->prepend(SetLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         /*
@@ -65,13 +69,11 @@ return Application::configure(basePath: dirname(__DIR__))
             $status = $response->getStatusCode();
 
             if ($status === 419) {
-                return back()->withErrors(['form' => 'Formularz wygasł. Wyślij go jeszcze raz.']);
+                return back()->withErrors(['form' => __('forms.errors.expired')]);
             }
 
             if ($status >= 500 && $status !== 503 && ! app()->hasDebugModeEnabled()) {
-                return back()->withErrors([
-                    'form' => 'Nie udało się wysłać formularza. Spróbuj ponownie za chwilę albo napisz na kontakt@netizo.pl.',
-                ]);
+                return back()->withErrors(['form' => __('forms.errors.failed')]);
             }
 
             return $response;

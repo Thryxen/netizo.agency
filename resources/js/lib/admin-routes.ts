@@ -10,6 +10,7 @@ export const adminRoutes = {
         update: (id: number): string => `${base}/projects/${id}`,
         destroy: (id: number): string => `${base}/projects/${id}`,
         reorder: `${base}/projects/reorder`,
+        translate: `${base}/projects/translate`,
     },
     clients: {
         index: `${base}/clients`,

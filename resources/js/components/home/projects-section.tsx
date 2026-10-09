@@ -5,8 +5,31 @@ import { ProjectFrame } from '@/components/home/project-frame';
 import { bleedClassName, gutterClassName, Rivet, Section, SectionHeading } from '@/components/home/section';
 import { TechTag } from '@/components/home/tech-tag';
 import { Button } from '@/components/ui/button';
+import { localized, useCopy } from '@/lib/i18n';
+import { useHomeSections } from '@/lib/sections';
 import { cn } from '@/lib/utils';
 import type { Project } from '@/types/home';
+
+const COPY = localized({
+    pl: {
+        title: 'Ostatnie wdrożenia',
+        lead: 'Wybrane projekty, które zaprojektowaliśmy, zbudowaliśmy i dalej rozwijamy.',
+        empty: 'Pierwsze realizacje pokażemy tu wkrótce.',
+        write: 'Napisz do nas',
+        tech: 'Technologie',
+        caseStudy: 'Zobacz case study',
+        caseStudyOf: (title: string): string => ` projektu ${title}`,
+    },
+    en: {
+        title: 'Recent launches',
+        lead: 'Selected projects we designed, built and keep developing.',
+        empty: 'We’ll show our first projects here soon.',
+        write: 'Write to us',
+        tech: 'Technologies',
+        caseStudy: 'See the case study',
+        caseStudyOf: (title: string): string => ` of ${title}`,
+    },
+});
 
 /**
  * One full-bleed row per project: hairlines run rail to rail (with rivets) and the section drops its bottom
@@ -14,6 +37,8 @@ import type { Project } from '@/types/home';
  */
 export function ProjectsSection({ projects }: { projects: Project[] }) {
     const { openContact } = useHomeUi();
+    const copy = useCopy(COPY);
+    const sectionId = useHomeSections().projects;
     const [activeProject, setActiveProject] = useState<Project | null>(null);
     const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
     const caseStudyTriggerRef = useRef<HTMLElement | null>(null);
@@ -27,12 +52,8 @@ export function ProjectsSection({ projects }: { projects: Project[] }) {
     const hasProjects = projects.length > 0;
 
     return (
-        <Section id="projekty" labelledBy="projekty-heading" containerClassName={hasProjects ? 'pb-0 md:pb-0' : undefined}>
-            <SectionHeading
-                id="projekty-heading"
-                title="Ostatnie wdrożenia"
-                lead="Wybrane projekty, które zaprojektowaliśmy, zbudowaliśmy i dalej rozwijamy."
-            />
+        <Section id={sectionId} labelledBy={`${sectionId}-heading`} containerClassName={hasProjects ? 'pb-0 md:pb-0' : undefined}>
+            <SectionHeading id={`${sectionId}-heading`} title={copy.title} lead={copy.lead} />
 
             {hasProjects ? (
                 <>
@@ -54,9 +75,9 @@ export function ProjectsSection({ projects }: { projects: Project[] }) {
                 </>
             ) : (
                 <div className="flex flex-col items-start gap-6 border p-8 md:p-10">
-                    <p className="text-lg leading-relaxed">Pierwsze realizacje pokażemy tu wkrótce.</p>
+                    <p className="text-lg leading-relaxed">{copy.empty}</p>
                     <Button variant="outline" className="max-md:h-11" onClick={() => openContact('quick')}>
-                        Napisz do nas
+                        {copy.write}
                     </Button>
                 </div>
             )}
@@ -73,6 +94,7 @@ type ProjectRowProps = {
  * `group/project`: keyboard focus on the row's button scrolls the screenshot preview like a hover on the frame does.
  */
 function ProjectRow({ project, onOpenCaseStudy }: ProjectRowProps) {
+    const copy = useCopy(COPY);
     const titleId = `projekt-${project.slug}-title`;
 
     return (
@@ -85,7 +107,7 @@ function ProjectRow({ project, onOpenCaseStudy }: ProjectRowProps) {
                 <p className="mt-5 max-w-[60ch] leading-relaxed text-pretty">{project.description}</p>
 
                 {project.techStack.length > 0 && (
-                    <ul aria-label="Technologie" className="mt-6 flex flex-wrap gap-1.5">
+                    <ul aria-label={copy.tech} className="mt-6 flex flex-wrap gap-1.5">
                         {project.techStack.map((tech) => (
                             <li key={tech}>
                                 <TechTag>{tech}</TechTag>
@@ -97,8 +119,8 @@ function ProjectRow({ project, onOpenCaseStudy }: ProjectRowProps) {
                 <ProjectMetrics metrics={project.metrics} className="mt-8" />
 
                 <Button variant="outline" aria-haspopup="dialog" className="mt-8 max-md:h-11" onClick={(event) => onOpenCaseStudy(project, event.currentTarget)}>
-                    Zobacz case study
-                    <span className="sr-only"> projektu {project.title}</span>
+                    {copy.caseStudy}
+                    <span className="sr-only">{copy.caseStudyOf(project.title)}</span>
                 </Button>
             </div>
 

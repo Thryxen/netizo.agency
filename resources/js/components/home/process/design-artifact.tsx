@@ -1,6 +1,7 @@
 import { Check, PenTool } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
 import { SlotCross } from '@/components/home/live-build/shop-window';
+import { localized, useCopy } from '@/lib/i18n';
 import { photo } from '@/lib/photos';
 import { cn } from '@/lib/utils';
 import { ArtifactFrame, chipClassName, Swap } from './artifact-parts';
@@ -14,6 +15,22 @@ const GROWN = 3;
 const RESOLVED = 4;
 
 const HERO_PHOTO = photo('shop-hero');
+
+const COPY = localized({
+    pl: {
+        title: 'Strona główna',
+        prototype: (version: string): string => `Prototyp ${version}`,
+        /** The shop's real headline (as in the hero's live build). */
+        headline: 'Swetry z polskiej wełny',
+        comment: 'Większe zdjęcie?',
+    },
+    en: {
+        title: 'Home page',
+        prototype: (version: string): string => `Prototype ${version}`,
+        headline: 'Polish wool sweaters',
+        comment: 'Bigger photo?',
+    },
+});
 
 /** Stagger of the design resolving over the wireframe, element by element (ms). */
 const STAGGER_MS = 70;
@@ -53,6 +70,7 @@ const WF_BAR = 'rounded-full bg-foreground/12';
  */
 export function DesignArtifact({ state }: { state: StepState }) {
     const step = useStepClock(ARTIFACT_MS.design, state);
+    const copy = useCopy(COPY);
     const designed = step >= DESIGNED;
     const commented = step >= COMMENTED;
     const grown = step >= GROWN;
@@ -61,14 +79,14 @@ export function DesignArtifact({ state }: { state: StepState }) {
     return (
         <ArtifactFrame
             icon={PenTool}
-            title="Strona główna"
+            title={copy.title}
             aside={
                 <Swap
                     current={resolved ? 'v2' : 'v1'}
                     align="end"
                     items={[
-                        { key: 'v1', node: <span className={cn(chipClassName, 'h-5 px-1.5 font-normal text-muted-foreground')}>Prototyp v1</span> },
-                        { key: 'v2', node: <span className={cn(chipClassName, 'h-5 border-foreground/40 px-1.5')}>Prototyp v2</span> },
+                        { key: 'v1', node: <span className={cn(chipClassName, 'h-5 px-1.5 font-normal text-muted-foreground')}>{copy.prototype('v1')}</span> },
+                        { key: 'v2', node: <span className={cn(chipClassName, 'h-5 border-foreground/40 px-1.5')}>{copy.prototype('v2')}</span> },
                     ]}
                 />
             }
@@ -99,7 +117,7 @@ export function DesignArtifact({ state }: { state: StepState }) {
                                 style={designed ? { transitionDelay: `${STAGGER_MS}ms` } : undefined}
                                 className="absolute inset-0 text-[11.5px] leading-[1.2] font-semibold tracking-tight transition-opacity duration-300 data-[show=false]:opacity-0"
                             >
-                                Swetry z polskiej wełny
+                                {copy.headline}
                             </span>
                         </span>
                         <span className="mt-1.5 flex flex-col gap-1">
@@ -169,6 +187,8 @@ export function DesignArtifact({ state }: { state: StepState }) {
  * beside the avatar (the text folds away to zero width), so the final frame shows the grown photo, not the bubble.
  */
 function Comment({ show, resolved }: { show: boolean; resolved: boolean }) {
+    const copy = useCopy(COPY);
+
     return (
         <span
             data-show={show}
@@ -176,7 +196,7 @@ function Comment({ show, resolved }: { show: boolean; resolved: boolean }) {
         >
             <span className="flex items-center rounded-md border bg-background px-1.5 py-1 text-[11px] leading-none font-medium whitespace-nowrap shadow-[0_0.1rem_0.4rem_rgb(0_0_0/0.08)] dark:bg-[oklch(0.22_0_0)] dark:shadow-none">
                 <Fold open={!resolved}>
-                    <span className="block px-0.5 py-px">Większe zdjęcie?</span>
+                    <span className="block px-0.5 py-px">{copy.comment}</span>
                 </Fold>
                 <Fold open={resolved}>
                     <Check aria-hidden="true" className="size-3" strokeWidth={2.75} />

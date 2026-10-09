@@ -2,14 +2,18 @@
  * Generuje obrazy do podglądów linków (og:image, twitter:image), 1200 × 630 px, do public/assets/images:
  *   og-netizo-2.png          strona główna, z szablon.html
  *   og-netizo-partnerzy.png  program partnerski (/partnerzy), z szablon-partnerzy.html
+ *   og-netizo-en.png         angielska strona główna (/en), z szablon-en.html
+ *   og-netizo-partners-en.png  angielski program partnerski (/en/partners), z szablon-partnerzy-en.html
  * Logo, sygnet i fonty są wspólne z wizytówkami (netizo/wizytowki), więc marka zmienia się w jednym miejscu.
  *
  * Uruchomienie (z katalogu projektu, bez instalowania niczego w projekcie):
  *   npx -y -p playwright@1.58.0 node netizo/og-image/generuj.cjs
+ * Tylko wybrane obrazy: dopisz nazwy plików, np. `… generuj.cjs og-netizo-en.png og-netizo-partners-en.png`.
  * Gdy brakuje przeglądarki: npx -y playwright@1.58.0 install chromium
  *
  * Po zmianie nazwy pliku zaktualizuj odwołania: dla strony głównej HomeController, config/seotools.php
- * i tests/Feature/HomePageTest.php, dla partnerów PartnerProgramController i tests/Feature/PartnerProgramPageTest.php.
+ * i tests/Feature/HomePageTest.php, dla partnerów PartnerProgramController i tests/Feature/PartnerProgramPageTest.php,
+ * dla wersji angielskiej klucz `seo.image` w lang/en/home.php lub lang/en/partners.php i te same testy.
  * Nowa nazwa omija pamięć podręczną podglądów (Facebook, Discord, Cloudflare), która trzyma stary obraz pod starym adresem.
  */
 const fs = require('fs');
@@ -21,6 +25,8 @@ const OUTPUT_DIR = path.join(DIR, '..', '..', 'public', 'assets', 'images');
 const IMAGES = [
     { template: 'szablon.html', output: 'og-netizo-2.png' },
     { template: 'szablon-partnerzy.html', output: 'og-netizo-partnerzy.png' },
+    { template: 'szablon-en.html', output: 'og-netizo-en.png' },
+    { template: 'szablon-partnerzy-en.html', output: 'og-netizo-partners-en.png' },
 ];
 const SIZE = { width: 1200, height: 630 };
 /** WhatsApp pomija podgląd z obrazem większym niż 300 KB. */
@@ -75,10 +81,17 @@ function render(template, values) {
         sygnet: fs.readFileSync(path.join(SHARED, 'sygnet.svg'), 'utf8'),
     };
 
+    const requested = process.argv.slice(2);
+    const unknown = requested.filter((output) => !IMAGES.some((image) => image.output === output));
+
+    if (unknown.length > 0) {
+        throw new Error(`Nieznany obraz: ${unknown.join(', ')}. Dostępne: ${IMAGES.map((image) => image.output).join(', ')}.`);
+    }
+
     const browser = await chromium.launch();
 
     try {
-        for (const image of IMAGES) {
+        for (const image of IMAGES.filter((candidate) => requested.length === 0 || requested.includes(candidate.output))) {
             const html = render(inlineFonts(fs.readFileSync(path.join(DIR, image.template), 'utf8')), values);
             const output = path.join(OUTPUT_DIR, image.output);
             const page = await browser.newPage({ viewport: SIZE, deviceScaleFactor: 1 });

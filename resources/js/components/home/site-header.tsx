@@ -2,34 +2,77 @@ import { Menu, Phone, XIcon } from 'lucide-react';
 import { type MouseEvent, type RefObject, useEffect, useRef, useState } from 'react';
 import { ExternalLink } from '@/components/home/external-link';
 import { useHomeUi } from '@/components/home/home-ui-context';
+import { InfoLinkLabel } from '@/components/home/info-link-label';
+import { LanguageSwitcher } from '@/components/home/language-switcher';
 import { Logo } from '@/components/home/logo';
 import { Container } from '@/components/home/section';
 import { ThemeToggle } from '@/components/home/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { type Locale, type Localized, localized, useCopy } from '@/lib/i18n';
 import { goToSection } from '@/lib/in-page-navigation';
-import { clientPanelUrl, contact, infoLinks } from '@/lib/site';
+import { type HomeSection, homeSections } from '@/lib/sections';
+import { clientPanelUrl, contact, useInfoLinks } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 type NavSection = { id: string; label: string };
 
-/** Every anchored section, in page order. */
-const SECTIONS: NavSection[] = [
-    { id: 'uslugi', label: 'Usługi' },
-    { id: 'projekty', label: 'Projekty' },
-    { id: 'misja', label: 'Misja' },
-    { id: 'klienci', label: 'Klienci' },
-    { id: 'proces', label: 'Proces' },
-    { id: 'panel', label: 'Panel klienta' },
-    { id: 'faq', label: 'FAQ' },
-    { id: 'newsletter', label: 'Newsletter' },
-    { id: 'kontakt', label: 'Kontakt' },
-];
+const COPY = localized({
+    pl: {
+        sections: {
+            services: 'Usługi',
+            projects: 'Projekty',
+            mission: 'Misja',
+            clients: 'Klienci',
+            process: 'Proces',
+            panel: 'Panel klienta',
+            faq: 'FAQ',
+            newsletter: 'Newsletter',
+            contact: 'Kontakt',
+        } satisfies Record<HomeSection, string>,
+        home: 'Netizo – strona główna',
+        sectionsNav: 'Sekcje strony',
+        callback: 'Zamów rozmowę telefoniczną',
+        clientPanel: 'Panel klienta',
+        quote: 'Wyceń projekt',
+        openMenu: 'Otwórz menu',
+        menu: 'Menu',
+        closeMenu: 'Zamknij menu',
+        logIn: 'Zaloguj się do panelu',
+    },
+    en: {
+        sections: {
+            services: 'Services',
+            projects: 'Projects',
+            mission: 'Mission',
+            clients: 'Clients',
+            process: 'Process',
+            panel: 'Client portal',
+            faq: 'FAQ',
+            newsletter: 'Newsletter',
+            contact: 'Contact',
+        },
+        home: 'Netizo – home page',
+        sectionsNav: 'Page sections',
+        callback: 'Request a phone call',
+        clientPanel: 'Client portal',
+        quote: 'Get a quote',
+        openMenu: 'Open menu',
+        menu: 'Menu',
+        closeMenu: 'Close menu',
+        logIn: 'Log in to the portal',
+    },
+});
 
-const DESKTOP_SECTION_IDS = new Set(['uslugi', 'projekty', 'proces', 'faq', 'kontakt']);
-const DESKTOP_SECTIONS = SECTIONS.filter(({ id }) => DESKTOP_SECTION_IDS.has(id));
+const SECTION_KEYS = Object.keys(homeSections.pl) as HomeSection[];
+const DESKTOP_SECTION_KEYS: HomeSection[] = ['services', 'projects', 'process', 'faq', 'contact'];
 
-const LAST_SECTION_ID = SECTIONS[SECTIONS.length - 1].id;
+const navSections = (locale: Locale, keys: HomeSection[]): NavSection[] =>
+    keys.map((key) => ({ id: homeSections[locale][key], label: COPY[locale].sections[key] }));
+
+/** Every anchored section in page order, and the ones in the desktop bar, in each language. */
+const SECTIONS: Localized<NavSection[]> = { pl: navSections('pl', SECTION_KEYS), en: navSections('en', SECTION_KEYS) };
+const DESKTOP_SECTIONS: Localized<NavSection[]> = { pl: navSections('pl', DESKTOP_SECTION_KEYS), en: navSections('en', DESKTOP_SECTION_KEYS) };
 
 const focusRing = 'outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50';
 
@@ -41,20 +84,21 @@ const isScrolledToEnd = (): boolean => window.innerHeight + window.scrollY >= do
  * (edge-adjacent counts as intersecting) does not stay active after an anchor jump.
  * At the very end of the page the last section wins: on tall viewports its top may never reach the band.
  */
-function useActiveSection(headerRef: RefObject<HTMLElement | null>): string | null {
+function useActiveSection(headerRef: RefObject<HTMLElement | null>, sections: NavSection[]): string | null {
     const [activeId, setActiveId] = useState<string | null>(null);
 
     useEffect(() => {
+        const lastSectionId = sections[sections.length - 1].id;
         if (typeof IntersectionObserver === 'undefined') {
             return;
         }
 
-        const elements = SECTIONS.map(({ id }) => document.getElementById(id)).filter((element): element is HTMLElement => element !== null);
+        const elements = sections.map(({ id }) => document.getElementById(id)).filter((element): element is HTMLElement => element !== null);
         const visible = new Map<string, boolean>();
         const headerHeight = headerRef.current?.offsetHeight ?? 64;
 
         const update = (): void => {
-            setActiveId(isScrolledToEnd() ? LAST_SECTION_ID : (SECTIONS.find(({ id }) => visible.get(id))?.id ?? null));
+            setActiveId(isScrolledToEnd() ? lastSectionId : (sections.find(({ id }) => visible.get(id))?.id ?? null));
         };
 
         const observer = new IntersectionObserver(
@@ -88,15 +132,19 @@ function useActiveSection(headerRef: RefObject<HTMLElement | null>): string | nu
             window.removeEventListener('scroll', handleScroll);
             window.cancelAnimationFrame(frame);
         };
-    }, [headerRef]);
+    }, [headerRef, sections]);
 
     return activeId;
 }
 
 export function SiteHeader() {
     const { openContact, openCallback } = useHomeUi();
+    const copy = useCopy(COPY);
+    const sections = useCopy(SECTIONS);
+    const desktopSections = useCopy(DESKTOP_SECTIONS);
+    const infoLinks = useInfoLinks();
     const headerRef = useRef<HTMLElement>(null);
-    const activeId = useActiveSection(headerRef);
+    const activeId = useActiveSection(headerRef, sections);
     const [menuOpen, setMenuOpen] = useState(false);
     /**
      * Action to run once the sheet has fully closed. Radix releases the scroll lock on unmount and
@@ -122,13 +170,13 @@ export function SiteHeader() {
     return (
         <header ref={headerRef} className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/85">
             <Container className="flex h-(--header-height) items-center gap-2">
-                <a href="#" aria-label="Netizo – strona główna" className={cn('-ml-1 inline-flex min-h-11 shrink-0 items-center rounded-sm p-1 lg:min-h-0', focusRing)}>
-                    <Logo className="h-9" />
+                <a href="#" aria-label={copy.home} className={cn('-ml-1 inline-flex min-h-11 shrink-0 items-center rounded-sm p-1 lg:min-h-0', focusRing)}>
+                    <Logo className="h-9 max-[359px]:h-7" />
                 </a>
 
-                <nav aria-label="Sekcje strony" className="ml-8 hidden lg:block xl:ml-12">
+                <nav aria-label={copy.sectionsNav} className="ml-8 hidden lg:block xl:ml-12">
                     <ul className="flex items-center gap-1">
-                        {DESKTOP_SECTIONS.map(({ id, label }) => {
+                        {desktopSections.map(({ id, label }) => {
                             const active = activeId === id;
 
                             return (
@@ -151,28 +199,30 @@ export function SiteHeader() {
                 </nav>
 
                 <div className="ml-auto flex items-center gap-1 sm:gap-2">
-                    <ThemeToggle className="size-11 lg:size-9" />
+                    <LanguageSwitcher className="max-lg:h-11" codeClassName="sm:hidden lg:inline xl:hidden" nameClassName="hidden sm:inline lg:hidden xl:inline" />
+                    {/* Phones: the theme toggle moves into the menu, so the language switcher fits beside the logo. */}
+                    <ThemeToggle className="hidden size-11 sm:inline-flex lg:size-9" />
                     <Button
                         variant="ghost"
                         size="icon"
                         className="size-11 lg:hidden"
-                        aria-label="Zamów rozmowę telefoniczną"
+                        aria-label={copy.callback}
                         onClick={(event) => openCallback(event.currentTarget)}
                     >
                         <Phone aria-hidden="true" />
                     </Button>
                     <Button variant="ghost" asChild className="hidden lg:inline-flex">
                         <ExternalLink href={clientPanelUrl} rel="noopener">
-                            Panel klienta
+                            {copy.clientPanel}
                         </ExternalLink>
                     </Button>
                     <Button className="hidden sm:inline-flex max-lg:h-11" onClick={() => openContact('brief')}>
-                        Wyceń projekt
+                        {copy.quote}
                     </Button>
 
                     <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="-mr-2.5 size-11 lg:hidden" aria-label="Otwórz menu">
+                            <Button variant="ghost" size="icon" className="-mr-2.5 size-11 lg:hidden" aria-label={copy.openMenu}>
                                 <Menu aria-hidden="true" />
                             </Button>
                         </SheetTrigger>
@@ -192,18 +242,18 @@ export function SiteHeader() {
                             }}
                         >
                             <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-border pr-2 pl-4">
-                                <SheetTitle className="text-base">Menu</SheetTitle>
+                                <SheetTitle className="text-base">{copy.menu}</SheetTitle>
                                 <SheetClose asChild>
-                                    <Button variant="ghost" size="icon" className="size-11" aria-label="Zamknij menu">
+                                    <Button variant="ghost" size="icon" className="size-11" aria-label={copy.closeMenu}>
                                         <XIcon aria-hidden="true" />
                                     </Button>
                                 </SheetClose>
                             </div>
 
                             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
-                                <nav aria-label="Sekcje strony">
+                                <nav aria-label={copy.sectionsNav}>
                                     <ul className="divide-y divide-border border-b border-border">
-                                        {SECTIONS.map(({ id, label }) => {
+                                        {sections.map(({ id, label }) => {
                                             const active = activeId === id;
 
                                             return (
@@ -234,16 +284,17 @@ export function SiteHeader() {
                                             rel="noopener"
                                             className={cn('flex h-11 items-center rounded-md px-2 text-muted-foreground hover:text-foreground', focusRing)}
                                         >
-                                            Zaloguj się do panelu
+                                            {copy.logIn}
                                         </ExternalLink>
                                     </li>
-                                    {infoLinks.map(({ href, label }) => (
-                                        <li key={href}>
+                                    {infoLinks.map((link) => (
+                                        <li key={link.href}>
                                             <a
-                                                href={href}
+                                                href={link.href}
+                                                hrefLang={link.hrefLang}
                                                 className={cn('flex h-11 items-center rounded-md px-2 text-muted-foreground hover:text-foreground', focusRing)}
                                             >
-                                                {label}
+                                                <InfoLinkLabel link={link} />
                                             </a>
                                         </li>
                                     ))}
@@ -251,14 +302,17 @@ export function SiteHeader() {
 
                                 <div className="mt-auto flex flex-col gap-1 border-t border-border px-4 pt-4 pb-2">
                                     <Button size="lg" className="h-11 w-full" onClick={() => closeMenuThen(() => openContact('brief'))}>
-                                        Wyceń projekt
+                                        {copy.quote}
                                     </Button>
-                                    <a
-                                        href={`mailto:${contact.email}`}
-                                        className={cn('inline-flex min-h-11 items-center self-start rounded-sm text-sm text-muted-foreground hover:text-foreground', focusRing)}
-                                    >
-                                        {contact.email}
-                                    </a>
+                                    <div className="flex items-center justify-between gap-3">
+                                        <a
+                                            href={`mailto:${contact.email}`}
+                                            className={cn('inline-flex min-h-11 items-center rounded-sm text-sm text-muted-foreground hover:text-foreground', focusRing)}
+                                        >
+                                            {contact.email}
+                                        </a>
+                                        <ThemeToggle className="-mr-2.5 size-11 sm:hidden" />
+                                    </div>
                                 </div>
                             </div>
                         </SheetContent>

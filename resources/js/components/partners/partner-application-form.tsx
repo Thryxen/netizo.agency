@@ -6,8 +6,49 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useRememberedValue } from '@/hooks/use-remembered-value';
-import { endpoints } from '@/lib/endpoints';
+import { useEndpoints } from '@/lib/endpoints';
+import { localized, useCopy, useLocale } from '@/lib/i18n';
+import { usePageUrls } from '@/lib/site';
 import { partnerTypeOptions } from './partner-options';
+
+const COPY = localized({
+    pl: {
+        sentHeading: 'Zgłoszenie wysłane',
+        sentText: (email: string) => `Dziękujemy. W ciągu 24 godzin odezwiemy się na ${email} z kodem partnera i umową do przejrzenia.`,
+        home: 'Przejdź na stronę główną',
+        formLabel: 'Zgłoszenie do programu partnerskiego',
+        name: 'Imię i nazwisko',
+        namePlaceholder: 'Anna Kowalska',
+        email: 'E-mail',
+        emailPlaceholder: 'anna@firma.pl',
+        phone: 'Telefon (opcjonalnie)',
+        type: 'Kim jesteś?',
+        message: 'Kogo chcesz nam polecić? (opcjonalnie)',
+        messagePlaceholder: 'Na przykład: znam kilka firm budowlanych, które potrzebują nowych stron.',
+        requiredBefore: 'Zgłoszenie do niczego Cię nie zobowiązuje. Pola oznaczone ',
+        asterisk: 'gwiazdką',
+        requiredAfter: ' są wymagane.',
+        submit: 'Wyślij zgłoszenie',
+    },
+    en: {
+        sentHeading: 'Application sent',
+        sentText: (email) => `Thank you. Within 24 hours we’ll email ${email} with your partner code and an agreement to review.`,
+        home: 'Go to the home page',
+        formLabel: 'Partner program application',
+        name: 'Full name',
+        namePlaceholder: 'Jane Smith',
+        email: 'Email',
+        emailPlaceholder: 'jane@company.com',
+        phone: 'Phone (optional)',
+        type: 'What best describes you?',
+        message: 'Who would you like to refer? (optional)',
+        messagePlaceholder: 'For example: I know a few construction companies that need new websites.',
+        requiredBefore: 'Applying doesn’t commit you to anything. Fields marked ',
+        asterisk: 'with an asterisk',
+        requiredAfter: ' are required.',
+        submit: 'Send application',
+    },
+});
 
 type PartnerApplicationData = {
     name: string;
@@ -26,8 +67,12 @@ type PartnerApplicationFormProps = {
     onSent?: (name: string) => void;
 };
 
-/** Application to the partner programme (Dołącz → POST /partnerzy). */
+/** Application to the partner programme (Dołącz → POST /partnerzy, Join → POST /en/partners). */
 export function PartnerApplicationForm({ onNameChange, onSent }: PartnerApplicationFormProps) {
+    const locale = useLocale();
+    const copy = useCopy(COPY);
+    const endpoints = useEndpoints();
+    const pageUrls = usePageUrls();
     const form = useForm<PartnerApplicationData>(createInitialData);
     const [submitted, setSubmitted] = useState(false);
     const [sentTo, setSentTo] = useState('');
@@ -107,14 +152,14 @@ export function PartnerApplicationForm({ onNameChange, onSent }: PartnerApplicat
         return (
             <div ref={rootRef} className="grid gap-3">
                 <h3 ref={successHeadingRef} tabIndex={-1} className="scroll-mt-24 text-2xl font-semibold tracking-tight outline-none">
-                    Zgłoszenie wysłane
+                    {copy.sentHeading}
                 </h3>
                 <p role="status" className="max-w-[48ch] leading-relaxed text-muted-foreground">
-                    Dziękujemy. W ciągu 24 godzin odezwiemy się na {sentTo} z kodem partnera i umową do przejrzenia.
+                    {copy.sentText(sentTo)}
                 </p>
                 <div className="pt-5">
                     <Button variant="outline" className="max-md:h-11" asChild>
-                        <a href="/">Przejdź na stronę główną</a>
+                        <a href={pageUrls.home}>{copy.home}</a>
                     </Button>
                 </div>
             </div>
@@ -123,14 +168,14 @@ export function PartnerApplicationForm({ onNameChange, onSent }: PartnerApplicat
 
     return (
         <div ref={rootRef}>
-            <form onSubmit={handleSubmit} noValidate aria-label="Zgłoszenie do programu partnerskiego" className="grid gap-6">
+            <form onSubmit={handleSubmit} noValidate aria-label={copy.formLabel} className="grid gap-6">
                 <div className="grid gap-5 sm:grid-cols-2">
-                    <Field fieldId="partner-name" label="Imię i nazwisko" required error={errors.name}>
+                    <Field fieldId="partner-name" label={copy.name} required error={errors.name}>
                         <Input
                             id="partner-name"
                             name="name"
                             autoComplete="name"
-                            placeholder="Anna Kowalska"
+                            placeholder={copy.namePlaceholder}
                             maxLength={255}
                             value={form.data.name}
                             onChange={(event) => setField('name', event.target.value)}
@@ -138,14 +183,14 @@ export function PartnerApplicationForm({ onNameChange, onSent }: PartnerApplicat
                             {...invalidProps('partner-name', errors.name)}
                         />
                     </Field>
-                    <Field fieldId="partner-email" label="E-mail" required error={errors.email}>
+                    <Field fieldId="partner-email" label={copy.email} required error={errors.email}>
                         <Input
                             id="partner-email"
                             name="email"
                             type="email"
                             inputMode="email"
                             autoComplete="email"
-                            placeholder="anna@firma.pl"
+                            placeholder={copy.emailPlaceholder}
                             maxLength={255}
                             value={form.data.email}
                             onChange={(event) => setField('email', event.target.value)}
@@ -155,7 +200,7 @@ export function PartnerApplicationForm({ onNameChange, onSent }: PartnerApplicat
                     </Field>
                 </div>
 
-                <Field fieldId="partner-phone" label="Telefon (opcjonalnie)" error={errors.phone} className="sm:max-w-[calc(50%-0.625rem)]">
+                <Field fieldId="partner-phone" label={copy.phone} error={errors.phone} className="sm:max-w-[calc(50%-0.625rem)]">
                     <Input
                         id="partner-phone"
                         name="phone"
@@ -174,7 +219,7 @@ export function PartnerApplicationForm({ onNameChange, onSent }: PartnerApplicat
                     id="partner-type"
                     legend={
                         <>
-                            Kim jesteś? <span aria-hidden="true" className="text-muted-foreground">*</span>
+                            {copy.type} <span aria-hidden="true" className="text-muted-foreground">*</span>
                         </>
                     }
                     error={errors.partner_type}
@@ -187,7 +232,7 @@ export function PartnerApplicationForm({ onNameChange, onSent }: PartnerApplicat
                                 id={`partner-type-${option.value}`}
                                 name="partner_type"
                                 value={option.value}
-                                label={option.label}
+                                label={option.label[locale]}
                                 checked={form.data.partner_type === option.value}
                                 onCheckedChange={(checked) => checked && setField('partner_type', option.value)}
                                 invalid={Boolean(errors.partner_type)}
@@ -196,13 +241,13 @@ export function PartnerApplicationForm({ onNameChange, onSent }: PartnerApplicat
                     </div>
                 </ChoiceFieldset>
 
-                <Field fieldId="partner-message" label="Kogo chcesz nam polecić? (opcjonalnie)" error={errors.message}>
+                <Field fieldId="partner-message" label={copy.message} error={errors.message}>
                     <Textarea
                         id="partner-message"
                         name="message"
                         rows={4}
                         maxLength={2000}
-                        placeholder="Na przykład: znam kilka firm budowlanych, które potrzebują nowych stron."
+                        placeholder={copy.messagePlaceholder}
                         value={form.data.message}
                         onChange={(event) => setField('message', event.target.value)}
                         className="min-h-28"
@@ -214,11 +259,13 @@ export function PartnerApplicationForm({ onNameChange, onSent }: PartnerApplicat
 
                 <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 border-t border-border pt-6">
                     <p className="max-w-[36ch] text-sm text-pretty text-muted-foreground">
-                        Zgłoszenie do niczego Cię nie zobowiązuje. Pola oznaczone <span aria-hidden="true">*</span>
-                        <span className="sr-only">gwiazdką</span> są wymagane.
+                        {copy.requiredBefore}
+                        <span aria-hidden="true">*</span>
+                        <span className="sr-only">{copy.asterisk}</span>
+                        {copy.requiredAfter}
                     </p>
                     <SubmitButton processing={form.processing} className="ml-auto max-md:h-11">
-                        Wyślij zgłoszenie
+                        {copy.submit}
                     </SubmitButton>
                 </div>
             </form>

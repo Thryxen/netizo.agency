@@ -6,6 +6,7 @@ import { AdminLayout } from '@/components/admin/admin-layout';
 import { BulkBar } from '@/components/admin/bulk-bar';
 import { ConfirmDeleteDialog } from '@/components/admin/confirm-delete-dialog';
 import { CopyButton } from '@/components/admin/detail';
+import { LeadLocaleBadge } from '@/components/admin/lead-locale';
 import { ListToolbar } from '@/components/admin/list-toolbar';
 import { Pagination } from '@/components/admin/pagination';
 import { SortHeader } from '@/components/admin/sort-header';
@@ -105,6 +106,7 @@ export default function CallbacksIndex({ callbacks, filters }: Props) {
                                             {callback.phone}
                                         </a>
                                         <CopyButton value={callback.phone} label="numer telefonu" />
+                                        <LeadLocaleBadge locale={callback.locale} className="ml-1" />
                                     </span>
                                 </TableCell>
                                 <TableCell className="whitespace-nowrap text-muted-foreground">{callback.createdAt}</TableCell>

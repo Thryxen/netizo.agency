@@ -2,17 +2,37 @@ import { ArrowUpRightIcon } from 'lucide-react';
 import { ExternalLink } from '@/components/home/external-link';
 import { bleedClassName, gutterClassName, Rivet, Section, SectionHeading } from '@/components/home/section';
 import { CountUp, Marquee } from '@/components/motion';
+import { localized, useCopy } from '@/lib/i18n';
+import { useHomeSections } from '@/lib/sections';
 import { cn } from '@/lib/utils';
 import type { Client } from '@/types/home';
 
 /** Below this many clients a loop would show the same name side by side, so the static list stays. */
 const MARQUEE_MIN_CLIENTS = 3;
 
-/** Availability is quoted once, in the hero; these figures don't repeat it. */
-const STATS = [
-    { value: '30M+', label: 'zapytań miesięcznie obsługują nasze systemy' },
-    { value: '250K+', label: 'linii kodu w produkcji' },
-] as const;
+const COPY = localized({
+    pl: {
+        title: 'Zaufali nam',
+        titleNoClients: 'Nasze wdrożenia w liczbach',
+        lead: 'Firmy, z którymi budujemy i rozwijamy produkty.',
+        statsLabel: 'Netizo w liczbach',
+        /** Availability is quoted once, in the hero; these figures don't repeat it. */
+        stats: [
+            { value: '30M+', label: 'zapytań miesięcznie obsługują nasze systemy' },
+            { value: '250K+', label: 'linii kodu w produkcji' },
+        ],
+    },
+    en: {
+        title: 'Trusted by',
+        titleNoClients: 'Our work in numbers',
+        lead: 'Companies we build and grow products with.',
+        statsLabel: 'Netizo in numbers',
+        stats: [
+            { value: '30M+', label: 'requests a month handled by our systems' },
+            { value: '250K+', label: 'lines of code in production' },
+        ],
+    },
+});
 
 /**
  * The heading band, then one bleed block rail to rail like the services grid: the client wordmarks (a marquee band;
@@ -23,28 +43,30 @@ const STATS = [
  * padding so the band's last row meets that hairline.
  */
 export function ClientsSection({ clients }: { clients: Client[] }) {
+    const copy = useCopy(COPY);
+    const sectionId = useHomeSections().clients;
     const hasClients = clients.length > 0;
     const showsMarquee = clients.length >= MARQUEE_MIN_CLIENTS;
 
     return (
-        <Section id="klienci" labelledBy="klienci-heading" containerClassName="pb-0 md:pb-0">
+        <Section id={sectionId} labelledBy={`${sectionId}-heading`} containerClassName="pb-0 md:pb-0">
             <div className="flex flex-col lg:grid lg:grid-cols-12 lg:gap-x-16">
                 <SectionHeading
-                    id="klienci-heading"
-                    title={hasClients ? 'Zaufali nam' : 'Nasze wdrożenia w liczbach'}
-                    lead={hasClients ? 'Firmy, z którymi budujemy i rozwijamy produkty.' : undefined}
+                    id={`${sectionId}-heading`}
+                    title={hasClients ? copy.title : copy.titleNoClients}
+                    lead={hasClients ? copy.lead : undefined}
                     className="lg:col-span-6"
                 />
 
                 <ul
-                    aria-label="Netizo w liczbach"
+                    aria-label={copy.statsLabel}
                     className={cn(
                         'order-last grid grid-cols-2 gap-px border-t border-border bg-border',
                         bleedClassName,
                         'lg:order-none lg:col-span-6 lg:mx-0 lg:mb-16 lg:gap-x-10 lg:self-end lg:border-t-0 lg:bg-transparent',
                     )}
                 >
-                    {STATS.map((stat) => (
+                    {copy.stats.map((stat) => (
                         <li key={stat.value} className={cn('flex flex-col gap-3 bg-background py-8', gutterClassName, 'lg:bg-transparent lg:p-0')}>
                             <CountUp value={stat.value} className="text-4xl leading-none font-semibold tracking-tight tabular-nums md:text-5xl" />
                             <span className="leading-snug text-muted-foreground">{stat.label}</span>

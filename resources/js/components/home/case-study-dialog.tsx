@@ -6,8 +6,32 @@ import { ProjectFrame } from '@/components/home/project-frame';
 import { TechTag } from '@/components/home/tech-tag';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { localized, useCopy } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { Project, ProjectMetric } from '@/types/home';
+
+const COPY = localized({
+    pl: {
+        metrics: 'Projekt w liczbach',
+        close: 'Zamknij',
+        about: 'O projekcie',
+        stack: 'Stack technologiczny',
+        cta: 'Podoba Ci się ten projekt? Zbudujmy coś razem.',
+        send: 'Wyślij zapytanie',
+        challenges: 'Wyzwania',
+        solutions: 'Rozwiązania',
+    },
+    en: {
+        metrics: 'The project in numbers',
+        close: 'Close',
+        about: 'About the project',
+        stack: 'Tech stack',
+        cta: 'Like this project? Let’s build something together.',
+        send: 'Send an inquiry',
+        challenges: 'Challenges',
+        solutions: 'Solutions',
+    },
+});
 
 type ProjectMetricsProps = {
     metrics: ProjectMetric[];
@@ -19,6 +43,8 @@ type ProjectMetricsProps = {
  * Project numbers as a shared-border row (value over label). Renders nothing without metrics.
  */
 export function ProjectMetrics({ metrics, size = 'sm', className }: ProjectMetricsProps) {
+    const copy = useCopy(COPY);
+
     if (metrics.length === 0) {
         return null;
     }
@@ -26,7 +52,7 @@ export function ProjectMetrics({ metrics, size = 'sm', className }: ProjectMetri
     const columns = metrics.length === 1 ? 'grid-cols-1' : metrics.length === 2 ? 'grid-cols-2' : 'grid-cols-3';
 
     return (
-        <ul aria-label="Projekt w liczbach" className={cn('grid border-t border-l', columns, className)}>
+        <ul aria-label={copy.metrics} className={cn('grid border-t border-l', columns, className)}>
             {metrics.map((metric) => (
                 <li key={`${metric.value}-${metric.label}`} className={cn('flex min-w-0 flex-col gap-1 border-r border-b p-3', size === 'lg' ? 'md:p-5' : 'md:p-4')}>
                     <span
@@ -59,6 +85,7 @@ type CaseStudyDialogProps = {
  */
 export function CaseStudyDialog({ project, open, onOpenChange, returnFocusRef }: CaseStudyDialogProps) {
     const { openContact } = useHomeUi();
+    const copy = useCopy(COPY);
     const isContactRequestedRef = useRef(false);
 
     const requestQuote = (): void => {
@@ -69,7 +96,7 @@ export function CaseStudyDialog({ project, open, onOpenChange, returnFocusRef }:
 
     /**
      * After the CTA, openContact() moves focus to the contact heading, so leave focus alone.
-     * Otherwise return it to the "Zobacz case study" button that opened the dialog.
+     * Otherwise return it to the "Zobacz case study" ("See the case study") button that opened the dialog.
      */
     const handleCloseAutoFocus = (event: Event): void => {
         event.preventDefault();
@@ -103,7 +130,7 @@ export function CaseStudyDialog({ project, open, onOpenChange, returnFocusRef }:
                             <DialogDescription className="mt-1">{project.category}</DialogDescription>
                         </div>
                         <DialogClose asChild>
-                            <Button variant="ghost" size="icon" aria-label="Zamknij" className="-mt-1 -mr-2 shrink-0 max-md:size-11">
+                            <Button variant="ghost" size="icon" aria-label={copy.close} className="-mt-1 -mr-2 shrink-0 max-md:size-11">
                                 <XIcon aria-hidden="true" />
                             </Button>
                         </DialogClose>
@@ -126,7 +153,7 @@ export function CaseStudyDialog({ project, open, onOpenChange, returnFocusRef }:
                         <ProjectFrame project={project} variant="full" />
 
                         <div>
-                            <h3 className="text-lg font-semibold tracking-tight">O projekcie</h3>
+                            <h3 className="text-lg font-semibold tracking-tight">{copy.about}</h3>
                             <p className="mt-3 max-w-[65ch] leading-relaxed text-pretty">{project.fullDescription || project.description}</p>
                         </div>
 
@@ -134,7 +161,7 @@ export function CaseStudyDialog({ project, open, onOpenChange, returnFocusRef }:
 
                         {project.techStack.length > 0 && (
                             <div>
-                                <h3 className="text-lg font-semibold tracking-tight">Stack technologiczny</h3>
+                                <h3 className="text-lg font-semibold tracking-tight">{copy.stack}</h3>
                                 <ul className="mt-4 flex flex-wrap gap-1.5">
                                     {project.techStack.map((tech) => (
                                         <li key={tech}>
@@ -147,11 +174,9 @@ export function CaseStudyDialog({ project, open, onOpenChange, returnFocusRef }:
                     </div>
 
                     <div className="flex flex-col gap-4 border-t bg-muted/50 px-5 py-6 sm:flex-row sm:items-center sm:justify-between md:px-8">
-                        <p className="text-lg leading-snug font-semibold tracking-tight text-balance">
-                            Podoba Ci się ten projekt? Zbudujmy coś razem.
-                        </p>
+                        <p className="text-lg leading-snug font-semibold tracking-tight text-balance">{copy.cta}</p>
                         <Button size="lg" className="self-start max-md:h-11 sm:self-auto" onClick={requestQuote}>
-                            Wyślij zapytanie
+                            {copy.send}
                         </Button>
                     </div>
                 </DialogContent>
@@ -161,9 +186,10 @@ export function CaseStudyDialog({ project, open, onOpenChange, returnFocusRef }:
 }
 
 function ChallengesAndSolutions({ challenges, solutions }: { challenges: string[]; solutions: string[] }) {
+    const copy = useCopy(COPY);
     const columns = [
-        { title: 'Wyzwania', items: challenges },
-        { title: 'Rozwiązania', items: solutions },
+        { title: copy.challenges, items: challenges },
+        { title: copy.solutions, items: solutions },
     ].filter((column) => column.items.length > 0);
 
     if (columns.length === 0) {

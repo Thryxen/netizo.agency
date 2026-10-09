@@ -2,7 +2,13 @@ import type { ComponentProps, ReactNode } from 'react';
 import { Rivet } from '@/components/home/section';
 import { TechTag } from '@/components/home/tech-tag';
 import { SpotlightLayer, useSpotlight } from '@/components/motion/spotlight';
+import { localized, useCopy } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+
+const COPY = localized({
+    pl: { technologies: (title: string): string => `Technologie: ${title}` },
+    en: { technologies: (title: string): string => `Technologies: ${title}` },
+});
 
 export type BentoService = {
     title: string;
@@ -55,12 +61,13 @@ type BentoTileTextProps = {
 /** Title (H3), one-line description and technology tags. */
 export function BentoTileText({ service, size = 'md', className }: BentoTileTextProps) {
     const { title, description, tags } = service;
+    const copy = useCopy(COPY);
 
     return (
         <div className={className}>
             <h3 className={cn('font-semibold tracking-tight text-balance', size === 'lg' ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl')}>{title}</h3>
             <p className="mt-1.5 max-w-[44ch] text-sm leading-relaxed text-pretty text-muted-foreground">{description}</p>
-            <ul aria-label={`Technologie: ${title}`} className="mt-4 flex flex-wrap gap-1.5">
+            <ul aria-label={copy.technologies(title)} className="mt-4 flex flex-wrap gap-1.5">
                 {tags.map((tag) => (
                     <li key={tag}>
                         <TechTag>{tag}</TechTag>

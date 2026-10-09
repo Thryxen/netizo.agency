@@ -27,6 +27,8 @@ class ProjectSeeder extends Seeder
                     'full_image' => $this->storeImage("{$project['slug']}.webp", "projects/full/{$project['slug']}.webp"),
                     'challenges' => collect($project['challenges'])->map(fn (string $challenge): array => ['challenge' => $challenge])->all(),
                     'solutions' => collect($project['solutions'])->map(fn (string $solution): array => ['solution' => $solution])->all(),
+                    'challenges_en' => collect($project['challenges_en'])->map(fn (string $challenge): array => ['challenge' => $challenge])->all(),
+                    'solutions_en' => collect($project['solutions_en'])->map(fn (string $solution): array => ['solution' => $solution])->all(),
                 ],
             );
         }
@@ -40,7 +42,9 @@ class ProjectSeeder extends Seeder
     }
 
     /**
-     * @return list<array{slug: string, sort_order: int, title: string, url: string, category: string, description: string, full_description: string, tech_stack: list<string>, metrics: list<array{value: string, label: string}>, challenges: list<string>, solutions: list<string>}>
+     * Polish copy, then its English twin for /en (the `_en` columns).
+     *
+     * @return list<array{slug: string, sort_order: int, title: string, url: string, category: string, description: string, full_description: string, tech_stack: list<string>, metrics: list<array{value: string, label: string}>, challenges: list<string>, solutions: list<string>, category_en: string, description_en: string, full_description_en: string, metrics_en: list<array{value: string, label: string}>, challenges_en: list<string>, solutions_en: list<string>}>
      */
     private function projects(): array
     {
@@ -69,6 +73,24 @@ class ProjectSeeder extends Seeder
                     'Kalendarz dostępności produktów, który obsługa ustawia w kilka sekund.',
                     'Lekki frontend z obrazami WebP i koszykiem, który działa płynnie nawet przy słabym zasięgu.',
                 ],
+                'category_en' => 'Company website / Online orders',
+                'description_en' => 'Website of an artisan bakery in Leszno with next-day orders and pickup at one of three locations.',
+                'full_description_en' => 'Złoty Kłos took orders by phone and in Facebook messages, and late every evening someone put together the list for the next day by hand. We designed a website that presents the range like a bakery shop window and added a simple ordering system with a choice of pickup point. The bakers get a ready summary of the bakes every morning, and customers pay online or on pickup.',
+                'metrics_en' => [
+                    ['value' => '38%', 'label' => 'of orders via the website'],
+                    ['value' => '2 h', 'label' => 'less work every day'],
+                    ['value' => '0.9 s', 'label' => 'LCP on mobile'],
+                ],
+                'challenges_en' => [
+                    'Orders from the phone, Messenger and paper notes had to be copied into one list every evening.',
+                    'The range changes every day, and some bakes are only available on weekends.',
+                    'Most customers visit the website on their phones, often on the way to work.',
+                ],
+                'solutions_en' => [
+                    'Orders go to a dashboard that builds the bakery’s summary at 9 p.m., split by pickup point.',
+                    'A product availability calendar the staff can set in a few seconds.',
+                    'A lightweight front end with WebP images and a cart that runs smoothly even on a weak signal.',
+                ],
             ],
             [
                 'slug' => 'mebloteka',
@@ -93,6 +115,24 @@ class ProjectSeeder extends Seeder
                     'Model wariantów, w którym klient zmienia tkaninę i od razu widzi zdjęcie, cenę i czas dostawy.',
                     'Synchronizacja z API hurtowni co 15 minut przez kolejkę, z powiadomieniem przy błędach.',
                     'Responsywne obrazy AVIF i WebP oraz wyszukiwarka z podpowiedziami bez przeładowania strony.',
+                ],
+                'category_en' => 'E-commerce / Headless',
+                'description_en' => 'An online store with Scandinavian-style furniture: a fast front end, fabric and wood variants, and stock synced with the wholesaler.',
+                'full_description_en' => 'Mebloteka sold only through a marketplace and needed its own sales channel that would be no slower than the competition. We built a headless store: a Laravel back end handles the catalog and orders, and a Next.js front end renders product pages with fabric and wood variants. Stock levels sync with the wholesaler every 15 minutes.',
+                'metrics_en' => [
+                    ['value' => '+41%', 'label' => 'conversion rate'],
+                    ['value' => '1.2 s', 'label' => 'average load time'],
+                    ['value' => '3.4k', 'label' => 'products in the catalog'],
+                ],
+                'challenges_en' => [
+                    'More than 3,000 products with color, fabric and size variants.',
+                    'Stock levels at the wholesaler changed several times a day.',
+                    'Large room-setting photos slowed down the product pages.',
+                ],
+                'solutions_en' => [
+                    'A variant model where customers switch the fabric and instantly see the photo, price and delivery time.',
+                    'Sync with the wholesaler’s API every 15 minutes through a queue, with an alert on errors.',
+                    'Responsive AVIF and WebP images and a search with suggestions that never reloads the page.',
                 ],
             ],
             [
@@ -119,6 +159,24 @@ class ProjectSeeder extends Seeder
                     'Onboarding z importem pojazdów z pliku CSV i pierwszym raportem gotowym w kilka minut.',
                     'Płatności cykliczne z automatycznymi fakturami i przypomnieniami o końcu okresu próbnego.',
                 ],
+                'category_en' => 'Web application / SaaS',
+                'description_en' => 'A dashboard for managing company fleets: live vehicle positions, fuel costs, inspections and reports for accounting.',
+                'full_description_en' => 'FlotaPro is a product for transport and service companies with fleets of 10 to 300 vehicles. We designed and built it from scratch: from the pricing page, through onboarding, to the dashboard with a map, alerts and reports. Data from GPS trackers reaches the system in real time, and the fleet manager sees the costs of every vehicle in one place.',
+                'metrics_en' => [
+                    ['value' => '120+', 'label' => 'companies subscribed'],
+                    ['value' => '< 5 s', 'label' => 'position refresh'],
+                    ['value' => '−18%', 'label' => 'fuel costs for clients'],
+                ],
+                'challenges_en' => [
+                    'Thousands of GPS readings a minute from devices made by different manufacturers.',
+                    'Fleet managers worked in spreadsheets and didn’t want to learn a complicated system.',
+                    'Subscriptions, invoices and free trials had to run without manual work.',
+                ],
+                'solutions_en' => [
+                    'A Redis queue for the readings and WebSockets that refresh the map without reloading the page.',
+                    'Onboarding with vehicle import from a CSV file and the first report ready in a few minutes.',
+                    'Recurring payments with automatic invoices and reminders before a trial ends.',
+                ],
             ],
             [
                 'slug' => 'fizjo-studio',
@@ -143,6 +201,24 @@ class ProjectSeeder extends Seeder
                     'Rezerwacja online w trzech krokach, z wolnymi terminami liczonymi według długości zabiegu.',
                     'Dwukierunkowa synchronizacja z kalendarzami Google wszystkich specjalistów.',
                     'Przypomnienia SMS z linkiem do odwołania wizyty, który od razu zwalnia termin dla innych.',
+                ],
+                'category_en' => 'Service website / Online booking',
+                'description_en' => 'Website of a physiotherapy clinic in Poznań with online booking, SMS reminders and specialist profiles.',
+                'full_description_en' => 'Fizjo Studio was losing patients because the front desk was hard to reach by phone and only one person knew the free slots. We built a new website with treatment descriptions and a price list, plus a booking system connected to the physiotherapists’ schedules. Patients choose the treatment, the specialist and the time, and get an SMS reminder the day before the visit.',
+                'metrics_en' => [
+                    ['value' => '70%', 'label' => 'of visits booked online'],
+                    ['value' => '−45%', 'label' => 'no-shows'],
+                    ['value' => '4.9/5', 'label' => 'Google rating'],
+                ],
+                'challenges_en' => [
+                    'The front desk took dozens of calls a day, mostly about free slots.',
+                    'Each physiotherapist kept their schedule in a different calendar.',
+                    'Patients forgot about their visits, and empty slots were hard to fill.',
+                ],
+                'solutions_en' => [
+                    'Online booking in three steps, with free slots calculated from the length of the treatment.',
+                    'Two-way sync with the Google Calendars of all the specialists.',
+                    'SMS reminders with a link to cancel the visit, which frees the slot for others right away.',
                 ],
             ],
         ];

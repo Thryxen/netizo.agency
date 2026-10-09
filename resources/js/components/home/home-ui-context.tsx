@@ -1,6 +1,7 @@
 import { createContext, type ReactNode, type RefObject, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useRememberedValue } from '@/hooks/use-remembered-value';
 import { goToSection } from '@/lib/in-page-navigation';
+import { useHomeSections } from '@/lib/sections';
 
 export type ContactTab = 'brief' | 'quick';
 
@@ -15,13 +16,11 @@ export type HomeUi = {
     callbackReturnFocusRef: RefObject<HTMLElement | null>;
     contactTab: ContactTab;
     setContactTab: (tab: ContactTab) => void;
-    /** Sets the tab (when given), then scrolls to #kontakt and moves focus to its heading. */
+    /** Sets the tab (when given), then scrolls to the contact section (#kontakt, #contact) and moves focus to its heading. */
     openContact: (tab?: ContactTab) => void;
 };
 
 const HomeUiContext = createContext<HomeUi | null>(null);
-
-const CONTACT_SECTION_ID = 'kontakt';
 
 /**
  * Run the callback once no Radix overlay (dialog/sheet) holds the body scroll lock — a closing
@@ -47,6 +46,7 @@ export function HomeUiProvider({ children }: { children: ReactNode }): ReactNode
     const [callbackOpen, setCallbackOpen] = useState(false);
     const [contactTab, setContactTab] = useState<ContactTab>('brief');
     const callbackReturnFocusRef = useRef<HTMLElement | null>(null);
+    const contactSectionId = useHomeSections().contact;
 
     useRememberedValue('home:contact-tab', contactTab, (remembered) => {
         if (isContactTab(remembered)) {
@@ -67,8 +67,8 @@ export function HomeUiProvider({ children }: { children: ReactNode }): ReactNode
         }
 
         // Let React commit the tab switch and any closing dialog/sheet release its scroll lock first.
-        whenScrollUnlocked(() => goToSection(CONTACT_SECTION_ID));
-    }, []);
+        whenScrollUnlocked(() => goToSection(contactSectionId));
+    }, [contactSectionId]);
 
     const value = useMemo<HomeUi>(
         () => ({ callbackOpen, setCallbackOpen, openCallback, callbackReturnFocusRef, contactTab, setContactTab, openContact }),

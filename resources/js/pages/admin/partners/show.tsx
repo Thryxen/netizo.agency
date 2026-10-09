@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import { ConfirmDeleteDialog } from '@/components/admin/confirm-delete-dialog';
 import { CopyButton, DetailItem, DetailList } from '@/components/admin/detail';
+import { leadLocaleLabel } from '@/components/admin/lead-locale';
 import { partnerTypeLabel } from '@/components/partners/partner-options';
 import { Button } from '@/components/ui/button';
 import { adminRoutes } from '@/lib/admin-routes';
@@ -48,6 +49,7 @@ export default function PartnerShow({ partner }: { partner: AdminPartner }) {
                     </DetailItem>
                     <DetailItem label="Kim jest">{partnerTypeLabel(partner.partnerType)}</DetailItem>
                     <DetailItem label="Data zgłoszenia">{partner.createdAt}</DetailItem>
+                    <DetailItem label="Język">{leadLocaleLabel(partner.locale)}</DetailItem>
                 </DetailList>
 
                 <section className="grid gap-2">
