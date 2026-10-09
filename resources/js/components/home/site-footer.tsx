@@ -3,8 +3,9 @@ import { InfoLinkLabel } from '@/components/home/info-link-label';
 import { LanguageSwitcher } from '@/components/home/language-switcher';
 import { Logo } from '@/components/home/logo';
 import { Container, Rivet } from '@/components/home/section';
+import { SocialIcon } from '@/components/home/social-icon';
 import { localized, useCopy } from '@/lib/i18n';
-import { clientPanelUrl, contact, useInfoLinks } from '@/lib/site';
+import { clientPanelUrl, contact, socialNetworkNames, useInfoLinks, useSocialProfiles } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 const COPY = localized({
@@ -14,6 +15,7 @@ const COPY = localized({
         info: 'Informacje',
         clientPanel: 'Panel klienta',
         contact: 'Kontakt',
+        socials: 'Obserwuj nas',
         rights: 'Wszelkie prawa zastrzeżone.',
     },
     en: {
@@ -22,6 +24,7 @@ const COPY = localized({
         info: 'Information',
         clientPanel: 'Client portal',
         contact: 'Contact',
+        socials: 'Follow us',
         rights: 'All rights reserved.',
     },
 });
@@ -40,14 +43,15 @@ type SiteFooterProps = {
 export function SiteFooter({ homeHref = '#' }: SiteFooterProps) {
     const copy = useCopy(COPY);
     const infoLinks = useInfoLinks();
+    const socialProfiles = useSocialProfiles();
 
     return (
         <footer className="border-t border-border">
             <Container className="py-14 md:py-16">
                 <Rivet side="left" />
                 <Rivet side="right" />
-                <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
-                    <div className="sm:col-span-2 lg:col-span-6">
+                <div className="grid gap-10 sm:grid-cols-3 lg:grid-cols-12 lg:gap-8">
+                    <div className="sm:col-span-3 lg:col-span-4">
                         <a href={homeHref} aria-label={copy.home} className={cn(linkClass, '-ml-1 p-1 text-foreground')}>
                             <Logo className="h-10" />
                         </a>
@@ -89,6 +93,22 @@ export function SiteFooter({ homeHref = '#' }: SiteFooterProps) {
                             </li>
                         </ul>
                     </div>
+
+                    {socialProfiles.length > 0 && (
+                        <div className="lg:col-span-2">
+                            <h2 className="text-sm font-medium">{copy.socials}</h2>
+                            <ul className="mt-2 flex flex-col text-sm md:mt-4 md:gap-3">
+                                {socialProfiles.map(({ network, url }) => (
+                                    <li key={network}>
+                                        <ExternalLink href={url} className={cn(linkClass, 'gap-2')}>
+                                            <SocialIcon network={network} className="size-4" />
+                                            {socialNetworkNames[network]}
+                                        </ExternalLink>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </div>
             </Container>
 

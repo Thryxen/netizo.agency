@@ -125,6 +125,15 @@ it('shares the language and the page in both languages with the polish partner p
             ->where('alternates', ['pl' => url('/partnerzy'), 'en' => url('/en/partners')]));
 });
 
+it('shares the configured social profiles with the partner pages for the footer', function (string $path) {
+    config(['socials' => ['facebook' => null, 'instagram' => 'https://www.instagram.com/netizo', 'tiktok' => null, 'discord' => null]]);
+
+    $this->get($path)
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('socials', [['network' => 'instagram', 'url' => 'https://www.instagram.com/netizo']]));
+})->with(['polish' => '/partnerzy', 'english' => '/en/partners']);
+
 it('links both partner pages to each other for search engines and share previews', function (string $path, string $language, string $ogLocale) {
     $this->get($path)
         ->assertOk()

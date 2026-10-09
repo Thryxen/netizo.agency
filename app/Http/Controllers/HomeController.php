@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\Project;
 use App\Services\LocalizedRoutes;
+use App\Services\SocialProfiles;
 use Artesaos\SEOTools\Facades\JsonLdMulti;
 use Artesaos\SEOTools\Facades\OpenGraph;
 use Artesaos\SEOTools\Facades\SEOMeta;
@@ -58,6 +59,12 @@ class HomeController extends Controller
             ])
             ->addValue('knowsLanguage', LocalizedRoutes::LOCALES)
             ->addValue('priceRange', '$$');
+
+        $socialProfileUrls = SocialProfiles::urls();
+
+        if ($socialProfileUrls !== []) {
+            JsonLdMulti::addValue('sameAs', $socialProfileUrls);
+        }
 
         $faq = $this->faq();
 

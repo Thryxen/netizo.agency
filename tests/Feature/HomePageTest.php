@@ -147,6 +147,8 @@ it('renders the FAQ JSON-LD and SEO tags in the root view', function () {
 });
 
 it('renders the organization JSON-LD built in the controller', function () {
+    config(['socials' => ['facebook' => null, 'instagram' => '', 'tiktok' => null, 'discord' => null]]);
+
     $response = $this->get('/')->assertOk();
 
     preg_match_all('/<script type="application\/ld\+json">(.*?)<\/script>/s', $response->getContent(), $matches);
@@ -162,6 +164,53 @@ it('renders the organization JSON-LD built in the controller', function () {
         ->and($organization['areaServed'])->toBe(['@type' => 'Country', 'name' => 'Polska'])
         ->and($organization['priceRange'])->toBe('$$')
         ->and($schemas->firstWhere('@type', 'WebPage'))->toBeNull();
+});
+
+it('lists the configured social profiles as sameAs in the organization JSON-LD', function (string $path) {
+    config(['socials' => [
+        'facebook' => 'https://www.facebook.com/netizo',
+        'instagram' => null,
+        'tiktok' => 'https://www.tiktok.com/@netizo',
+        'discord' => 'https://discord.gg/netizo',
+    ]]);
+
+    $response = $this->get($path)->assertOk();
+
+    preg_match_all('/<script type="application\/ld\+json">(.*?)<\/script>/s', $response->getContent(), $matches);
+
+    $organization = collect($matches[1])
+        ->map(fn (string $json): mixed => json_decode(trim($json), true))
+        ->firstWhere('@type', 'ProfessionalService');
+
+    expect($organization['sameAs'])->toBe([
+        'https://www.facebook.com/netizo',
+        'https://www.tiktok.com/@netizo',
+        'https://discord.gg/netizo',
+    ]);
+})->with(['polish' => '/', 'english' => '/en']);
+
+it('shares the configured social profiles in config order without the empty ones', function (string $path) {
+    config(['socials' => [
+        'facebook' => 'https://www.facebook.com/netizo',
+        'instagram' => '',
+        'tiktok' => 'https://www.tiktok.com/@netizo',
+        'discord' => null,
+    ]]);
+
+    $this->get($path)
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('socials', [
+            ['network' => 'facebook', 'url' => 'https://www.facebook.com/netizo'],
+            ['network' => 'tiktok', 'url' => 'https://www.tiktok.com/@netizo'],
+        ]));
+})->with(['polish' => '/', 'english' => '/en']);
+
+it('shares no social profiles when none is configured', function () {
+    config(['socials' => ['facebook' => null, 'instagram' => null, 'tiktok' => null, 'discord' => null]]);
+
+    $this->get('/')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('socials', []));
 });
 
 it('points the share image tags at a 1200x630 file under the size link previews accept', function () {

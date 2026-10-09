@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { localized, useLocale } from '@/lib/i18n';
 
 /**
@@ -13,6 +14,32 @@ export const contact = {
 } as const;
 
 export const clientPanelUrl = 'https://panel-klienta.netizo.pl';
+
+/** Brand names of the social networks with an icon (components/home/social-icon.tsx), the same in both languages. */
+export const socialNetworkNames = {
+    facebook: 'Facebook',
+    instagram: 'Instagram',
+    tiktok: 'TikTok',
+    discord: 'Discord',
+} as const;
+
+export type SocialNetwork = keyof typeof socialNetworkNames;
+
+export type SocialProfile = { network: SocialNetwork; url: string };
+
+function isSocialNetwork(network: string): network is SocialNetwork {
+    return Object.hasOwn(socialNetworkNames, network);
+}
+
+/**
+ * Netizo's social profiles, set in .env (config/socials.php) and shared by HandleInertiaRequests on public pages:
+ * only the networks with a URL, in config order. A network without an icon here is skipped.
+ */
+export function useSocialProfiles(): SocialProfile[] {
+    const socials = usePage<{ socials?: { network: string; url: string }[] }>().props.socials ?? [];
+
+    return socials.filter((profile): profile is SocialProfile => isSocialNetwork(profile.network));
+}
 
 /** Pages of the site in each language (routes/web.php). */
 export const pageUrls = localized({

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\LocalizedRoutes;
+use App\Services\SocialProfiles;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -50,6 +51,7 @@ class HandleInertiaRequests extends Middleware
                 ...$shared,
                 'locale' => app()->getLocale(),
                 'alternates' => LocalizedRoutes::alternates($request->route()?->getName()),
+                'socials' => SocialProfiles::all(),
             ];
         }
 
