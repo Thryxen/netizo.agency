@@ -24,7 +24,7 @@ it('serves the page at /partnerzy', function () {
 });
 
 it('renders its own SEO tags, canonical URL and share image', function () {
-    $imageUrl = asset('assets/images/og-netizo-2.png');
+    $imageUrl = asset('assets/images/og-netizo-partnerzy.png');
 
     $this->get('/partnerzy')
         ->assertOk()
@@ -32,7 +32,32 @@ it('renders its own SEO tags, canonical URL and share image', function () {
         ->assertSee('<link rel="canonical" href="'.url('/partnerzy').'">', false)
         ->assertSee('<meta property="og:url" content="'.url('/partnerzy').'">', false)
         ->assertSee('<meta property="og:image" content="'.$imageUrl.'">', false)
+        ->assertSee('<meta property="og:image:width" content="1200">', false)
+        ->assertSee('<meta property="og:image:height" content="630">', false)
+        ->assertSee('<meta name="twitter:image" content="'.$imageUrl.'">', false)
+        ->assertDontSee('og-netizo-2.png', false)
         ->assertDontSee('Tworzymy Strony WWW dla Ambitnych Firm', false);
+});
+
+it('uses its share image in the WebPage JSON-LD', function () {
+    $response = $this->get('/partnerzy')->assertOk();
+
+    preg_match_all('/<script type="application\/ld\+json">(.*?)<\/script>/s', $response->getContent(), $matches);
+
+    $webPage = collect($matches[1])
+        ->map(fn (string $json): mixed => json_decode(trim($json), true))
+        ->firstWhere('@type', 'WebPage');
+
+    expect($webPage['image'])->toBe(asset('assets/images/og-netizo-partnerzy.png'));
+});
+
+it('ships a 1200x630 share image under the size link previews accept', function () {
+    $imagePath = public_path('assets/images/og-netizo-partnerzy.png');
+
+    expect($imagePath)->toBeFile()
+        ->and(array_slice(getimagesize($imagePath), 0, 2))->toBe([1200, 630])
+        ->and(getimagesize($imagePath)['mime'])->toBe('image/png')
+        ->and(filesize($imagePath))->toBeLessThan(300 * 1024);
 });
 
 it('renders the FAQ and WebPage JSON-LD from the same questions as the page', function () {

@@ -15,7 +15,7 @@ class PartnerProgramController extends Controller
     {
         $title = 'Program partnerski: 15% prowizji za polecenie | Netizo';
         $description = 'Polecaj Netizo firmom, które potrzebują strony, sklepu lub aplikacji, i dostawaj 15% netto od każdej opłaconej faktury klienta przez 12 miesięcy. Bez opłat i bez limitu poleceń.';
-        $imageUrl = asset('assets/images/og-netizo-2.png');
+        $imageUrl = asset('assets/images/og-netizo-partnerzy.png');
 
         SEOMeta::setTitle($title);
         SEOMeta::setDescription($description);
